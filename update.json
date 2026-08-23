@@ -1,7 +1,1 @@
-{
-  "latest_version": "1.0.15",
-  "download_url": "https://github.com/haremking7025/sfbot-control/releases/download/v1.0.15/SFBOT_v1.0.15.exe",
-  "sha256": "5A0566312FB89B9ADE5CBE4D1EF0F1EAD16EE6EF8E07BAE567CFA42A6294EF14",
-  "release_notes": "log แสดงผลลัพธ์ที่ได้รับ",
-  "force_update": false
-}
+{"version":"1.0.16","sha256":"4DDDCE43026907F4DBCDD4D46CAA38FCAC34A2B2C4E5CBBDA9EE1ECEDDF9D845"}
