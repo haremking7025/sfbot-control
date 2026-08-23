@@ -1,7 +1,7 @@
 {
-  "latest_version": "1.0.5",
-  "download_url": "https://github.com/haremking7025/sfbot-control/releases/download/v1.0.5/SFBOT_v1.0.5.exe",
-  "sha256": "51E73956318AA8C9B523CD714469FE418348C0D328B23A53F5A5D26E265D0D4F",
-  "release_notes": "🔄 ระบบอัปเดตแบบ v3.9.7: copy ไฟล์ใหม่ชื่อเวอร์ชัน + เก็บ .exe.old + เปิดไฟล์เดิมคืนถ้าล้มเหลว",
+  "latest_version": "1.0.6",
+  "download_url": "https://github.com/haremking7025/sfbot-control/releases/download/v1.0.6/SFBOT_v1.0.6.exe",
+  "sha256": "00B7338B0C70A5933542CD2580D1AB6E269BC5F0311581D60F475CDD83DEA796",
+  "release_notes": "🔧 v1.0.6 — สำหรับทดสอบอัปเดต",
   "force_update": false
 }
