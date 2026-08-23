@@ -1,7 +1,7 @@
 {
-  "latest_version": "1.0.12",
-  "download_url": "https://github.com/haremking7025/sfbot-control/releases/download/v1.0.12/SFBOT_v1.0.12.exe",
-  "sha256": "DE72EBEAD3D841D0DCAFE92624FA58D7E1DC7ECE7B1C22B51AF4E170F02A0A10",
-  "release_notes": "ตรวจจับแรงค์แบบ v3.9.7 (หาคำ rank/แรงค์ ก่อน fallback ตำแหน่ง)",
+  "latest_version": "1.0.13",
+  "download_url": "https://github.com/haremking7025/sfbot-control/releases/download/v1.0.13/SFBOT_v1.0.13.exe",
+  "sha256": "A71F87D641530C7601F176C73D3EB7FAF63E2F22CC4B53C0A7CB9F5AC8ECFE4E",
+  "release_notes": "normalize label แรงค์ + log วิธีเลือก",
   "force_update": false
 }
