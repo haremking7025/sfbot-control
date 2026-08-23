@@ -1,0 +1,6 @@
+{
+  "latest_version": "1.0.1",
+  "download_url": "https://github.com/haremking7025/sfbot-control/releases/download/v1.0.1/SFBOT_v1.0.1.exe",
+  "release_notes": "✨ หน้าต่างอัปเดตใหม่: progress bar + แสดงเวอร์ชัน + release notes\n🐛 แก้โปรแกรมค้างตอนเปิด\n⚡ background thread checks — UI ไม่ค้าง",
+  "force_update": false
+}
