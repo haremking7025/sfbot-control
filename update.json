@@ -1,7 +1,7 @@
 {
-  "latest_version": "1.0.8",
-  "download_url": "https://github.com/haremking7025/sfbot-control/releases/download/v1.0.8/SFBOT_v1.0.8.exe",
-  "sha256": "1EFC3634FCE8FEE2504CEC40B737EB9AC60050C999B8F08F20AC3074D42E6146",
-  "release_notes": "🎨 popup update ใช้รูปโลโก้ SF + ดีไซน์มืออาชีพ ไม่มีอิโมจิ",
+  "latest_version": "1.0.9",
+  "download_url": "https://github.com/haremking7025/sfbot-control/releases/download/v1.0.9/SFBOT_v1.0.9.exe",
+  "sha256": "399EBA124278C2F7CF1F1C5352312997EECDC9D16CB6BDFE5168AE46D8987313",
+  "release_notes": "Splash screen + โลโก้ SF กลม + ดีไซน์มืออาชีพ",
   "force_update": false
 }
