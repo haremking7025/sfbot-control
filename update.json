@@ -1,7 +1,7 @@
 {
   "latest_version": "1.0.6",
   "download_url": "https://github.com/haremking7025/sfbot-control/releases/download/v1.0.6/SFBOT_v1.0.6.exe",
-  "sha256": "00B7338B0C70A5933542CD2580D1AB6E269BC5F0311581D60F475CDD83DEA796",
-  "release_notes": "🔧 v1.0.6 — สำหรับทดสอบอัปเดต",
+  "sha256": "21A7617AE06F0A711299C48978CBA659FE4CC242BA6826A1BC05CCAEA6DA8BA4",
+  "release_notes": "🔧 v1.0.6 — แก้ค้าง: process ตายจริง + ซ่อนหน้าต่าง cmd",
   "force_update": false
 }
