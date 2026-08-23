@@ -1,7 +1,7 @@
 {
-  "latest_version": "1.0.14",
-  "download_url": "https://github.com/haremking7025/sfbot-control/releases/download/v1.0.14/SFBOT_v1.0.14.exe",
-  "sha256": "A130C1A7708F911E4E0371F65AE0B37824B1615486808D1B9062BF1FF509DF17",
-  "release_notes": "แก้ล็อกอิน GAME ID",
+  "latest_version": "1.0.15",
+  "download_url": "https://github.com/haremking7025/sfbot-control/releases/download/v1.0.15/SFBOT_v1.0.15.exe",
+  "sha256": "5A0566312FB89B9ADE5CBE4D1EF0F1EAD16EE6EF8E07BAE567CFA42A6294EF14",
+  "release_notes": "log แสดงผลลัพธ์ที่ได้รับ",
   "force_update": false
 }
