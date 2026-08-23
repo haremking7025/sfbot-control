@@ -1,7 +1,7 @@
 {
-  "latest_version": "1.0.9",
-  "download_url": "https://github.com/haremking7025/sfbot-control/releases/download/v1.0.9/SFBOT_v1.0.9.exe",
-  "sha256": "399EBA124278C2F7CF1F1C5352312997EECDC9D16CB6BDFE5168AE46D8987313",
-  "release_notes": "Splash screen + โลโก้ SF กลม + ดีไซน์มืออาชีพ",
+  "latest_version": "1.0.10",
+  "download_url": "https://github.com/haremking7025/sfbot-control/releases/download/v1.0.10/SFBOT_v1.0.10.exe",
+  "sha256": "68E4463634AD0CD8B3456919D80410CADA93FF71E38E0D166621B69815A154C6",
+  "release_notes": "โลโก้ SF กลับเป็นรูปเต็ม (ไม่ตัดวงกลม)",
   "force_update": false
 }
