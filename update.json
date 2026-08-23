@@ -1,7 +1,7 @@
 {
-  "latest_version": "1.0.2",
-  "download_url": "https://github.com/haremking7025/sfbot-control/releases/download/v1.0.2/SFBOT_v1.0.2.exe",
-  "sha256": "ED0354734428340E22568669625F8AC209300C35B86E498C108A7E1881114E49",
-  "release_notes": "🎨 หน้าต่างอัปเดตใหม่ — ดีไซน์สวยงาม\n🔧 แก้บั๊ก Security validation หลังรีสตาร์ท\n🔐 SHA-256 hash verify",
+  "latest_version": "1.0.3",
+  "download_url": "https://github.com/haremking7025/sfbot-control/releases/download/v1.0.3/SFBOT_v1.0.3.exe",
+  "sha256": "51A1080A9DFE0AC32B3ED1CD317411F20783C68367BEED872F424AF07132E938",
+  "release_notes": "🎨 หน้าต่างอัปเดตสวยงาม\n🔧 แก้บั๊ก Security validation หลังรีสตาร์ท\n🔐 SHA-256 hash verify",
   "force_update": false
 }
