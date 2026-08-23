@@ -1,7 +1,7 @@
 {
-  "latest_version": "1.0.3",
-  "download_url": "https://github.com/haremking7025/sfbot-control/releases/download/v1.0.3/SFBOT_v1.0.3.exe",
-  "sha256": "0A81CD75826F80BC35D559E2C28B3C111D0311999B75891CCCA1ECB5A8110F2E",
-  "release_notes": "🎨 หน้าต่างอัปเดตสวยงาม (icon แบบวาด)\n🔧 แก้บั๊ก Security validation หลังรีสตาร์ท (PowerShell detached)\n🔐 SHA-256 hash verify",
+  "latest_version": "1.0.4",
+  "download_url": "https://github.com/haremking7025/sfbot-control/releases/download/v1.0.4/SFBOT_v1.0.4.exe",
+  "sha256": "E44340C54388BA3A030AFD5B7EBBE6B06AB391C3EF094B13654F285C4BC2FB9A",
+  "release_notes": "🛡 ป้องกันโค้ด Cython + PyArmor\n🎨 หน้าต่างอัปเดตสวยงาม\n🔧 แก้บั๊ก Security validation หลังรีสตาร์ท",
   "force_update": false
 }
