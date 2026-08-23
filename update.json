@@ -1,7 +1,7 @@
 {
-  "latest_version": "1.0.4",
-  "download_url": "https://github.com/haremking7025/sfbot-control/releases/download/v1.0.4/SFBOT_v1.0.4.exe",
-  "sha256": "E44340C54388BA3A030AFD5B7EBBE6B06AB391C3EF094B13654F285C4BC2FB9A",
-  "release_notes": "🛡 ป้องกันโค้ด Cython + PyArmor\n🎨 หน้าต่างอัปเดตสวยงาม\n🔧 แก้บั๊ก Security validation หลังรีสตาร์ท",
+  "latest_version": "1.0.5",
+  "download_url": "https://github.com/haremking7025/sfbot-control/releases/download/v1.0.5/SFBOT_v1.0.5.exe",
+  "sha256": "EFB8C92122BE652B43FA17ADB6B123655A501E89719A3369EAAEEBF463A8D4D1",
+  "release_notes": "🔧 แก้บั๊กกดอัปเดตแล้วโปรแกรมหายไป ไม่แทนที่ไฟล์เก่า ไม่เปิดใหม่",
   "force_update": false
 }
