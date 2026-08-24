@@ -1,5 +1,5 @@
 {
-  "active": false,
-  "message": "ปิดปรับปรุงชั่วคราว",
+  "active": true,
+  "message": "CLOSED - testing kill switch",
   "min_version": "1.0.0"
 }
