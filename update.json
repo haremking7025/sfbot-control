@@ -1,7 +1,7 @@
 {
-  "version": "1.0.1",
-  "sha256": "C1F7D66CFE12EF56A3F91AFCA7478BBA0A5FBD78A2EDE75F05251723A1A4668D",
-  "url": "https://github.com/haremking7025/sfbot-control/releases/download/v1.0.1/SFBOT_v1.0.1.exe",
-  "size": 26516321,
-  "notes": "- แสดงเหตุผลจริงจากเว็บเมื่อรับคีย์เวิร์ดไม่สำเร็จ (เช่น คูปองถูกใช้ไปแล้ว)\n- หน้าต่างอัปเดตใหม่ มีรายละเอียด release notes และขนาดไฟล์\n- แก้บั๊กโปรแกรมค้างใน Processes หลังปิด\n- ปรับ Log ภาษาไทย อ่านง่าย แยกไอดีชัดเจน"
+  "version": "1.0.2",
+  "sha256": "782007BC40E04C08D9FB0D09FBFEBDB8C535AB72AE22BBE6A6E21726FD437356",
+  "url": "https://github.com/haremking7025/sfbot-control/releases/download/v1.0.2/SFBOT_v1.0.2.exe",
+  "size": 26517954,
+  "notes": "- แสดงเหตุผลจริงจากเว็บเมื่อรับคีย์เวิร์ดไม่สำเร็จ (เช่น คูปองโค้ดนี้ถูกใช้ไปแล้ว)\n- หน้าต่างอัปเดตใหม่: release notes + ขนาดไฟล์ ดูสวยงามมืออาชีพ\n- แก้บั๊กโปรแกรมค้างใน Processes หลังปิด\n- Log ภาษาไทย อ่านง่าย แยกไอดีชัดเจน"
 }
