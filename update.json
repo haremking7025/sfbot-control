@@ -1,7 +1,8 @@
 {
-  "version": "1.0.6",
-  "sha256": "54B3653807D0C7655D27900B4D7C978425B38D135BC2D98F6E05D4E337B8E595",
-  "url": "https://github.com/haremking7025/sfbot-control/releases/download/v1.0.6/SFBOT_v1.0.6.exe",
-  "size": 26519340,
-  "notes": "- แก้หน้าต่างอัปเดตค้างและการอัปเดต UI จาก worker thread\n- แสดงเปอร์เซ็นต์ ขนาดไฟล์ และความเร็ว MB/s\n- เพิ่ม retry และ resume เมื่อเครือข่ายหลุด\n- ตรวจ metadata GitHub ให้รองรับ version และ latest_version"
+  "version": "1.0.7",
+  "sha256": "4d064ebd7248a4d5dc317a3f430d3226809313ff62bc19445c2f69961e802d2e",
+  "url": "https://github.com/haremking7025/sfbot-control/releases/download/v1.0.7/SFBOT_v1.0.7.exe",
+  "size": 38087144,
+  "notes": "ลบกล่องยืนยันก่อนเริ่มงาน กดปุ่มแล้วเริ่มทำงานทันที พร้อมปรับปรุงความเสถียรของระบบ",
+  "latest_version": "1.0.7"
 }
