@@ -1,8 +1,8 @@
 {
-  "version": "1.0.7",
-  "sha256": "4d064ebd7248a4d5dc317a3f430d3226809313ff62bc19445c2f69961e802d2e",
-  "url": "https://github.com/haremking7025/sfbot-control/releases/download/v1.0.7/SFBOT_v1.0.7.exe",
-  "size": 38087144,
-  "notes": "ลบกล่องยืนยันก่อนเริ่มงาน กดปุ่มแล้วเริ่มทำงานทันที พร้อมปรับปรุงความเสถียรของระบบ",
-  "latest_version": "1.0.7"
+  "version": "1.0.8",
+  "sha256": "017651b4fd713896f3438c435c964f138bbaced5373ed996d053e599ac372ab1",
+  "url": "https://github.com/haremking7025/sfbot-control/releases/download/v1.0.8/SFBOT_v1.0.8.exe",
+  "size": 37880219,
+  "notes": "ปรับการเลือกหน่วยตัวละคร: ใช้หน่วยที่ 1 เป็นตัวเลือกหลัก และใช้หน่วยที่ 2 เป็นตัวเลือกสำรองเมื่อไม่พบหน่วยที่ 1 โดยเลือกเพียงหน่วยเดียว",
+  "latest_version": "1.0.8"
 }
