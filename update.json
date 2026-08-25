@@ -1,8 +1,8 @@
 {
-  "version": "1.0.9",
-  "sha256": "531fe701358548a64d14eca03fcf85ec6633afd619342b3a732fb28d2c03b267",
-  "url": "https://github.com/haremking7025/sfbot-control/releases/download/v1.0.9/SFBOT_v1.0.9.exe",
-  "size": 37878998,
-  "notes": "ปรับชื่อหน้าต่างโปรแกรมให้แสดงชื่อและเวอร์ชันถูกต้อง",
-  "latest_version": "1.0.9"
+  "version": "1.1.0",
+  "sha256": "38a4e73150f5a2cfcd027c64d36078788cddb35f624dab41c5cfe89df2fd7d34",
+  "url": "https://github.com/haremking7025/sfbot-control/releases/download/v1.1.0/SFBOT_v1.1.0.exe",
+  "size": 37922241,
+  "notes": "แก้ไอคอนโปรแกรมและไอคอนบนแถบหน้าต่างให้ใช้โลโก้ SFBOT ถูกต้อง",
+  "latest_version": "1.1.0"
 }
