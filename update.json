@@ -1,8 +1,8 @@
 {
-  "version": "1.1.3",
-  "sha256": "9e6e300e80380f455b1c5bde47584758a2d632d6bdd0175e12b76c932e991bde",
-  "url": "https://github.com/haremking7025/sfbot-control/releases/download/v1.1.3/SFBOT_v1.1.3.exe",
-  "size": 37924497,
-  "notes": "แก้ไอคอนให้ใช้ไฟล์ ICO ต้นฉบับเพื่อความคมชัด รวมการแก้ระบบดาวน์โหลด GitHub และการเลือกหน่วยตัวละคร",
-  "latest_version": "1.1.3"
+  "version": "1.1.5",
+  "latest_version": "1.1.5",
+  "sha256": "4a26cac630520eeabf7a99b4bf63fdba3340f915ff4fad2e5ad20c926c4700e0",
+  "url": "https://github.com/haremking7025/sfbot-control/releases/download/v1.1.5/SFBOT_v1.1.5.exe",
+  "size": 37145069,
+  "notes": "แก้ไอคอน Taskbar/Title bar เบลอ — ใช้ iconphoto จาก JPG ต้นฉบับ (LANCZOS) เหมือน v3.9.7 แทน iconbitmap ที่ดึงเฟรม 16px แล้วยืด"
 }
