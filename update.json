@@ -1,8 +1,8 @@
 {
-  "version": "1.1.1",
-  "sha256": "2a7ca27768756959db51c3f9d46d21d756c1079b514f6ce7183ad36ace25fe93",
-  "url": "https://github.com/haremking7025/sfbot-control/releases/download/v1.1.1/SFBOT_v1.1.1.exe",
-  "size": 37924243,
-  "notes": "ปรับปรุงการดาวน์โหลดจาก GitHub รองรับไฟล์ที่ดาวน์โหลดครบแล้วและป้องกันข้อผิดพลาด Range 416",
-  "latest_version": "1.1.1"
+  "version": "1.1.2",
+  "sha256": "9097c53b2e19389ed23da8a050167da27c76339bbd3b881da04798f2abeee24b",
+  "url": "https://github.com/haremking7025/sfbot-control/releases/download/v1.1.2/SFBOT_v1.1.2.exe",
+  "size": 37923802,
+  "notes": "ปรับปรุงไอคอนโปรแกรมให้คมชัดขึ้น และรวมการแก้ไขระบบดาวน์โหลด GitHub ก่อนหน้า",
+  "latest_version": "1.1.2"
 }
