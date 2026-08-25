@@ -1,7 +1,7 @@
 {
-  "version": "1.0.4",
-  "sha256": "DA5D7B94714EA4C6A0135DD6F67E01F57D9EB1A58096993EA6ADC6845DF7C06C",
-  "url": "https://github.com/haremking7025/sfbot-control/releases/download/v1.0.4/SFBOT_v1.0.4.exe",
-  "size": 26519014,
-  "notes": "- แก้หน้าต่างอัปเดตค้างระหว่างดาวน์โหลด\n- แสดงเปอร์เซ็นต์ ขนาดไฟล์ และความเร็ว MB/s\n- เพิ่ม retry และ resume เมื่อเครือข่ายหลุด\n- แสดงเหตุผลจริงจากเว็บเมื่อรับคีย์เวิร์ดไม่สำเร็จ\n- ปรับหน้าต่างอัปเดตให้สวยงามและอ่านง่าย"
+  "version": "1.0.5",
+  "sha256": "ABFFEED48BAF31F325CAA234A2C578EA57C80796CF8A44702B7642B2DF56B64E",
+  "url": "https://github.com/haremking7025/sfbot-control/releases/download/v1.0.5/SFBOT_v1.0.5.exe",
+  "size": 26518416,
+  "notes": "- แก้หน้าต่างอัปเดตค้าง\n- แสดงเปอร์เซ็นต์และความเร็ว MB/s\n- เพิ่ม retry และ resume\n- ปรับปรุงการรีสตาร์ทหลังอัปเดต"
 }
