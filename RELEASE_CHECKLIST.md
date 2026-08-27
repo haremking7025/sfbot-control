@@ -47,7 +47,9 @@
   > ไม่งั้น build หยุดทันที (errorlevel 1)
 
 - [ ] ยืนยัน EXE เกิดที่: `dist\SFBOT\SFBOT_v1.2.2.exe`
-- [ ] build เขียนแถวลง `docs/release_history.csv` อัตโนมัติ (EXE sha256) — ตรวจว่ามีแถวใหม่
+- [ ] บันทึก release_history.csv: ตอบ "y" ข้อถาม "Release build - log this build to
+  docs/release_history.csv?" (หรือตั้ง `SFBOT_LOG_RELEASE=y` ล่วงหน้า) — CSV ควรเก็บเฉพาะ
+  เวอร์ชันที่ปล่อยจริง ตรวจว่ามีแถวใหม่ 1 แถว
 
 ---
 
@@ -160,6 +162,8 @@
 
 - [ ] ลบ EXE/ZIP เก่าในโปรเจกต์ + build artifacts (`build\` `build_protected\`) ไหม?
 - [ ] อัปเดต `docs/release_history.csv` ให้ตรง release จริง (ถ้าลบ release เก่า ให้ลบแถวด้วย)
+  — ตั้งแต่ build ใหม่ ระบบถามยืนยันก่อนเขียน CSV (`SFBOT_LOG_RELEASE=y`) จึงควรมีเฉพาะ
+  เวอร์ชันที่ปล่อยจริงอยู่แล้ว
 
 ---
 
