@@ -1,9 +1,6 @@
 {
-  "version": "1.1.8",
-  "latest_version": "1.1.8",
-  "sha256": "b368b684f9d88d0dc09e9bab3f430efefed6e24c3437d3053c8a547ab679cbdc",
-  "url": "https://github.com/haremking7025/sfbot-control/releases/download/v1.1.8/SFBOT_v1.1.8.exe",
-  "size": 26522395,
-  "notes": "ปรับชื่อหน่วยและ alias ให้ตรงกับเว็บ ปรับข้อความ error และป้องกัน retry ส่งคีย์ซ้ำ",
-  "filename": "SFBOT_v1.1.8.exe"
+  "version": "1.1.9",
+  "url": "https://github.com/haremking7025/sfbot-control/releases/download/v1.1.9/SFBOT_v1.1.9.zip",
+  "sha256": "819c73387922b9e65db8c2d8c0877c94f27cb012cc00f36af2eaacd8c1f19a12",
+  "size": 37386877
 }
