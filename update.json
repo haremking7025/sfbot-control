@@ -1,9 +1,9 @@
 {
   "version": "1.1.8",
-  "latest_version": "1.1.7",
+  "latest_version": "1.1.8",
   "sha256": "b368b684f9d88d0dc09e9bab3f430efefed6e24c3437d3053c8a547ab679cbdc",
-  "url": "https://github.com/haremking7025/sfbot-control/releases/download/v1.1.7/SFBOT_v1.1.7.exe",
+  "url": "https://github.com/haremking7025/sfbot-control/releases/download/v1.1.8/SFBOT_v1.1.8.exe",
   "size": 26522395,
-  "notes": "แก้ปุ่มล้างคุกกี้ + ไอคอนคมชัด + build ครบ hidden imports",
+  "notes": "ปรับชื่อหน่วยและ alias ให้ตรงกับเว็บ ปรับข้อความ error และป้องกัน retry ส่งคีย์ซ้ำ",
   "filename": "SFBOT_v1.1.8.exe"
 }
