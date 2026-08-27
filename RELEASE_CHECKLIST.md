@@ -131,6 +131,16 @@
   git add update.json && git commit -m "Update v1.2.2 checksum" && git push origin main
   ```
 
+- [ ] **ซิงค์ RELEASE_CHECKLIST.md ไปยัง repo** (ถ้าแก้ checklist ในรอบนี้):
+
+  ```bash
+  python tools/sync_checklist.py --push
+  ```
+
+  > สคริปต์คัดลอก `docs/RELEASE_CHECKLIST.md` → repo + commit + push อัตโนมัติ
+  > (หา clone จาก env `SFBOT_CONTROL_DIR` หรือ `%TEMP%\sfbot-control`) — กันลืมซิงค์
+  > ถ้าไม่ได้แก้ checklist รอบนี้ ข้ามได้
+
 > ⚠️ **ห้าม commit ไฟล์ ZIP/EXE ลงใน repo** — .gitignore กันไว้แล้ว แนบเป็น release asset เท่านั้น
 
 ---
