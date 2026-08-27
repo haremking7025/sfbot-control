@@ -8,7 +8,7 @@ Repo นี้ใช้เป็น **เซิร์ฟเวอร์อัป
 
 | ไฟล์ | หน้าที่ |
 |---|---|
-| `update.json` | ประกาศเวอร์ชันล่าสุด + ลิงก์ดาวน์โหลด EXE + SHA-256 สำหรับตรวจสอบความถูกต้อง |
+| `update.json` | ประกาศเวอร์ชันล่าสุด + ลิงก์ดาวน์โหลด ZIP + SHA-256 + ขนาดไฟล์ (bytes) |
 | `kill_switch.json` | สั่งปิดโปรแกรมทุกเครื่องจากระยะไกล (กรณีต้องการปิดปรับปรุงชั่วคราว) |
 | `README.md` | เอกสารนี้ |
 
@@ -18,35 +18,41 @@ Repo นี้ใช้เป็น **เซิร์ฟเวอร์อัป
 
 ## 🚀 ปล่อยเวอร์ชันใหม่ (Auto-update)
 
-1. **บิ้ว EXE ใหม่** จากโปรเจกต์ SFBOT (เช่น `SFBOT_v1.0.5.exe`)
-2. **คำนวณ SHA-256** ของ EXE:
+1. **บิ้ว EXE + ZIP ใหม่** จากโปรเจกต์ SFBOT (เช่น `SFBOT_v1.2.2.exe` และ `SFBOT_v1.2.2.zip`)
+2. **คำนวณ SHA-256 ของ ZIP** (ตัวที่แจกให้ผู้ใช้ดาวน์โหลด):
    ```powershell
-   Get-FileHash .\SFBOT_v1.0.5.exe -Algorithm SHA256
+   Get-FileHash .\SFBOT_v1.2.2.zip -Algorithm SHA256
    ```
-3. **อัปเดต `update.json`**:
+3. **อัปเดต `update.json`** — schema ที่ใช้จริง:
 
    ```json
    {
-     "latest_version": "1.0.5",
-     "download_url": "https://github.com/haremking7025/sfbot-control/releases/download/v1.0.5/SFBOT_v1.0.5.exe",
-     "sha256": "ใส่ค่า SHA-256 ตัวพิมพ์ใหญ่จากขั้นตอนที่ 2",
-     "release_notes": "📝 สรุปสิ่งที่เปลี่ยนในเวอร์ชันนี้",
-     "force_update": false
+     "version": "1.2.2",
+     "url": "https://github.com/haremking7025/sfbot-control/releases/download/v1.2.2/SFBOT_v1.2.2.zip",
+     "sha256": "8feaf14f55e96320a08f3c793b92c4a8c1c86a260f299ffbcf48ac5056728664",
+     "size": 28589633
    }
    ```
 
-   > `force_update: true` = บังคับให้ทุกเครื่องอัปเดต แม้เวอร์ชันเท่ากัน (ใช้เมื่อด่วนจริง)
+   | ฟิลด์ | ความหมาย |
+   |---|---|
+   | `version` | เวอร์ชันล่าสุด (เปรียบเทียบกับเวอร์ชันเครื่อง) |
+   | `url` | ลิงก์ดาวน์โหลด — ต้องชี้ไป asset ของ release จริง |
+   | `sha256` | เช็คความถูกต้องของไฟล์หลังดาวน์โหลด (ตัวพิมพ์เล็ก) |
+   | `size` | ขนาดไฟล์เป็น bytes — เช็คความสมบูรณ์ก่อนโหลด |
 
-4. **สร้าง GitHub Release** พร้อมแนบ EXE เป็น asset:
+   > updater รองรับ schema เก่า (`latest_version` / `download_url` / `release_notes` / `force_update`) อยู่ด้วย แต่ repo นี้ใช้ schema ใหม่ข้างต้น
+
+4. **สร้าง GitHub Release** พร้อมแนบ **ทั้ง EXE และ ZIP** เป็น asset:
    ```bash
-   gh release create v1.0.5 SFBOT_v1.0.5.exe \
+   gh release create v1.2.2 SFBOT_v1.2.2.exe SFBOT_v1.2.2.zip \
      --repo haremking7025/sfbot-control \
-     --title "SFBOT v1.0.5" \
+     --title "SFBOT v1.2.2" \
      --notes "รายละเอียดเวอร์ชัน"
    ```
-   > ต้องแน่ใจว่า tag ตรงกับ `download_url` และ `latest_version` ใน `update.json`
+   > ต้องแน่ใจว่า tag ตรงกับ `url` ใน `update.json` และ asset ZIP ที่แนบคือไฟล์เดียวกับที่คำนวณ sha256 ไว้
 
-5. ทุกเครื่องที่เปิด SFBOT จะเห็นหน้าต่าง "มีอัปเดตใหม่" → กดอัปเดต → ดาวน์โหลด + ตรวจ SHA-256 → รีสตาร์ทอัตโนมัติ
+5. **Commit + push** `update.json` → ทุกเครื่องที่เปิด SFBOT จะเห็นหน้าต่าง "มีอัปเดตใหม่" → กดอัปเดต → ดาวน์โหลด + ตรวจ SHA-256/ขนาด → รีสตาร์ทอัตโนมัติ
 
 ---
 
@@ -57,7 +63,7 @@ Repo นี้ใช้เป็น **เซิร์ฟเวอร์อัป
 ```json
 {
   "active": true,
-  "message": "ปิดปรับปรุงชั่วคราว กรุณารอ",
+  "message": "โปรแกรมอยู่ระหว่างการปิดปรับปรุง — กรุณารอเวอร์ชันใหม่อีกครั้ง",
   "min_version": "1.0.0"
 }
 ```
@@ -75,22 +81,22 @@ Repo นี้ใช้เป็น **เซิร์ฟเวอร์อัป
 ## ⚠️ หมายเหตุ
 
 - GitHub CDN (`raw.githubusercontent.com`) อาจแคชไฟล์เก่าได้ **1–5 นาที** หลัง push — ถ้าเครื่องไคลเอนต์ยังเห็นเวอร์ชันเก่า ให้รอสักครู่
-- `sha256` ใน `update.json` ต้องตรงกับ EXE จริงที่อัปโหลด ไม่งั้นแอปจะปฏิเสธการอัปเดต (กันไฟล์เสียหาย/ถูกแทรกแซง)
+- `sha256` และ `size` ใน `update.json` ต้องตรงกับ ZIP จริงที่อัปโหลด ไม่งั้นแอปจะปฏิเสธการอัปเดต (กันไฟล์เสียหาย/ถูกแทรกแซง)
+- อย่าอัปโหลดไฟล์ ZIP/EXE ลงใน repo ตรงๆ (history bloat) — แนบเป็น release asset เท่านั้น
 - ใช้เวอร์ชันนี้ร่วมกับแอป SFBOT v1.0.0 ขึ้นไปเท่านั้น
 
 ---
 
 ## 📦 ตัวอย่างไฟล์ปัจจุบัน
 
-**update.json**
+**update.json** (v1.2.2)
 
 ```json
 {
-  "latest_version": "1.0.4",
-  "download_url": "https://github.com/haremking7025/sfbot-control/releases/download/v1.0.4/SFBOT_v1.0.4.exe",
-  "sha256": "E44340C54388BA3A030AFD5B7EBBE6B06AB391C3EF094B13654F285C4BC2FB9A",
-  "release_notes": "🛡 ป้องกันโค้ด Cython + PyArmor\n🎨 หน้าต่างอัปเดตสวยงาม\n🔧 แก้บั๊ก Security validation หลังรีสตาร์ท",
-  "force_update": false
+  "version": "1.2.2",
+  "url": "https://github.com/haremking7025/sfbot-control/releases/download/v1.2.2/SFBOT_v1.2.2.zip",
+  "sha256": "8feaf14f55e96320a08f3c793b92c4a8c1c86a260f299ffbcf48ac5056728664",
+  "size": 28589633
 }
 ```
 
@@ -99,7 +105,7 @@ Repo นี้ใช้เป็น **เซิร์ฟเวอร์อัป
 ```json
 {
   "active": false,
-  "message": "ปิดปรับปรุงชั่วคราว",
+  "message": "โปรแกรมอยู่ระหว่างการปิดปรับปรุง — กรุณารอเวอร์ชันใหม่อีกครั้ง",
   "min_version": "1.0.0"
 }
 ```
