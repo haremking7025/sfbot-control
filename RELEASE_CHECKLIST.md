@@ -1,0 +1,174 @@
+# 📋 RELEASE CHECKLIST — ปล่อยเวอร์ชันใหม่ SFBOT
+
+ใช้ checklist นี้ทุกครั้งที่ปล่อยเวอร์ชันใหม่ ไล่ตามลำดับ **ห้ามข้ามขั้นตอน** ตัวที่ทำแล้วให้ติ๊ก ☐ → ☑ หรือลบออก
+
+> ตัวอย่างในเอกสารนี้ใช้ **v1.2.2** — ให้แทนที่ด้วยเวอร์ชันจริงทุกจุด (ห้ามพลาดเพราะจุดนี้แหละที่ทำบ่อยที่สุด)
+
+---
+
+## 0. ตรวจสภาพก่อนเริ่ม
+
+- [ ] โปรเจกต์อยู่ในโฟลเดอร์ถูกต้อง (`sfbot.pyw` + `sfbot_lib\` อยู่ด้วยกัน)
+- [ ] venv พร้อม (`venv\` มีอยู่ หรือ build จะสร้างให้เอง)
+- [ ] ติดต่อ GitHub ได้ (`gh auth status` ผ่าน)
+- [ ] ไฟล์ source ผ่านชุดตรวจ (build จะรันให้อัตโนมัติ แต่ตรวจเองก่อนดีกว่า):
+
+  ```bash
+  python -m py_compile sfbot.pyw sfbot_lib/core/*.py sfbot_lib/engine/*.py sfbot_lib/features/*.py sfbot_lib/ui/*.py
+  python -m ruff check .
+  python tools/check_bugs.py
+  python tools/find_dead_code.py
+  ```
+
+---
+
+## 1. อัปเดตเวอร์ชัน
+
+- [ ] แก้ `VERSION` ใน `sfbot_lib/core/constants.py`:
+
+  ```python
+  VERSION = "1.2.2"   # ← เปลี่ยนเป็นเวอร์ชันใหม่ เช่น "1.3.0"
+  ```
+
+- [ ] รันชุดตรวจรอบสั้น (py_compile + ruff) ยืนยันเขียวก่อน build
+
+---
+
+## 2. Build EXE
+
+- [ ] รัน build แบบป้องกัน (Cython + PyArmor) — ตั้ง `SFBOT_PROTECT=y` กันบั๊กป้อน stdin:
+
+  ```bat
+  set SFBOT_PROTECT=y
+  build_client.bat
+  ```
+
+  > build จะรัน 3 ชุดตรวจอัตโนมัติ (check_bugs → ruff → find_dead_code) — ถ้าติดให้แก้ก่อน
+  > ไม่งั้น build หยุดทันที (errorlevel 1)
+
+- [ ] ยืนยัน EXE เกิดที่: `dist\SFBOT\SFBOT_v1.2.2.exe`
+- [ ] build เขียนแถวลง `docs/release_history.csv` อัตโนมัติ (EXE sha256) — ตรวจว่ามีแถวใหม่
+
+---
+
+## 3. สร้าง ZIP
+
+- [ ] สร้าง ZIP จาก EXE:
+
+  ```powershell
+  Compress-Archive -Path "dist\SFBOT\SFBOT_v1.2.2.exe" -DestinationPath "SFBOT_v1.2.2.zip"
+  ```
+
+- [ ] ตรวจว่าใน ZIP มี **EXE ตัวเดียว** ไม่มี `.py`/`.pyc` รั่วออกมา:
+
+  ```powershell
+  tar -tf SFBOT_v1.2.2.zip
+  ```
+
+---
+
+## 4. คำนวณ SHA-256 + ขนาด (ของ ZIP)
+
+- [ ] คำนวณ sha256 (ตัวพิมพ์เล็ก) + ขนาดไฟล์:
+
+  ```powershell
+  (Get-FileHash .\SFBOT_v1.2.2.zip -Algorithm SHA256).Hash.ToLower()
+  (Get-Item .\SFBOT_v1.2.2.zip).Length
+  ```
+
+- [ ] บันทึกค่าไว้ (ต้องใช้ 2 จุด: update.json + ตรวจอัปเดต)
+
+---
+
+## 5. ปล่อย GitHub Release
+
+- [ ] สร้าง release พร้อมแนบ **ทั้ง EXE และ ZIP**:
+
+  ```bash
+  gh release create v1.2.2 dist/SFBOT/SFBOT_v1.2.2.exe SFBOT_v1.2.2.zip \
+    --repo haremking7025/sfbot-control \
+    --title "SFBOT v1.2.2" \
+    --notes "📝 สรุปสิ่งที่เปลี่ยนในเวอร์ชันนี้"
+  ```
+
+  > ⚠️ tag ต้องตรงกับ `url` ใน update.json (ขั้นตอน 6) ทุกจุด
+
+- [ ] ยืนยัน asset อัปโหลดครบ (EXE + ZIP) + digest ตรงเครื่อง
+
+---
+
+## 6. อัปเดต `update.json` (repo sfbot-control)
+
+- [ ] clone/pull repo ควบคุม:
+
+  ```bash
+  cd /tmp/sfbot-control && git pull --ff-only
+  ```
+
+- [ ] แก้ `update.json` เป็น schema ใหม่:
+
+  ```json
+  {
+    "version": "1.2.2",
+    "url": "https://github.com/haremking7025/sfbot-control/releases/download/v1.2.2/SFBOT_v1.2.2.zip",
+    "sha256": "8feaf14f55e96320a08f3c793b92c4a8c1c86a260f299ffbcf48ac5056728664",
+    "size": 28589633
+  }
+  ```
+
+  | ฟิลด์ | แหล่งค่า |
+  |---|---|
+  | `version` | VERSION ใน constants.py |
+  | `url` | release download URL ของ ZIP |
+  | `sha256` | จากขั้นตอน 4 (ตัวพิมพ์เล็ก) |
+  | `size` | จากขั้นตอน 4 (bytes) |
+
+- [ ] commit + push:
+
+  ```bash
+  git add update.json && git commit -m "Update v1.2.2 checksum" && git push origin main
+  ```
+
+> ⚠️ **ห้าม commit ไฟล์ ZIP/EXE ลงใน repo** — .gitignore กันไว้แล้ว แนบเป็น release asset เท่านั้น
+
+---
+
+## 7. ทดสอบอัปเดตจริง (สำคัญที่สุด)
+
+- [ ] ดาวน์โหลดจาก URL ใน update.json แล้วเทียบ sha256/size กับที่บันทึก:
+
+  ```python
+  import json, hashlib, urllib.request
+  u = json.load(open(r"C:\Users\thepw\Downloads\SFBOT\update.json"))  # หรืออ่านจาก GitHub
+  # ดาวน์โหลด u["url"] → hashlib.sha256(ไฟล์).hexdigest() == u["sha256"] และ os.path.getsize == u["size"]
+  ```
+
+  → ต้องได้ **MATCH** (sha + size ตรงเป๊ะ) ไม่งั้นผู้ใช้อัปเดตไม่ได้
+
+- [ ] เปิดแอปเวอร์ชันเก่า (เช่น v1.2.1) → กดอัปเดต → ดาวน์โหลด ZIP → รีสตาร์ทเป็นเวอร์ชันใหม่
+- [ ] หลังอัปเดต: ไอคอน/โลโก้ยังคม ไม่เบลอ + แอปเปิดปกติ
+
+---
+
+## 8. ล้างของเก่า (แล้วแต่)
+
+- [ ] ลบ release เก่าบน GitHub ไหม? (เก็บเฉพาะล่าสุด):
+
+  ```bash
+  gh release delete v1.2.1 --repo haremking7025/sfbot-control --cleanup-tag --yes
+  ```
+
+- [ ] ลบ EXE/ZIP เก่าในโปรเจกต์ + build artifacts (`build\` `build_protected\`) ไหม?
+- [ ] อัปเดต `docs/release_history.csv` ให้ตรง release จริง (ถ้าลบ release เก่า ให้ลบแถวด้วย)
+
+---
+
+## 🔁 สรุป flow คร่าวๆ
+
+```
+constants.py (VERSION) → build_client.bat (EXE) → zip → sha256/size
+    → gh release create (EXE+ZIP) → update.json (version/url/sha256/size) → push
+    → ทดสอบดาวน์โหลด MATCH → ล้างของเก่า → ✅ เสร็จ
+```
+
+สร้างโดย [haremking7025](https://github.com/haremking7025) · สำหรับ SFBOT Desktop

@@ -11,12 +11,15 @@ Repo นี้ใช้เป็น **เซิร์ฟเวอร์อัป
 | `update.json` | ประกาศเวอร์ชันล่าสุด + ลิงก์ดาวน์โหลด ZIP + SHA-256 + ขนาดไฟล์ (bytes) |
 | `kill_switch.json` | สั่งปิดโปรแกรมทุกเครื่องจากระยะไกล (กรณีต้องการปิดปรับปรุงชั่วคราว) |
 | `README.md` | เอกสารนี้ |
+| `RELEASE_CHECKLIST.md` | ขั้นตอนปล่อยเวอร์ชันใหม่แบบละเอียด (build → zip → sha256 → release → update.json) — ดูได้ที่ [RELEASE_CHECKLIST.md](RELEASE_CHECKLIST.md) |
 
 แอปจะอ่านไฟล์ทั้งสองผ่าน `https://raw.githubusercontent.com/haremking7025/sfbot-control/main/...` ทุกครั้งที่เปิดโปรแกรม
 
 ---
 
 ## 🚀 ปล่อยเวอร์ชันใหม่ (Auto-update)
+
+> 📋 มีขั้นตอนละเอียดทุกขั้นตอนใน [RELEASE_CHECKLIST.md](RELEASE_CHECKLIST.md) — ไล่ตามลำดับทุกครั้ง
 
 1. **บิ้ว EXE + ZIP ใหม่** จากโปรเจกต์ SFBOT (เช่น `SFBOT_v1.2.2.exe` และ `SFBOT_v1.2.2.zip`)
 2. **คำนวณ SHA-256 ของ ZIP** (ตัวที่แจกให้ผู้ใช้ดาวน์โหลด):
