@@ -1,8 +1,9 @@
 {
-  "version": "1.1.7",
+  "version": "1.1.8",
   "latest_version": "1.1.7",
-  "sha256": "ec38bf09cfe2a4d708ba234e257ede0d03220b0a6979ce3faef6d457e686c98c",
+  "sha256": "b368b684f9d88d0dc09e9bab3f430efefed6e24c3437d3053c8a547ab679cbdc",
   "url": "https://github.com/haremking7025/sfbot-control/releases/download/v1.1.7/SFBOT_v1.1.7.exe",
-  "size": 37873779,
-  "notes": "\u0e41\u0e01\u0e49\u0e1b\u0e38\u0e48\u0e21\u0e25\u0e49\u0e32\u0e07\u0e04\u0e38\u0e01\u0e01\u0e35\u0e49 + \u0e44\u0e2d\u0e04\u0e2d\u0e19\u0e04\u0e21\u0e0a\u0e31\u0e14 + build \u0e04\u0e23\u0e1a hidden imports"
+  "size": 26522395,
+  "notes": "แก้ปุ่มล้างคุกกี้ + ไอคอนคมชัด + build ครบ hidden imports",
+  "filename": "SFBOT_v1.1.8.exe"
 }
