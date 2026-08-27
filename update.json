@@ -1,6 +1,7 @@
 {
-  "version": "1.2.3",
-  "url": "https://github.com/haremking7025/sfbot-control/releases/download/v1.2.3/SFBOT_v1.2.3.zip",
-  "sha256": "675b003ef98f6bfb4a7c329d3fbc34d739407131728783126e519c49821ab949",
-  "size": 28646905
+  "version": "1.2.4",
+  "url": "https://github.com/haremking7025/sfbot-control/releases/download/v1.2.4/SFBOT_v1.2.4.zip",
+  "sha256": "a7773996e4d979f98cf10f361182320fe58bd1582a7b00a43353539b93b3a170",
+  "size": 28654530,
+  "notes": "SFBOT v1.2.4\n\n- แก้บั๊กอัปเดต: เปิดโปรแกรมไม่ได้หลังกดอัปเดต (ได้ไฟล์ ZIP ปลอมชื่อ .exe) — ตอนนี้แตก ZIP ให้อัตโนมัติแล้ว\n- เปลี่ยนหัวข้อหน้าต่างอัปเดตเป็น \"อัปเดตเวอร์ชันนี้\"\n- เพิ่มกฎตรวจ .bat ใน check_bugs.py + ป้องกัน UnicodeEncodeError ใน tools"
 }
