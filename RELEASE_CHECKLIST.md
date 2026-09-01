@@ -48,7 +48,8 @@
 
   > build จะรัน 3 ชุดตรวจอัตโนมัติ (check_bugs → ruff → find_dead_code) — ถ้าติดให้แก้ก่อน
   > ไม่งั้น build หยุดทันที (errorlevel 1)
-  > Cython compile 43 โมดูลแบบขนาน (`-j`) — build ทั้งหมดใช้เวลาประมาณ 1 นาที ไม่ใช่ 10 นาที
+  > Cython compile 43 โมดูลแบบขนาน (`-j`) + แคช `.pyd` ข้าม build (`.cython-cache\`) —
+  > รอบแรก ~50 วิ รอบถัดไป (เนื้อหาไม่เปลี่ยน) เหลือ ~20-25 วิ ไม่ใช่ 10 นาที
 
 - [ ] ยืนยัน EXE เกิดที่: `dist\SFBOT\SFBOT_v1.2.2.exe`
 - [ ] บันทึก release_history.csv: ตอบ "y" ข้อถาม "Release build - log this build to
@@ -73,13 +74,13 @@
 
 ---
 
-## 4. คำนวณ SHA-256 + ขนาด (ของ ZIP)
+## 4. คำนวณ SHA-256 + ขนาด (ของ EXE)
 
-- [ ] คำนวณ sha256 (ตัวพิมพ์เล็ก) + ขนาดไฟล์:
+- [ ] คำนวณ sha256 (ตัวพิมพ์เล็ก) + ขนาดไฟล์ของ **EXE** (update.json ชี้ EXE ตรงๆ ไม่ใช่ ZIP):
 
   ```powershell
-  (Get-FileHash .\SFBOT_v1.2.2.zip -Algorithm SHA256).Hash.ToLower()
-  (Get-Item .\SFBOT_v1.2.2.zip).Length
+  (Get-FileHash .\dist\SFBOT\SFBOT_v1.2.2.exe -Algorithm SHA256).Hash.ToLower()
+  (Get-Item .\dist\SFBOT\SFBOT_v1.2.2.exe).Length
   ```
 
 - [ ] บันทึกค่าไว้ (ต้องใช้ 2 จุด: update.json + ตรวจอัปเดต)
@@ -91,7 +92,7 @@
 - [ ] สร้าง release พร้อมแนบ **ทั้ง EXE และ ZIP**:
 
   ```bash
-  gh release create v1.2.2 dist/SFBOT/SFBOT_v1.2.2.exe SFBOT_v1.2.2.zip \
+  gh release create v1.2.2 dist/SFBOT/SFBOT_v1.2.2.exe dist/SFBOT/SFBOT_v1.2.2.zip \
     --repo haremking7025/sfbot-control \
     --title "SFBOT v1.2.2" \
     --notes "📝 สรุปสิ่งที่เปลี่ยนในเวอร์ชันนี้"
@@ -116,18 +117,23 @@
   ```json
   {
     "version": "1.2.2",
-    "url": "https://github.com/haremking7025/sfbot-control/releases/download/v1.2.2/SFBOT_v1.2.2.zip",
+    "url": "https://github.com/haremking7025/sfbot-control/releases/download/v1.2.2/SFBOT_v1.2.2.exe",
     "sha256": "8feaf14f55e96320a08f3c793b92c4a8c1c86a260f299ffbcf48ac5056728664",
-    "size": 28589633
+    "size": 28965123,
+    "notes": "สรุปสิ่งที่เปลี่ยนในเวอร์ชันนี้ (แสดงในหน้าต่างอัปเดต)"
   }
   ```
 
   | ฟิลด์ | แหล่งค่า |
   |---|---|
   | `version` | VERSION ใน constants.py |
-  | `url` | release download URL ของ ZIP |
-  | `sha256` | จากขั้นตอน 4 (ตัวพิมพ์เล็ก) |
-  | `size` | จากขั้นตอน 4 (bytes) |
+  | `url` | release download URL ของ **EXE** (ไม่ใช่ ZIP) |
+  | `sha256` | จากขั้นตอน 4 (sha ของ EXE, ตัวพิมพ์เล็ก) |
+  | `size` | จากขั้นตอน 4 (bytes ของ EXE) |
+  | `notes` | สรุปสิ่งที่เปลี่ยน — updater เอาไปแสดงในหน้าต่างอัปเดต |
+
+  > ⚠️ update.json ต้องชี้ไปที่ **EXE** ตรงๆ (sha/size ของ EXE) —
+  > ไม่ใช้ ZIP เป็น target อัปเดตแล้ว กัน updater ดาวน์โหลดผิดไฟล์
 
 - [ ] commit + push:
 
@@ -161,7 +167,7 @@
 
   → ต้องได้ **MATCH** (sha + size ตรงเป๊ะ) ไม่งั้นผู้ใช้อัปเดตไม่ได้
 
-- [ ] เปิดแอปเวอร์ชันเก่า (เช่น v1.2.1) → กดอัปเดต → ดาวน์โหลด ZIP → รีสตาร์ทเป็นเวอร์ชันใหม่
+- [ ] เปิดแอปเวอร์ชันเก่า (เช่น v1.2.1) → กดอัปเดต → ดาวน์โหลด EXE → รีสตาร์ทเป็นเวอร์ชันใหม่
 - [ ] หลังอัปเดต: ไอคอน/โลโก้ยังคม ไม่เบลอ + แอปเปิดปกติ
 
 ---
@@ -175,6 +181,8 @@
   ```
 
 - [ ] ลบ EXE/ZIP เก่าในโปรเจกต์ + build artifacts (`build\` `build_protected\`) ไหม?
+  > ⚠️ **ห้ามลบ `.cython-cache\`** — เป็นแคช .pyd ที่ทำให้ build รอบหน้าวิ่งแบบ cache hit
+  > (ลบแล้วรอบหน้าต้อง compile ทั้ง 43 โมดูลใหม่ ~50 วิ)
 - [ ] อัปเดต `docs/release_history.csv` ให้ตรง release จริง (ถ้าลบ release เก่า ให้ลบแถวด้วย)
   — ตั้งแต่ build ใหม่ ระบบถามยืนยันก่อนเขียน CSV (`SFBOT_LOG_RELEASE=y`) จึงควรมีเฉพาะ
   เวอร์ชันที่ปล่อยจริงอยู่แล้ว
