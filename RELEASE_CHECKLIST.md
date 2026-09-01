@@ -43,8 +43,12 @@
   build_client.bat
   ```
 
+  > รันแบบอัตโนมัติ/headless (ส่ง input ไม่ได้) ให้เพิ่ม `set SFBOT_NO_PAUSE=y`
+  > เพื่อข้ามทุก `pause` ท้ายสคริปต์ (กันค้างรอ keypress)
+
   > build จะรัน 3 ชุดตรวจอัตโนมัติ (check_bugs → ruff → find_dead_code) — ถ้าติดให้แก้ก่อน
   > ไม่งั้น build หยุดทันที (errorlevel 1)
+  > Cython compile 43 โมดูลแบบขนาน (`-j`) — build ทั้งหมดใช้เวลาประมาณ 1 นาที ไม่ใช่ 10 นาที
 
 - [ ] ยืนยัน EXE เกิดที่: `dist\SFBOT\SFBOT_v1.2.2.exe`
 - [ ] บันทึก release_history.csv: ตอบ "y" ข้อถาม "Release build - log this build to
