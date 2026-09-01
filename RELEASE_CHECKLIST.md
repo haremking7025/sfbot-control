@@ -9,7 +9,12 @@
 ## 0. ตรวจสภาพก่อนเริ่ม
 
 - [ ] โปรเจกต์อยู่ในโฟลเดอร์ถูกต้อง (`sfbot.pyw` + `sfbot_lib\` อยู่ด้วยกัน)
-- [ ] venv พร้อม (`venv\` มีอยู่ หรือ build จะสร้างให้เอง)
+- [ ] venv พร้อม (`venv\` มีอยู่ หรือ build จะสร้างให้เอง) — ถ้าสร้างใหม่ ให้ติดตั้ง
+  dependencies ผ่าน manifest กลางที่ root (รวม runtime + build ทั้งหมด):
+
+  ```bat
+  venv\Scripts\python.exe -m pip install -r requirements.txt
+  ```
 - [ ] ติดต่อ GitHub ได้ (`gh auth status` ผ่าน)
 - [ ] ไฟล์ source ผ่านชุดตรวจ (build จะรันให้อัตโนมัติ แต่ตรวจเองก่อนดีกว่า):
 
