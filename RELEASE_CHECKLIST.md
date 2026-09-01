@@ -161,7 +161,7 @@
 
   ```python
   import json, hashlib, urllib.request
-  u = json.load(open(r"C:\Users\thepw\Downloads\SFBOT\update.json"))  # หรืออ่านจาก GitHub
+  u = json.load(open(r"C:\Users\thepw\Desktop\SFBOT\update.json"))  # หรืออ่านจาก GitHub
   # ดาวน์โหลด u["url"] → hashlib.sha256(ไฟล์).hexdigest() == u["sha256"] และ os.path.getsize == u["size"]
   ```
 
