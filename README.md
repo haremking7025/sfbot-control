@@ -8,10 +8,12 @@ Repo นี้ใช้เป็น **เซิร์ฟเวอร์อัป
 
 | ไฟล์ | หน้าที่ |
 |---|---|
-| `update.json` | ประกาศเวอร์ชันล่าสุด + ลิงก์ดาวน์โหลด ZIP + SHA-256 + ขนาดไฟล์ (bytes) |
+| `update.json` | ประกาศเวอร์ชันล่าสุด + ลิงก์ดาวน์โหลด EXE + SHA-256 + ขนาดไฟล์ (bytes) |
 | `kill_switch.json` | สั่งปิดโปรแกรมทุกเครื่องจากระยะไกล (กรณีต้องการปิดปรับปรุงชั่วคราว) |
 | `README.md` | เอกสารนี้ |
 | `RELEASE_CHECKLIST.md` | ขั้นตอนปล่อยเวอร์ชันใหม่แบบละเอียด (build → zip → sha256 → release → update.json) — ดูได้ที่ [RELEASE_CHECKLIST.md](RELEASE_CHECKLIST.md) |
+| `docs/build-protected.md` | วิธี build แบบกันโค้ด (Cython + PyArmor) โดยไม่ใช้ vcvarsall + ขั้นตอน Release — ดูได้ที่ [docs/build-protected.md](docs/build-protected.md) |
+| `docs/README.md` | เอกสารเต็มของโปรเจกต์ SFBOT (ความสามารถ, โครงสร้างโค้ด, แก้ปัญหา) — ดูได้ที่ [docs/README.md](docs/README.md) |
 
 แอปจะอ่านไฟล์ทั้งสองผ่าน `https://raw.githubusercontent.com/haremking7025/sfbot-control/main/...` ทุกครั้งที่เปิดโปรแกรม
 
