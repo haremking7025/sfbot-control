@@ -1,7 +1,7 @@
 {
-  "version": "1.3.7",
-  "url": "https://github.com/haremking7025/sfbot-control/releases/download/v1.3.7/SFKeyword_v1.3.7.exe",
-  "sha256": "18bf225f4f646735b9e07971d6fd8ad19a6d4cf3d62e0d8f167ffef54ab6685e",
-  "size": 38741702,
-  "notes": "SFKeyword v1.3.7\n\n🔤 ใช้ชื่อ SFKeyword ครบทุกจุด\n- หน้าต่าง / splash / เมนู / ถาดระบบ / ชื่อบอท Discord/webhook = SFKeyword ทั้งหมด\n- entry ออโต้สตาร์ต (Windows) = SFKeywordAutoStart\n\n📦 ย้ายข้อมูลอัตโนมัติ\n- อัปเดตจาก v1.3.5 (โฟลเดอร์เก่า SFBOT) จะย้าย config/webhook/คุกกี้/ประวัติไปที่ %LOCALAPPDATA%\\SFKeyword ให้อัตโนมัติ ไม่เสียข้อมูล\n\n🧹 ล้างของเก่า\n- ลบ release/ไฟล์เวอร์ชันเก่าทั้งหมด เหลือเฉพาะเวอร์ชันล่าสุด"
+  "version": "1.3.8",
+  "url": "https://github.com/haremking7025/sfbot-control/releases/download/v1.3.8/SFKeyword_v1.3.8.exe",
+  "sha256": "c89b93311604629ac4b9a78238fdc846fa69a02dccd5fb809c0252b99e38ffdf",
+  "size": 38741647,
+  "notes": "SFKeyword v1.3.8 — รุ่นต่อเนื่องของ v1.3.7\n\n🔤 ใช้ชื่อ SFKeyword ครบทุกจุด (หน้าต่าง/splash/เมนู/ถาดระบบ/webhook/ออโต้สตาร์ต)\n📦 ย้ายข้อมูลจาก SFBOT → SFKeyword อัตโนมัติสำหรับผู้ที่อัปเกรดจาก v1.3.5\n🧹 GitHub เก็บ release เฉพาะเวอร์ชันล่าสุด"
 }
