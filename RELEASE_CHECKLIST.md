@@ -1,4 +1,4 @@
-# 📋 RELEASE CHECKLIST — ปล่อยเวอร์ชันใหม่ SFBOT
+# 📋 RELEASE CHECKLIST — ปล่อยเวอร์ชันใหม่ SFKeyword
 
 ใช้ checklist นี้ทุกครั้งที่ปล่อยเวอร์ชันใหม่ ไล่ตามลำดับ **ห้ามข้ามขั้นตอน** ตัวที่ทำแล้วให้ติ๊ก ☐ → ☑ หรือลบออก
 
@@ -8,7 +8,7 @@
 
 ## 0. ตรวจสภาพก่อนเริ่ม
 
-- [ ] โปรเจกต์อยู่ในโฟลเดอร์ถูกต้อง (`sfbot.pyw` + `sfbot_lib\` อยู่ด้วยกัน)
+- [ ] โปรเจกต์อยู่ในโฟลเดอร์ถูกต้อง (`sfkeyword.pyw` + `sfkeyword_lib\` อยู่ด้วยกัน)
 - [ ] venv พร้อม (`venv\` มีอยู่ หรือ build จะสร้างให้เอง) — ถ้าสร้างใหม่ ให้ติดตั้ง
   dependencies ผ่าน manifest กลางที่ root (รวม runtime + build ทั้งหมด):
 
@@ -19,7 +19,7 @@
 - [ ] ไฟล์ source ผ่านชุดตรวจ (build จะรันให้อัตโนมัติ แต่ตรวจเองก่อนดีกว่า):
 
   ```bash
-  python -m py_compile sfbot.pyw sfbot_lib/core/*.py sfbot_lib/engine/*.py sfbot_lib/features/*.py sfbot_lib/ui/*.py
+  python -m py_compile sfkeyword.pyw sfkeyword_lib/core/*.py sfkeyword_lib/engine/*.py sfkeyword_lib/features/*.py sfkeyword_lib/ui/*.py
   python -m ruff check .
   python tools/check_bugs.py
   python tools/find_dead_code.py
@@ -29,7 +29,7 @@
 
 ## 1. อัปเดตเวอร์ชัน
 
-- [ ] แก้ `VERSION` ใน `sfbot_lib/core/constants.py`:
+- [ ] แก้ `VERSION` ใน `sfkeyword_lib/core/constants.py`:
 
   ```python
   VERSION = "1.2.2"   # ← เปลี่ยนเป็นเวอร์ชันใหม่ เช่น "1.3.0"
@@ -41,14 +41,14 @@
 
 ## 2. Build EXE
 
-- [ ] รัน build แบบป้องกัน (Cython + PyArmor) — ตั้ง `SFBOT_PROTECT=y` กันบั๊กป้อน stdin:
+- [ ] รัน build แบบป้องกัน (Cython + PyArmor) — ตั้ง `SFKeyword_PROTECT=y` กันบั๊กป้อน stdin:
 
   ```bat
-  set SFBOT_PROTECT=y
+  set SFKeyword_PROTECT=y
   build_client.bat
   ```
 
-  > รันแบบอัตโนมัติ/headless (ส่ง input ไม่ได้) ให้เพิ่ม `set SFBOT_NO_PAUSE=y`
+  > รันแบบอัตโนมัติ/headless (ส่ง input ไม่ได้) ให้เพิ่ม `set SFKeyword_NO_PAUSE=y`
   > เพื่อข้ามทุก `pause` ท้ายสคริปต์ (กันค้างรอ keypress)
 
   > build จะรัน 3 ชุดตรวจอัตโนมัติ (check_bugs → ruff → find_dead_code) — ถ้าติดให้แก้ก่อน
@@ -56,9 +56,9 @@
   > Cython compile 43 โมดูลแบบขนาน (`-j`) + แคช `.pyd` ข้าม build (`.cython-cache\`) —
   > รอบแรก ~50 วิ รอบถัดไป (เนื้อหาไม่เปลี่ยน) เหลือ ~20-25 วิ ไม่ใช่ 10 นาที
 
-- [ ] ยืนยัน EXE เกิดที่: `dist\SFBOT\SFBOT_v1.2.2.exe`
+- [ ] ยืนยัน EXE เกิดที่: `dist\SFKeyword\SFKeyword_v1.2.2.exe`
 - [ ] บันทึก release_history.csv: ตอบ "y" ข้อถาม "Release build - log this build to
-  docs/release_history.csv?" (หรือตั้ง `SFBOT_LOG_RELEASE=y` ล่วงหน้า) — CSV ควรเก็บเฉพาะ
+  docs/release_history.csv?" (หรือตั้ง `SFKeyword_LOG_RELEASE=y` ล่วงหน้า) — CSV ควรเก็บเฉพาะ
   เวอร์ชันที่ปล่อยจริง ตรวจว่ามีแถวใหม่ 1 แถว
 
 ---
@@ -68,13 +68,13 @@
 - [ ] สร้าง ZIP จาก EXE:
 
   ```powershell
-  Compress-Archive -Path "dist\SFBOT\SFBOT_v1.2.2.exe" -DestinationPath "SFBOT_v1.2.2.zip"
+  Compress-Archive -Path "dist\SFKeyword\SFKeyword_v1.2.2.exe" -DestinationPath "SFKeyword_v1.2.2.zip"
   ```
 
 - [ ] ตรวจว่าใน ZIP มี **EXE ตัวเดียว** ไม่มี `.py`/`.pyc` รั่วออกมา:
 
   ```powershell
-  tar -tf SFBOT_v1.2.2.zip
+  tar -tf SFKeyword_v1.2.2.zip
   ```
 
 ---
@@ -84,8 +84,8 @@
 - [ ] คำนวณ sha256 (ตัวพิมพ์เล็ก) + ขนาดไฟล์ของ **EXE** (update.json ชี้ EXE ตรงๆ ไม่ใช่ ZIP):
 
   ```powershell
-  (Get-FileHash .\dist\SFBOT\SFBOT_v1.2.2.exe -Algorithm SHA256).Hash.ToLower()
-  (Get-Item .\dist\SFBOT\SFBOT_v1.2.2.exe).Length
+  (Get-FileHash .\dist\SFKeyword\SFKeyword_v1.2.2.exe -Algorithm SHA256).Hash.ToLower()
+  (Get-Item .\dist\SFKeyword\SFKeyword_v1.2.2.exe).Length
   ```
 
 - [ ] บันทึกค่าไว้ (ต้องใช้ 2 จุด: update.json + ตรวจอัปเดต)
@@ -97,9 +97,9 @@
 - [ ] สร้าง release พร้อมแนบ **ทั้ง EXE และ ZIP**:
 
   ```bash
-  gh release create v1.2.2 dist/SFBOT/SFBOT_v1.2.2.exe dist/SFBOT/SFBOT_v1.2.2.zip \
+  gh release create v1.2.2 dist/SFKeyword/SFKeyword_v1.2.2.exe dist/SFKeyword/SFKeyword_v1.2.2.zip \
     --repo haremking7025/sfbot-control \
-    --title "SFBOT v1.2.2" \
+    --title "SFKeyword v1.2.2" \
     --notes "📝 สรุปสิ่งที่เปลี่ยนในเวอร์ชันนี้"
   ```
 
@@ -122,7 +122,7 @@
   ```json
   {
     "version": "1.2.2",
-    "url": "https://github.com/haremking7025/sfbot-control/releases/download/v1.2.2/SFBOT_v1.2.2.exe",
+    "url": "https://github.com/haremking7025/sfbot-control/releases/download/v1.2.2/SFKeyword_v1.2.2.exe",
     "sha256": "8feaf14f55e96320a08f3c793b92c4a8c1c86a260f299ffbcf48ac5056728664",
     "size": 28965123,
     "notes": "สรุปสิ่งที่เปลี่ยนในเวอร์ชันนี้ (แสดงในหน้าต่างอัปเดต)"
@@ -153,7 +153,7 @@
   ```
 
   > สคริปต์คัดลอก `docs/RELEASE_CHECKLIST.md` → repo + commit + push อัตโนมัติ
-  > (หา clone จาก env `SFBOT_CONTROL_DIR` หรือ `%TEMP%\sfbot-control`) — กันลืมซิงค์
+  > (หา clone จาก env `SFKeyword_CONTROL_DIR` หรือ `%TEMP%\sfbot-control`) — กันลืมซิงค์
   > ถ้าไม่ได้แก้ checklist รอบนี้ ข้ามได้
 
 > ⚠️ **ห้าม commit ไฟล์ ZIP/EXE ลงใน repo** — .gitignore กันไว้แล้ว แนบเป็น release asset เท่านั้น
@@ -166,7 +166,7 @@
 
   ```python
   import json, hashlib, urllib.request
-  u = json.load(open(r"C:\Users\thepw\Desktop\SFBOT\update.json"))  # หรืออ่านจาก GitHub
+  u = json.load(open(r"C:\Users\thepw\Desktop\SFKeyword\update.json"))  # หรืออ่านจาก GitHub
   # ดาวน์โหลด u["url"] → hashlib.sha256(ไฟล์).hexdigest() == u["sha256"] และ os.path.getsize == u["size"]
   ```
 
@@ -189,7 +189,7 @@
   > ⚠️ **ห้ามลบ `.cython-cache\`** — เป็นแคช .pyd ที่ทำให้ build รอบหน้าวิ่งแบบ cache hit
   > (ลบแล้วรอบหน้าต้อง compile ทั้ง 43 โมดูลใหม่ ~50 วิ)
 - [ ] อัปเดต `docs/release_history.csv` ให้ตรง release จริง (ถ้าลบ release เก่า ให้ลบแถวด้วย)
-  — ตั้งแต่ build ใหม่ ระบบถามยืนยันก่อนเขียน CSV (`SFBOT_LOG_RELEASE=y`) จึงควรมีเฉพาะ
+  — ตั้งแต่ build ใหม่ ระบบถามยืนยันก่อนเขียน CSV (`SFKeyword_LOG_RELEASE=y`) จึงควรมีเฉพาะ
   เวอร์ชันที่ปล่อยจริงอยู่แล้ว
 
 ---
@@ -202,4 +202,4 @@ constants.py (VERSION) → build_client.bat (EXE) → zip → sha256/size
     → ทดสอบดาวน์โหลด MATCH → ล้างของเก่า → ✅ เสร็จ
 ```
 
-สร้างโดย [haremking7025](https://github.com/haremking7025) · สำหรับ SFBOT Desktop
+สร้างโดย [haremking7025](https://github.com/haremking7025) · สำหรับ SFKeyword Desktop

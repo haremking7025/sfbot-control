@@ -1,8 +1,8 @@
-# SFBOT Control
+# SFKeyword Control
 
-ศูนย์ควบคุม **SFBOT** — โปรแกรมเดสก์ท็อปอัตโนมัติสำหรับเกม Special Force
+ศูนย์ควบคุม **SFKeyword** — โปรแกรมเดสก์ท็อปอัตโนมัติสำหรับเกม Special Force
 
-Repo นี้ใช้เป็น **เซิร์ฟเวอร์อัปเดต + สวิตช์ปิดโปรแกรมระยะไกล (kill switch)** ให้กับแอป `SFBOT` ทุกเครื่องที่เปิดใช้งาน
+Repo นี้ใช้เป็น **เซิร์ฟเวอร์อัปเดต + สวิตช์ปิดโปรแกรมระยะไกล (kill switch)** ให้กับแอป `SFKeyword` ทุกเครื่องที่เปิดใช้งาน
 
 ## ไฟล์ใน repo นี้
 
@@ -13,7 +13,7 @@ Repo นี้ใช้เป็น **เซิร์ฟเวอร์อัป
 | `README.md` | เอกสารนี้ |
 | `RELEASE_CHECKLIST.md` | ขั้นตอนปล่อยเวอร์ชันใหม่แบบละเอียด (build → zip → sha256 → release → update.json) — ดูได้ที่ [RELEASE_CHECKLIST.md](RELEASE_CHECKLIST.md) |
 | `docs/build-protected.md` | วิธี build แบบกันโค้ด (Cython + PyArmor) โดยไม่ใช้ vcvarsall + ขั้นตอน Release — ดูได้ที่ [docs/build-protected.md](docs/build-protected.md) |
-| `docs/README.md` | เอกสารเต็มของโปรเจกต์ SFBOT (ความสามารถ, โครงสร้างโค้ด, แก้ปัญหา) — ดูได้ที่ [docs/README.md](docs/README.md) |
+| `docs/README.md` | เอกสารเต็มของโปรเจกต์ SFKeyword (ความสามารถ, โครงสร้างโค้ด, แก้ปัญหา) — ดูได้ที่ [docs/README.md](docs/README.md) |
 
 แอปจะอ่านไฟล์ทั้งสองผ่าน `https://raw.githubusercontent.com/haremking7025/sfbot-control/main/...` ทุกครั้งที่เปิดโปรแกรม
 
@@ -23,17 +23,17 @@ Repo นี้ใช้เป็น **เซิร์ฟเวอร์อัป
 
 > 📋 มีขั้นตอนละเอียดทุกขั้นตอนใน [RELEASE_CHECKLIST.md](RELEASE_CHECKLIST.md) — ไล่ตามลำดับทุกครั้ง
 
-1. **บิ้ว EXE + ZIP ใหม่** จากโปรเจกต์ SFBOT (เช่น `SFBOT_v1.2.2.exe` และ `SFBOT_v1.2.2.zip`)
+1. **บิ้ว EXE + ZIP ใหม่** จากโปรเจกต์ SFKeyword (เช่น `SFKeyword_v1.2.2.exe` และ `SFKeyword_v1.2.2.zip`)
 2. **คำนวณ SHA-256 ของ ZIP** (ตัวที่แจกให้ผู้ใช้ดาวน์โหลด):
    ```powershell
-   Get-FileHash .\SFBOT_v1.2.2.zip -Algorithm SHA256
+   Get-FileHash .\SFKeyword_v1.2.2.zip -Algorithm SHA256
    ```
 3. **อัปเดต `update.json`** — schema ที่ใช้จริง:
 
    ```json
    {
      "version": "1.2.2",
-     "url": "https://github.com/haremking7025/sfbot-control/releases/download/v1.2.2/SFBOT_v1.2.2.zip",
+     "url": "https://github.com/haremking7025/sfbot-control/releases/download/v1.2.2/SFKeyword_v1.2.2.zip",
      "sha256": "8feaf14f55e96320a08f3c793b92c4a8c1c86a260f299ffbcf48ac5056728664",
      "size": 28589633
    }
@@ -50,14 +50,14 @@ Repo นี้ใช้เป็น **เซิร์ฟเวอร์อัป
 
 4. **สร้าง GitHub Release** พร้อมแนบ **ทั้ง EXE และ ZIP** เป็น asset:
    ```bash
-   gh release create v1.2.2 SFBOT_v1.2.2.exe SFBOT_v1.2.2.zip \
+   gh release create v1.2.2 SFKeyword_v1.2.2.exe SFKeyword_v1.2.2.zip \
      --repo haremking7025/sfbot-control \
-     --title "SFBOT v1.2.2" \
+     --title "SFKeyword v1.2.2" \
      --notes "รายละเอียดเวอร์ชัน"
    ```
    > ต้องแน่ใจว่า tag ตรงกับ `url` ใน `update.json` และ asset ZIP ที่แนบคือไฟล์เดียวกับที่คำนวณ sha256 ไว้
 
-5. **Commit + push** `update.json` → ทุกเครื่องที่เปิด SFBOT จะเห็นหน้าต่าง "มีอัปเดตใหม่" → กดอัปเดต → ดาวน์โหลด + ตรวจ SHA-256/ขนาด → รีสตาร์ทอัตโนมัติ
+5. **Commit + push** `update.json` → ทุกเครื่องที่เปิด SFKeyword จะเห็นหน้าต่าง "มีอัปเดตใหม่" → กดอัปเดต → ดาวน์โหลด + ตรวจ SHA-256/ขนาด → รีสตาร์ทอัตโนมัติ
 
 ---
 
@@ -79,7 +79,7 @@ Repo นี้ใช้เป็น **เซิร์ฟเวอร์อัป
 | `message` | ข้อความที่แสดงในหน้าต่างปิดปรับปรุง |
 | `min_version` | เวอร์ชันต่ำสุดที่ไม่โดนบล็อก (เครื่องที่เวอร์ชัน ≥ ค่านี้เปิดได้ปกติ) |
 
-แล้ว commit + push → ทุกเครื่องที่เปิด SFBOT จะเจอหน้าต่าง "ปิดปรับปรุงชั่วคราว" ทันที
+แล้ว commit + push → ทุกเครื่องที่เปิด SFKeyword จะเจอหน้าต่าง "ปิดปรับปรุงชั่วคราว" ทันที
 
 ---
 
@@ -88,7 +88,7 @@ Repo นี้ใช้เป็น **เซิร์ฟเวอร์อัป
 - GitHub CDN (`raw.githubusercontent.com`) อาจแคชไฟล์เก่าได้ **1–5 นาที** หลัง push — ถ้าเครื่องไคลเอนต์ยังเห็นเวอร์ชันเก่า ให้รอสักครู่
 - `sha256` และ `size` ใน `update.json` ต้องตรงกับ ZIP จริงที่อัปโหลด ไม่งั้นแอปจะปฏิเสธการอัปเดต (กันไฟล์เสียหาย/ถูกแทรกแซง)
 - อย่าอัปโหลดไฟล์ ZIP/EXE ลงใน repo ตรงๆ (history bloat) — แนบเป็น release asset เท่านั้น
-- ใช้เวอร์ชันนี้ร่วมกับแอป SFBOT v1.0.0 ขึ้นไปเท่านั้น
+- ใช้เวอร์ชันนี้ร่วมกับแอป SFKeyword v1.0.0 ขึ้นไปเท่านั้น
 
 ---
 
@@ -99,7 +99,7 @@ Repo นี้ใช้เป็น **เซิร์ฟเวอร์อัป
 ```json
 {
   "version": "1.2.2",
-  "url": "https://github.com/haremking7025/sfbot-control/releases/download/v1.2.2/SFBOT_v1.2.2.zip",
+  "url": "https://github.com/haremking7025/sfbot-control/releases/download/v1.2.2/SFKeyword_v1.2.2.zip",
   "sha256": "8feaf14f55e96320a08f3c793b92c4a8c1c86a260f299ffbcf48ac5056728664",
   "size": 28589633
 }
@@ -117,4 +117,4 @@ Repo นี้ใช้เป็น **เซิร์ฟเวอร์อัป
 
 ---
 
-สร้างโดย [haremking7025](https://github.com/haremking7025) · สำหรับ SFBOT Desktop
+สร้างโดย [haremking7025](https://github.com/haremking7025) · สำหรับ SFKeyword Desktop

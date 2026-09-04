@@ -1,18 +1,34 @@
-# --- Large binaries (NEVER commit these - attach to GitHub Releases instead) ---
-*.exe
-*.zip
-
-# --- Build artifacts / local junk ---
+# --- Build outputs (recreated on every build) ---
 dist/
 build/
 build_protected/
+_cybuild/
+_pyarmor_out/
+.cython-cache/
+*.spec
+
+# --- Large binaries (attach to GitHub Releases instead of committing) ---
+*.exe
+*.zip
+
+# --- Virtualenv & caches ---
+venv/
+.pip-cache/
+.ruff_cache/
 __pycache__/
 *.pyc
 *.pyo
 
-# --- Editor / OS ---
+# --- Editor / OS / tooling ---
 .vscode/
 .idea/
+.freebuff/
 *.swp
 Thumbs.db
 .DS_Store
+
+# --- Runtime data (credentials/results - keep local) ---
+sf_cookies/
+results/
+settings_backups/
+sfkeyword_result_*.csv

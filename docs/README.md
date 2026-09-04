@@ -1,4 +1,4 @@
-# SFBOT — เจ้าพี ออโต้ คีย์เวิร์ด
+# SFKeyword — เจ้าพี ออโต้ คีย์เวิร์ด
 
 บอทเดสก์ท็อป (Windows, Tkinter) สำหรับเกม **Special Force** — ล็อกอินหลายบัญชีพร้อมกัน
 กรอกคีย์เวิร์ด/โค้ดกิจกรรมให้ทุกไอดีอัตโนมัติ ดึงคีย์ของแจกประจำวันส่งเข้า Discord
@@ -43,10 +43,10 @@
 pip install -r requirements.txt
 
 :: เปิดโปรแกรม
-python sfbot.pyw
+python sfkeyword.pyw
 ```
 
-หรือดับเบิลคลิก `sfbot.pyw` โดยตรง (Windows จะรันด้วย `pythonw.exe` ให้อัตโนมัติ ไม่มี
+หรือดับเบิลคลิก `sfkeyword.pyw` โดยตรง (Windows จะรันด้วย `pythonw.exe` ให้อัตโนมัติ ไม่มี
 console ค้าง)
 
 **อาร์กิวเมนต์ที่รองรับ:**
@@ -54,7 +54,7 @@ console ค้าง)
 
 **หมายเหตุ:**
 - เปิดได้แค่หน้าต่างเดียว — ถ้าเปิดซ้ำจะเด้งแจ้งเตือน "เปิดโปรแกรมซ้ำ"
-- ข้อมูลทั้งหมด (บัญชี/คีย์เวิร์ด/cookie/log) เก็บที่ `%LOCALAPPDATA%\SFBOT\`
+- ข้อมูลทั้งหมด (บัญชี/คีย์เวิร์ด/cookie/log) เก็บที่ `%LOCALAPPDATA%\SFKeyword\`
   ไม่ใช่ข้างไฟล์ .exe — โครงสร้างโฟลเดอร์ดูได้ที่หัวข้อ "ข้อมูลที่เก็บ"
 
 ### เปิดใช้งานครั้งแรก (สรุป)
@@ -76,8 +76,8 @@ build_client.bat
 
 สคริปต์จะทำตามลำดับ:
 
-1. อ่านเวอร์ชันจาก `sfbot_lib/core/constants.py` (`VERSION = "1.0.0"`) ผ่าน `tools/get_version.py`
-   → ตั้งชื่อไฟล์เป็น `SFBOT_v1.0.0.exe` อัตโนมัติ
+1. อ่านเวอร์ชันจาก `sfkeyword_lib/core/constants.py` (`VERSION = "1.0.0"`) ผ่าน `tools/get_version.py`
+   → ตั้งชื่อไฟล์เป็น `SFKeyword_v1.0.0.exe` อัตโนมัติ
 2. สร้าง virtualenv (`venv/`) แล้วติดตั้ง dependencies จาก `tools/requirements.txt`
 3. รัน `tools/check_bugs.py` ตรวจหา bug pattern ก่อน build — เจอปัญหาจะหยุดทันที
    และรัน `ruff` ตรวจบั๊ก/เดดโค้ด (`python -m ruff check .` ตั้งค่าใน
@@ -85,12 +85,12 @@ build_client.bat
    ผิดพลาดจุดไหนหยุด build ทันที
 4. ถามว่าต้องการกันโค้ดหรือไม่ (`y/N`):
    - **y** — ติดตั้ง `tools/requirements-build.txt` (Cython + PyArmor) แล้วก็อปปี้โปรเจกต์
-     ไป `build_protected/` → compile `sfbot_lib/` ด้วย Cython → obfuscate `sfbot.pyw`
+     ไป `build_protected/` → compile `sfkeyword_lib/` ด้วย Cython → obfuscate `sfkeyword.pyw`
      ด้วย PyArmor → build จากสำเนาที่กันโค้ดแล้ว *(ต้องมี MSVC Build Tools)*
    - **N** — build จากซอร์สตรงๆ
-5. `PyInstaller --onefile --noconsole` → ไฟล์ออกที่ **`dist\SFBOT\SFBOT_v1.0.0.exe`**
+5. `PyInstaller --onefile --noconsole` → ไฟล์ออกที่ **`dist\SFKeyword\SFKeyword_v1.0.0.exe`**
 6. คำนวณ SHA-256 และบันทึกลง `docs/release_history.csv` **เฉพาะเมื่อยืนยันว่าเป็น release**
-   (ตอบ "y" หรือตั้ง `SFBOT_LOG_RELEASE=y`) — ประวัติเก็บเฉพาะเวอร์ชันที่ปล่อยบน GitHub จริง
+   (ตอบ "y" หรือตั้ง `SFKeyword_LOG_RELEASE=y`) — ประวัติเก็บเฉพาะเวอร์ชันที่ปล่อยบน GitHub จริง
 
 > ไฟล์ `.exe` ตัวเดียวเท่านั้นที่ต้องแจกจ่ายให้ลูกค้า — ทำงานได้เองโดยไม่ต้องมีไฟล์อื่น
 > ข้างๆ
@@ -98,7 +98,7 @@ build_client.bat
 ### กันโค้ด (Cython + PyArmor) — ทางเลือก
 
 ```bat
-set SFBOT_PROTECT=y
+set SFKeyword_PROTECT=y
 build_client.bat
 ```
 
@@ -120,19 +120,19 @@ build_client.bat
 
 ---
 
-## 📁 ข้อมูลที่เก็บ (`%LOCALAPPDATA%\SFBOT\`)
+## 📁 ข้อมูลที่เก็บ (`%LOCALAPPDATA%\SFKeyword\`)
 
 | ไฟล์/โฟลเดอร์ | เนื้อหา |
 |---|---|
 | `config/` | ตั้งค่าปัจจุบันแยกหมวด (ui / automation / account / webhook / system) |
-| `sfbot_settings.json` | ไฟล์ตั้งค่าเก่า (legacy — migrate ครั้งเดียวแล้วเลิกใช้) |
+| `sfkeyword_settings.json` | ไฟล์ตั้งค่าเก่า (legacy — migrate ครั้งเดียวแล้วเลิกใช้) |
 | `sf_cookies/` | cookie ต่อบัญชี (ใช้ล็อกอินข้ามรอบ ไม่ต้องล็อกอินใหม่ทุกครั้ง) |
-| `logs/` | `sfbot_YYYYMMDD.log` + `.jsonl` (หมุนรายวัน, เก็บ 7 วัน), `error_YYYYMMDD.log` |
+| `logs/` | `sfkeyword_YYYYMMDD.log` + `.jsonl` (หมุนรายวัน, เก็บ 7 วัน), `error_YYYYMMDD.log` |
 | `results/` | ผลลัพธ์รอบการรันแบบ CSV |
 | `account_history.csv` | ประวัติบัญชี |
 | `settings_backups/` | สำรองตั้งค่า (สำหรับ "กู้คืนการตั้งค่า") |
 | `webhook_sent_messages.json` | ประวัติข้อความ Discord ที่เคยส่ง |
-| `sfbot_crash.log` | crash log (กันหลุดตอน callback UI) |
+| `sfkeyword_crash.log` | crash log (กันหลุดตอน callback UI) |
 
 ---
 
@@ -142,9 +142,9 @@ build_client.bat
 
 | ไฟล์ | หน้าที่ |
 |---|---|
-| `sfbot.pyw` | **Entry point** — bootstrap เท่านั้น: DPI awareness, spawn `pythonw.exe`, single-instance mutex, `--tray` / auto-start detection, สร้าง `App` แล้วเข้า mainloop |
+| `sfkeyword.pyw` | **Entry point** — bootstrap เท่านั้น: DPI awareness, spawn `pythonw.exe`, single-instance mutex, `--tray` / auto-start detection, สร้าง `App` แล้วเข้า mainloop |
 | `build_client.bat` | สคริปต์ build .exe (venv → check_bugs → กันโค้ด (ไม่บังคับ) → PyInstaller) |
-| `tools/get_version.py` | อ่าน `VERSION` จาก `sfbot_lib/core/constants.py` ให้ build script ตั้งชื่อไฟล์ |
+| `tools/get_version.py` | อ่าน `VERSION` จาก `sfkeyword_lib/core/constants.py` ให้ build script ตั้งชื่อไฟล์ |
 | `tools/check_bugs.py` | ตรวจ bug pattern ทั่วทั้งแพ็กเกจก่อน build (missing method, import shadowing ฯลฯ) |
 | `tools/find_dead_code.py` | สแกนเดดโค้ด (module-level def ที่ไม่ถูกใช้) ก่อน build — เจอจะหยุด build |
 | `tools/requirements.txt` | dependencies รันจริง (requests, cryptography, Pillow, pystray, pyinstaller …) |
@@ -158,7 +158,7 @@ build_client.bat
 | `docs/RELEASE_CHECKLIST.md` | checklist ปล่อยเวอร์ชันใหม่ (build → zip → sha256 → release → update.json) — ไล่ตามลำดับทุกครั้ง |
 | `assets/sf_logo.ico` + `sf_logo.jpg` | ไอคอนแอป |
 
-### แพ็กเกจ `sfbot_lib/`
+### แพ็กเกจ `sfkeyword_lib/`
 
 `App` เป็นคลาสเดียวที่ประกอบจาก mixin หลายไฟล์ (split-by-feature-area) — ทุก `app_*`
 แชร์สถานะผ่าน `self.xxx` ที่ตั้งไว้ใน `AppCoreMixin.__init__` / `_build_ui()`
@@ -176,7 +176,7 @@ build_client.bat
 | `ui_theme` | วิดเจ็ต Tk ธีมมืด + helper (toast, popup, toggle switch, overlay ยืนยัน) |
 | `rows` | วิดเจ็ตแถวตาราง: `AccountRow` / `WebhookRow` / `KeywordRow` |
 | `log_system` | ระบบ logging ส่วนกลาง: หมุนรายวัน 3 รูปแบบ, redaction password/cookie, retention 7 วัน |
-| `perf_logger` | บันทึก RAM/thread ของโปรแกรมทุก 60 วิ ลง `logs/sfbot_perf_YYYYMMDD.log` (audit memory leak) |
+| `perf_logger` | บันทึก RAM/thread ของโปรแกรมทุก 60 วิ ลง `logs/sfkeyword_perf_YYYYMMDD.log` (audit memory leak) |
 | `updater` | อัปเดตอัตโนมัติ + kill-switch ผ่าน GitHub (`update.json` / `kill_switch.json`) |
 | `worker_manager` | จัดการ background thread ส่วนกลาง (สร้าง/ติดตาม/หยุดเป็นระบบ แทนที่การ `threading.Thread(...).start()` กระจาย) |
 | `app` | คลาส `App` — ประกอบ mixin ทั้งหมด (ไม่มีความ logic เอง) |
@@ -228,4 +228,4 @@ build_client.bat
 | บัญชีโดนล็อก 15 นาที (ข้อความ "suspicious activity") | รอ 15 นาที หรือเพิ่ม "หน่วงระหว่างล็อกอิน" ในแท็บตั้งค่า — อย่ายิงล็อกอินซ้ำเร็วๆ |
 | อยากล็อกเอาต์เซสชันที่ค้าง | แดชบอร์ด → **ปิดเซสชันทั้งหมด** แล้วล็อกอินใหม่ |
 | Webhook ไม่ส่งข้อความ | กด "ทดสอบส่งข้อความ" ก่อน — มักเป็น URL ผิด หรือ Webhook ถูกลบฝั่ง Discord |
-| ยังแก้ไม่ได้ | ดูไฟล์ใน `%LOCALAPPDATA%\SFBOT\logs/` แล้วส่งให้ทีมตรวจ |
+| ยังแก้ไม่ได้ | ดูไฟล์ใน `%LOCALAPPDATA%\SFKeyword\logs/` แล้วส่งให้ทีมตรวจ |

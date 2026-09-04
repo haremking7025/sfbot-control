@@ -1,7 +1,7 @@
 # Build แบบกันโค้ด (Cython + PyArmor) — โดยไม่ใช้ vcvarsall.bat
 
-คู่มือนี้สำหรับ build `.exe` แบบ **กันโค้ด** (protected) — compile `sfbot_lib\`
-เป็น native `.pyd` ด้วย **Cython** และ obfuscate entry point (`sfbot.pyw`) ด้วย
+คู่มือนี้สำหรับ build `.exe` แบบ **กันโค้ด** (protected) — compile `sfkeyword_lib\`
+เป็น native `.pyd` ด้วย **Cython** และ obfuscate entry point (`sfkeyword.pyw`) ด้วย
 **PyArmor** — โดยไม่ต้องพึ่ง `vcvarsall.bat` ซึ่ง **ค้างได้ใน shell ที่ไม่ใช่
 interactive** (Git Bash, ระบบ automation, CI) แม้จะติดตั้ง Build Tools ครบแล้วก็ตาม
 
@@ -83,20 +83,20 @@ venv/Scripts/python.exe -m pip list --not-required
 vcvarsall) รันจาก **Command Prompt** ปกติ:
 
 ```bat
-set SFBOT_PROTECT=y
+set SFKeyword_PROTECT=y
 build_client.bat
 ```
 
-- `SFBOT_PROTECT=y` = ตอบ "y" ข้อ "Protect source with Cython + PyArmor?" อัตโนมัติ
-- `SFBOT_NO_PAUSE=y` = ข้ามทุก `pause` ท้ายสคริปต์ (ใช้ตอนรันอัตโนมัติ/headless กันค้าง)
+- `SFKeyword_PROTECT=y` = ตอบ "y" ข้อ "Protect source with Cython + PyArmor?" อัตโนมัติ
+- `SFKeyword_NO_PAUSE=y` = ข้ามทุก `pause` ท้ายสคริปต์ (ใช้ตอนรันอัตโนมัติ/headless กันค้าง)
 - Cython compile แบบขนาน (`-j` ตามจำนวน CPU) + แคช `.pyd` ข้าม build
   (`.cython-cache\` ที่ root โปรเจกต์ — ห้ามลบ ไม่งั้นรอบหน้าต้อง compile ใหม่ทั้งหมด)
   → รอบแรก ~50 วิ รอบถัดไป (เนื้อหาไม่เปลี่ยน) เหลือ ~20-25 วิ
-- ผลลัพธ์: `dist\SFBOT\SFBOT_v<เวอร์ชัน>.exe`
-- บันทึก `docs/release_history.csv` **เฉพาะเมื่อยืนยันว่าเป็น release** — ตั้ง `SFBOT_LOG_RELEASE=y`
+- ผลลัพธ์: `dist\SFKeyword\SFKeyword_v<เวอร์ชัน>.exe`
+- บันทึก `docs/release_history.csv` **เฉพาะเมื่อยืนยันว่าเป็น release** — ตั้ง `SFKeyword_LOG_RELEASE=y`
   หรือตอบ "y" ข้อถาม "Release build - log this build to docs/release_history.csv?" (ค่าเริ่มต้น N = ไม่บันทึก)
 - ถ้าเจอ MSVC ไม่ครบ สคริปต์จะถามให้ข้ามไป build แบบไม่กันโค้ดแทน
-  (ตอบอัตโนมัติได้ด้วย env `SFBOT_SKIP_PROTECT=y`)
+  (ตอบอัตโนมัติได้ด้วย env `SFKeyword_SKIP_PROTECT=y`)
 
 > ⚠️ ถ้ารันใน Git Bash / sandbox แล้ว `cmd.exe` ค้างเอง (แม้แต่ `echo` ก็ไม่จบ)
 > ให้ใช้ **วิธีที่ 2** ข้างล่างแทน
@@ -113,17 +113,17 @@ build_client.bat
 venv/Scripts/python.exe -X utf8 tools/build_tools/build_protected_driver.py
 ```
 
-รันจากโฟลเดอร์โปรเจกต์ (ที่มี `sfbot.pyw` และ `venv\`)
+รันจากโฟลเดอร์โปรเจกต์ (ที่มี `sfkeyword.pyw` และ `venv\`)
 
 สคริปต์จะ:
 0. รัน 3 ชุดตรวจ (check_bugs → ruff → find_dead_code) เหมือนวิธีที่ 1 — เจอปัญหาหยุดทันที
-1. อ่านเวอร์ชันจาก `sfbot_lib/core/constants.py` → `SFBOT_v<เวอร์ชัน>.exe` อัตโนมัติ
+1. อ่านเวอร์ชันจาก `sfkeyword_lib/core/constants.py` → `SFKeyword_v<เวอร์ชัน>.exe` อัตโนมัติ
 2. หา Build Tools + Windows SDK เวอร์ชันล่าสุด (vswhere / scan โฟลเดอร์)
 3. ก็อปปี้โปรเจกต์ไป `build_protected\` (กันโฟลเดอร์ขยะ รวม `.cython-cache` เหมือน robocopy ใน bat)
-4. `cythonize_lib.py` → compile `sfbot_lib\` เป็น `.pyd` (ยกเว้น `__init__.py`)
+4. `cythonize_lib.py` → compile `sfkeyword_lib\` เป็น `.pyd` (ยกเว้น `__init__.py`)
    — แบบขนาน (`-j`) + แคช `.cython-cache` ข้าม build: compile เฉพาะโมดูลที่แก้จริง
-5. `obfuscate_entry.py` → obfuscate `sfbot.pyw` + ก็อปปี้ `pyarmor_runtime_*`
-6. PyInstaller `--onefile --noconsole` → `dist\SFBOT\SFBOT_v<เวอร์ชัน>.exe`
+5. `obfuscate_entry.py` → obfuscate `sfkeyword.pyw` + ก็อปปี้ `pyarmor_runtime_*`
+6. PyInstaller `--onefile --noconsole` → `dist\SFKeyword\SFKeyword_v<เวอร์ชัน>.exe`
 7. พิมพ์ `size` + `sha256` ให้เอาไปใส่ `update.json`
 
 **จุดสำคัญของ driver** (เทียบกับ vcvarsall):
@@ -184,14 +184,14 @@ select = [
 1. **สร้าง ZIP** (จาก EXE ตัวเดียว):
 
    ```bash
-   powershell -NoProfile -Command "Compress-Archive -Path 'dist/SFBOT/SFBOT_v<ver>.exe' -DestinationPath 'SFBOT_v<ver>.zip' -Force"
+   powershell -NoProfile -Command "Compress-Archive -Path 'dist/SFKeyword/SFKeyword_v<ver>.exe' -DestinationPath 'SFKeyword_v<ver>.zip' -Force"
    ```
 
 2. **อัปเดต release บน GitHub** (`gh` ต้อง login แล้ว):
 
    ```bash
-   gh release delete-asset v<ver> SFBOT_v<ver>.zip --repo haremking7025/sfbot-control -y
-   gh release upload v<ver> "dist/SFBOT/SFBOT_v<ver>.exe#/SFBOT_v<ver>.exe" "SFBOT_v<ver>.zip#/SFBOT_v<ver>.zip" --repo haremking7025/sfbot-control --clobber
+   gh release delete-asset v<ver> SFKeyword_v<ver>.zip --repo haremking7025/sfbot-control -y
+   gh release upload v<ver> "dist/SFKeyword/SFKeyword_v<ver>.exe#/SFKeyword_v<ver>.exe" "SFKeyword_v<ver>.zip#/SFKeyword_v<ver>.zip" --repo haremking7025/sfbot-control --clobber
    ```
 
    ตรวจว่า asset ถูกต้อง (ขนาด + digest ตรงกับเครื่อง):
@@ -205,7 +205,7 @@ select = [
    ```json
    {
      "version": "<ver>",
-     "url": "https://github.com/haremking7025/sfbot-control/releases/download/v<ver>/SFBOT_v<ver>.exe",
+     "url": "https://github.com/haremking7025/sfbot-control/releases/download/v<ver>/SFKeyword_v<ver>.exe",
      "sha256": "<sha256 ของ EXE>",
      "size": <ขนาด EXE>,
      "notes": "สรุปสิ่งที่เปลี่ยนในเวอร์ชันนี้ (แสดงในหน้าต่างอัปเดต)"
@@ -234,14 +234,14 @@ select = [
 
 ## การตรวจสอบว่า "กันโค้ดจริง"
 
-- ใน `build_protected\sfbot_lib\` เหลือไฟล์ `.py` แค่ `__init__.py` เท่านั้น
+- ใน `build_protected\sfkeyword_lib\` เหลือไฟล์ `.py` แค่ `__init__.py` เท่านั้น
   ที่เหลือเป็น `.pyd` (เช่น `app.cp312-win_amd64.pyd`)
 - `.cython-cache\` (root โปรเจกต์) เก็บ .pyd แบบแคช — robocopy ยกเว้นไว้
   ไม่ถูกคัดลอกเข้า `build_protected\` จึงไม่รั่วเข้า EXE
-- `build_protected\sfbot.pyw` ขึ้นต้นด้วย `# Pyarmor 8.5.12 ...` +
+- `build_protected\sfkeyword.pyw` ขึ้นต้นด้วย `# Pyarmor 8.5.12 ...` +
   `from pyarmor_runtime_000000 import __pyarmor__`
 - PyInstaller analysis มี `pyarmor_runtime_000000` ใน TOC
-  (`grep pyarmor build/SFBOT/*/Analysis-00.toc`)
+  (`grep pyarmor build/SFKeyword/*/Analysis-00.toc`)
 - เปิด EXE แล้วค้างค้างหน้าต่างได้ (ไม่ crash ทันที)
 
 ---
@@ -250,7 +250,7 @@ select = [
 
 - PyArmor ที่ติดตั้งผ่าน `requirements-build.txt` (`pyarmor>=8.5,<9`) เป็น
   **trial (evaluation)** — **ไม่มีวันหมดอายุ** แต่มีข้อจำกัด:
-  - code object สูงสุด ~32 KB (ใช้ obfuscate แค่ `sfbot.pyw` ที่เล็กมาก จึงไม่กระทบ)
+  - code object สูงสุด ~32 KB (ใช้ obfuscate แค่ `sfkeyword.pyw` ที่เล็กมาก จึงไม่กระทบ)
   - สคริปต์ที่ obfuscate ด้วย trial "ไม่ private" — ใครก็แกะกลับได้
   - **โค้ดจริงทั้งหมดถูก Cython คอมไพล์เป็น `.pyd` แล้ว** (native code) —
     ความเสี่ยงนี้จึงจำกัดอยู่ที่ entry point บางบรรทัด
