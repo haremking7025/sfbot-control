@@ -1,7 +1,7 @@
 {
-  "version": "1.3.3",
-  "url": "https://github.com/haremking7025/sfbot-control/releases/download/v1.3.3/SFBOT_v1.3.3.exe",
-  "sha256": "df07dd8981066a294e379700398ff81e4736dd20bd8203d6655ac43b3fbcbf5f",
-  "size": 28072060,
-  "notes": "SFBOT v1.3.3\n\n🔧 แก้ไข\n- กรอบเส้นปะรอบ dropdown 📄 เลือกไฟล์ .txt (แท็บ คีย์เวิร์ด/บัญชี/รับไอเทมฟรี) ไม่เปลี่ยนเป็นสีไฮไลต์ตอนคลิก/โฟกัสอีกต่อไป — สีกรอบคงที่ตลอด"
+  "version": "1.3.4",
+  "url": "https://github.com/haremking7025/sfbot-control/releases/download/v1.3.4/SFBOT_v1.3.4.exe",
+  "sha256": "6f1fc3ffdff1772d7344c92b869e4df328fd52a7d19556c2e52c6af8a0e57c3a",
+  "size": 28074190,
+  "notes": "SFBOT v1.3.4\n\n🔧 แก้ไข\n- อัปเดตแล้วไอคอนโปรแกรมไม่ย้ายที่อีกต่อไป — ไฟล์ใช้ชื่อคงที่ SFBOT.exe (ไม่ผูกเวอร์ชัน): อัปเดตรอบแรก rename ไฟล์เดิมเป็น SFBOT.exe (ตำแหน่งไอคอนเดิมคงอยู่) รอบต่อไปเขียนทับที่เดิม — ไม่มีไฟล์ SFBOT_vX.Y.Z.exe ใหม่โผล่ขึ้นบนเดสก์ท็อป"
 }
