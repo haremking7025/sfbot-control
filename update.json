@@ -1,7 +1,7 @@
 {
-  "version": "1.3.19",
-  "url": "https://github.com/haremking7025/sfbot-control/releases/download/v1.3.19/SFKeyword_v1.3.19.exe",
-  "sha256": "f2da1a4353352bb53dd5086a34278eca99f8daea945a81071dfbe6f23a2475a0",
-  "size": 28102717,
-  "notes": "SFKeyword v1.3.19 — จานสีไล่ระดับคลิกเลือกสีอิสระ (S/L + แถบ H) + แสดงค่า HSL ควบคู่ RGB"
+  "version": "1.3.20",
+  "url": "https://github.com/haremking7025/sfbot-control/releases/download/v1.3.20/SFKeyword_v1.3.20.exe",
+  "sha256": "0c81d2952ffa21dfac4b9ef59ac2f8fb1c554910cdb0a88c5b0fe644619d5ae6",
+  "size": 28101507,
+  "notes": "SFKeyword v1.3.20 — ถาดสีไม่ล้นจอ: เปิดสีของหมวด log ไหนจะโชว์เฉพาะชุดสีหมวดนั้น + สีทั่วไป ตั้งของใครของมัน"
 }
