@@ -1,7 +1,7 @@
 {
-  "version": "1.3.16",
-  "url": "https://github.com/haremking7025/sfbot-control/releases/download/v1.3.16/SFKeyword_v1.3.16.exe",
-  "sha256": "ca15b0729955f275e77c20cf979dbce47eecc4bd60b85952d286ac0fba3e68be",
-  "size": 28095362,
-  "notes": "SFKeyword v1.3.16 — ตัวกรอง log ตามหมวดสี (Error/คำเตือน/สำเร็จ/ล็อกอิน/คีย์เวิร์ด/คุกกี้) เหนือช่อง log"
+  "version": "1.3.17",
+  "url": "https://github.com/haremking7025/sfbot-control/releases/download/v1.3.17/SFKeyword_v1.3.17.exe",
+  "sha256": "aa3080dfb9e494e17c5989556599cce7329b5a77efb4dd20097590aa2e3b2345",
+  "size": 28094792,
+  "notes": "SFKeyword v1.3.17 — ช่องค้นหา log + จำสถานะตัวกรอง + สรุปไอดีที่ไม่สำเร็จใน popup ตอนเสร็จสิ้น"
 }
