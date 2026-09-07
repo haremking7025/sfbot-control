@@ -1,7 +1,7 @@
 {
   "version": "1.3.11",
-  "url": "https://github.com/haremking7025/sfbot-control/releases/download/v1.3.11/SFKeyword_v1.3.11.zip",
-  "sha256": "a481e20bbe87cccf7d3032d5f1afc02086c1acab1723efac01d950dbb2862f5e",
-  "size": 28186186,
-  "notes": "SFKeyword v1.3.11 — สลับ build เป็น onedir (โฟลเดอร์แอป) แก้ Security validation failure + Failed to load Python DLL หลังอัปเดตถาวร"
+  "url": "https://github.com/haremking7025/sfbot-control/releases/download/v1.3.11/SFKeyword_v1.3.11.exe",
+  "sha256": "208c3e2f39332f3da38932e1d52fee3b2db2c8cc43507e6219a38574a3e2fbef",
+  "size": 28086017,
+  "notes": "SFKeyword v1.3.11 — กลับเป็นไฟล์ .exe เดียว (onefile) เหมือนเดิม อัปเดตอัตโนมัติจาก v1.3.10 ใช้ได้ตามปกติ แก้ Security validation failure + Failed to load Python DLL"
 }
