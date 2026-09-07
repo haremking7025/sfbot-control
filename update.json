@@ -1,7 +1,7 @@
 {
-  "version": "1.3.14",
-  "url": "https://github.com/haremking7025/sfbot-control/releases/download/v1.3.14/SFKeyword_v1.3.14.exe",
-  "sha256": "a45030cfdd84f2fbeb2e319f5ae59f5aa1cb952ffff527a37c293d6f5aad56e6",
-  "size": 28091789,
-  "notes": "SFKeyword v1.3.14 — ถาดสีเพิ่มกลุ่มคีย์เวิร์ด 🗝 + สี Username ลดเหลือ 1 สีได้"
+  "version": "1.3.15",
+  "url": "https://github.com/haremking7025/sfbot-control/releases/download/v1.3.15/SFKeyword_v1.3.15.exe",
+  "sha256": "84d167029da23c0b56ca9e5e23f4455a4d38436f796e584f95585e9222175cde",
+  "size": 28092035,
+  "notes": "SFKeyword v1.3.15 — เพิ่มหมวดสีคีย์เวิร์ด 🗝 ในหน้าตั้งค่า + ระบายสีบรรทัด log ที่ส่งคีย์เวิร์ด"
 }
