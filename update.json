@@ -1,7 +1,7 @@
 {
-  "version": "1.3.13",
-  "url": "https://github.com/haremking7025/sfbot-control/releases/download/v1.3.13/SFKeyword_v1.3.13.exe",
-  "sha256": "b8e3f12f6a712a71ab8b1256f2b7905fc26672fbdf5ba6917cc086b559e31dea",
-  "size": 28090565,
-  "notes": "SFKeyword v1.3.13 — ถาดสีแบ่งกลุ่มสีสำเร็จรูปตามหมวด log (Error/คำเตือน/สำเร็จ/ล็อกอิน/คุกกี้) + สีทั่วไปหลากหลายขึ้น"
+  "version": "1.3.14",
+  "url": "https://github.com/haremking7025/sfbot-control/releases/download/v1.3.14/SFKeyword_v1.3.14.exe",
+  "sha256": "a45030cfdd84f2fbeb2e319f5ae59f5aa1cb952ffff527a37c293d6f5aad56e6",
+  "size": 28091789,
+  "notes": "SFKeyword v1.3.14 — ถาดสีเพิ่มกลุ่มคีย์เวิร์ด 🗝 + สี Username ลดเหลือ 1 สีได้"
 }
