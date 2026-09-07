@@ -1,7 +1,7 @@
 {
-  "version": "1.3.10",
-  "url": "https://github.com/haremking7025/sfbot-control/releases/download/v1.3.10/SFKeyword_v1.3.10.exe",
-  "sha256": "894ad94001fc5acedba9e45e55d4d125e05a16aebfa45b157e469037caf26628",
-  "size": 28085775,
-  "notes": "SFKeyword v1.3.10 — แก้หน้าต่าง Error ตอนอัปเดต\r\n\r\n🛠 แก้ \"Security validation failure: failed to obtain executable path for parent process!\" ที่เด้งตอนโปรแกรมรีสตาร์ทเองหลังอัปเดต — เกิดจาก PyInstaller 6.22.1+ เพิ่มเช็ค bootloader ใหม่ ที่ล้มเหลวตอนรีสตาร์ทผ่าน apply_update.bat แก้ด้วย PYINSTALLER_RESET_ENVIRONMENT=1 และล็อก PyInstaller <6.22.1\r\n✨ คงฟีเจอร์ v1.3.9 ทั้งหมด (ลบ AI Monitor, สี log ใหม่, EXE 28MB)"
+  "version": "1.3.11",
+  "url": "https://github.com/haremking7025/sfbot-control/releases/download/v1.3.11/SFKeyword_v1.3.11.zip",
+  "sha256": "a481e20bbe87cccf7d3032d5f1afc02086c1acab1723efac01d950dbb2862f5e",
+  "size": 28186186,
+  "notes": "SFKeyword v1.3.11 — สลับ build เป็น onedir (โฟลเดอร์แอป) แก้ Security validation failure + Failed to load Python DLL หลังอัปเดตถาวร"
 }
