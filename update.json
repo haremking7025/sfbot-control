@@ -1,7 +1,7 @@
 {
-  "version": "1.3.12",
-  "url": "https://github.com/haremking7025/sfbot-control/releases/download/v1.3.12/SFKeyword_v1.3.12.exe",
-  "sha256": "2810e3142359f8c0d97719761a85a6ef615d487204cdce1dec9c1b1100a80fea",
-  "size": 28092186,
-  "notes": "SFKeyword v1.3.12 — ถาดสีธีมเข้มใหม่ (เลือกสี log ได้): พื้นเข้มเข้ากับแอป ไม่มีเส้นกรอบ หน้าต่างใหญ่ขึ้น + สไลเดอร์ R/G/B + ช่อง hex"
+  "version": "1.3.13",
+  "url": "https://github.com/haremking7025/sfbot-control/releases/download/v1.3.13/SFKeyword_v1.3.13.exe",
+  "sha256": "b8e3f12f6a712a71ab8b1256f2b7905fc26672fbdf5ba6917cc086b559e31dea",
+  "size": 28090565,
+  "notes": "SFKeyword v1.3.13 — ถาดสีแบ่งกลุ่มสีสำเร็จรูปตามหมวด log (Error/คำเตือน/สำเร็จ/ล็อกอิน/คุกกี้) + สีทั่วไปหลากหลายขึ้น"
 }
