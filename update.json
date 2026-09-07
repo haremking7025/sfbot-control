@@ -1,7 +1,7 @@
 {
-  "version": "1.3.9",
-  "url": "https://github.com/haremking7025/sfbot-control/releases/download/v1.3.9/SFKeyword_v1.3.9.exe",
-  "sha256": "979bbaaaba7b9ba8477c95fb636c91551efec67a5d4028c4d5c564a9bd3e9b82",
-  "size": 28088251,
-  "notes": "SFKeyword v1.3.9 — ลบฟีเจอร์ AI Monitor (จับคีย์สด) ออกทั้งหมด รวมทั้งล้างเดดโค้ด และแพ็กเกจ vision/OCR ที่ค้าง (EXE เล็กลง 90MB → 28MB)\n\n🧹 ลบ AI Monitor ทั้งหมด: แท็บ จับคีย์สด, SFVision (OCR/เฝ้าดูสตรีม), learning store และไฟล์รองรับ — ล้างข้อมูลเก่าในเครื่อง + build script\n🧼 ล้างเดดโค้ด: พารามิเตอร์ codes/usernames ที่เหลือจาก AI Monitor\n🎨 ระบบสี Log: ระบายสีตามหมวด + สีประจำไอดี + ตั้งสีเองได้ + ตัดแถวซ้ำซาก"
+  "version": "1.3.10",
+  "url": "https://github.com/haremking7025/sfbot-control/releases/download/v1.3.10/SFKeyword_v1.3.10.exe",
+  "sha256": "894ad94001fc5acedba9e45e55d4d125e05a16aebfa45b157e469037caf26628",
+  "size": 28085775,
+  "notes": "SFKeyword v1.3.10 — แก้หน้าต่าง Error ตอนอัปเดต\r\n\r\n🛠 แก้ \"Security validation failure: failed to obtain executable path for parent process!\" ที่เด้งตอนโปรแกรมรีสตาร์ทเองหลังอัปเดต — เกิดจาก PyInstaller 6.22.1+ เพิ่มเช็ค bootloader ใหม่ ที่ล้มเหลวตอนรีสตาร์ทผ่าน apply_update.bat แก้ด้วย PYINSTALLER_RESET_ENVIRONMENT=1 และล็อก PyInstaller <6.22.1\r\n✨ คงฟีเจอร์ v1.3.9 ทั้งหมด (ลบ AI Monitor, สี log ใหม่, EXE 28MB)"
 }
