@@ -1,7 +1,7 @@
 {
-  "version": "1.3.8",
-  "url": "https://github.com/haremking7025/sfbot-control/releases/download/v1.3.8/SFKeyword_v1.3.8.exe",
-  "sha256": "c89b93311604629ac4b9a78238fdc846fa69a02dccd5fb809c0252b99e38ffdf",
-  "size": 38741647,
-  "notes": "SFKeyword v1.3.8 — รุ่นต่อเนื่องของ v1.3.7\n\n🔤 ใช้ชื่อ SFKeyword ครบทุกจุด (หน้าต่าง/splash/เมนู/ถาดระบบ/webhook/ออโต้สตาร์ต)\n📦 ย้ายข้อมูลจาก SFBOT → SFKeyword อัตโนมัติสำหรับผู้ที่อัปเกรดจาก v1.3.5\n🧹 GitHub เก็บ release เฉพาะเวอร์ชันล่าสุด"
+  "version": "1.3.9",
+  "url": "https://github.com/haremking7025/sfbot-control/releases/download/v1.3.9/SFKeyword_v1.3.9.exe",
+  "sha256": "979bbaaaba7b9ba8477c95fb636c91551efec67a5d4028c4d5c564a9bd3e9b82",
+  "size": 28088251,
+  "notes": "SFKeyword v1.3.9 — ลบฟีเจอร์ AI Monitor (จับคีย์สด) ออกทั้งหมด รวมทั้งล้างเดดโค้ด และแพ็กเกจ vision/OCR ที่ค้าง (EXE เล็กลง 90MB → 28MB)\n\n🧹 ลบ AI Monitor ทั้งหมด: แท็บ จับคีย์สด, SFVision (OCR/เฝ้าดูสตรีม), learning store และไฟล์รองรับ — ล้างข้อมูลเก่าในเครื่อง + build script\n🧼 ล้างเดดโค้ด: พารามิเตอร์ codes/usernames ที่เหลือจาก AI Monitor\n🎨 ระบบสี Log: ระบายสีตามหมวด + สีประจำไอดี + ตั้งสีเองได้ + ตัดแถวซ้ำซาก"
 }
