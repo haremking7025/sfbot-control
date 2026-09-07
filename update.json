@@ -1,7 +1,7 @@
 {
-  "version": "1.3.18",
-  "url": "https://github.com/haremking7025/sfbot-control/releases/download/v1.3.18/SFKeyword_v1.3.18.exe",
-  "sha256": "68fffdb352d47568e117cf4a805b63e343edba3df93692dc0fdc1ed127db897b",
-  "size": 28096837,
-  "notes": "SFKeyword v1.3.18 — ถาดสีเลือกอิสระ: slider R/G/B + hex อยู่ด้านบน กลุ่มสีสำเร็จรูปพับได้"
+  "version": "1.3.19",
+  "url": "https://github.com/haremking7025/sfbot-control/releases/download/v1.3.19/SFKeyword_v1.3.19.exe",
+  "sha256": "f2da1a4353352bb53dd5086a34278eca99f8daea945a81071dfbe6f23a2475a0",
+  "size": 28102717,
+  "notes": "SFKeyword v1.3.19 — จานสีไล่ระดับคลิกเลือกสีอิสระ (S/L + แถบ H) + แสดงค่า HSL ควบคู่ RGB"
 }
