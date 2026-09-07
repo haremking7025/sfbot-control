@@ -20,9 +20,8 @@
 
   ```bash
   python -m py_compile sfkeyword.pyw sfkeyword_lib/core/*.py sfkeyword_lib/engine/*.py sfkeyword_lib/features/*.py sfkeyword_lib/ui/*.py
-  python -m ruff check .
-  python tools/check_bugs.py
-  python tools/find_dead_code.py
+  python tools/check_venv_manifest.py   # ตรวจ venv ตรง manifest (build รันให้อัตโนมัติ)
+  python -m ruff check .                # ตรวจบั๊ก/เดดโค้ด (build รันให้อัตโนมัติ)
   ```
 
 ---
@@ -51,7 +50,7 @@
   > รันแบบอัตโนมัติ/headless (ส่ง input ไม่ได้) ให้เพิ่ม `set SFKeyword_NO_PAUSE=y`
   > เพื่อข้ามทุก `pause` ท้ายสคริปต์ (กันค้างรอ keypress)
 
-  > build จะรัน 3 ชุดตรวจอัตโนมัติ (check_bugs → ruff → find_dead_code) — ถ้าติดให้แก้ก่อน
+  > build จะรัน ruff ตรวจบั๊ก/เดดโค้ดอัตโนมัติ (`python -m ruff check .`) — ถ้าติดให้แก้ก่อน
   > ไม่งั้น build หยุดทันที (errorlevel 1)
   > Cython compile 43 โมดูลแบบขนาน (`-j`) + แคช `.pyd` ข้าม build (`.cython-cache\`) —
   > รอบแรก ~50 วิ รอบถัดไป (เนื้อหาไม่เปลี่ยน) เหลือ ~20-25 วิ ไม่ใช่ 10 นาที
@@ -145,16 +144,6 @@
   ```bash
   git add update.json && git commit -m "Update v1.2.2 checksum" && git push origin main
   ```
-
-- [ ] **ซิงค์ RELEASE_CHECKLIST.md ไปยัง repo** (ถ้าแก้ checklist ในรอบนี้):
-
-  ```bash
-  python tools/sync_checklist.py --push
-  ```
-
-  > สคริปต์คัดลอก `docs/RELEASE_CHECKLIST.md` → repo + commit + push อัตโนมัติ
-  > (หา clone จาก env `SFKeyword_CONTROL_DIR` หรือ `%TEMP%\sfbot-control`) — กันลืมซิงค์
-  > ถ้าไม่ได้แก้ checklist รอบนี้ ข้ามได้
 
 > ⚠️ **ห้าม commit ไฟล์ ZIP/EXE ลงใน repo** — .gitignore กันไว้แล้ว แนบเป็น release asset เท่านั้น
 

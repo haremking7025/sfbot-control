@@ -1,10 +1,10 @@
-# SFKeyword — เจ้าพี ออโต้ คีย์เวิร์ด
+# SFKeyword
 
 บอทเดสก์ท็อป (Windows, Tkinter) สำหรับเกม **Special Force** — ล็อกอินหลายบัญชีพร้อมกัน
 กรอกคีย์เวิร์ด/โค้ดกิจกรรมให้ทุกไอดีอัตโนมัติ ดึงคีย์ของแจกประจำวันส่งเข้า Discord
 และรับไอเทมฟรีอัตโนมัติ
 
-เวอร์ชันปัจจุบัน: **1.2.8**
+เวอร์ชันปัจจุบัน: **1.3.21**
 
 ---
 
@@ -76,19 +76,18 @@ build_client.bat
 
 สคริปต์จะทำตามลำดับ:
 
-1. อ่านเวอร์ชันจาก `sfkeyword_lib/core/constants.py` (`VERSION = "1.0.0"`) ผ่าน `tools/get_version.py`
-   → ตั้งชื่อไฟล์เป็น `SFKeyword_v1.0.0.exe` อัตโนมัติ
-2. สร้าง virtualenv (`venv/`) แล้วติดตั้ง dependencies จาก `tools/requirements.txt`
-3. รัน `tools/check_bugs.py` ตรวจหา bug pattern ก่อน build — เจอปัญหาจะหยุดทันที
-   และรัน `ruff` ตรวจบั๊ก/เดดโค้ด (`python -m ruff check .` ตั้งค่าใน
-   `pyproject.toml`) พร้อมสแกนเดดโค้ด (`tools/find_dead_code.py`) —
-   ผิดพลาดจุดไหนหยุด build ทันที
+1. อ่านเวอร์ชันจาก `sfkeyword_lib/core/constants.py` (`VERSION = "1.3.21"`) ผ่าน `tools/get_version.py`
+   → ตั้งชื่อไฟล์เป็น `SFKeyword_v1.3.21.exe` อัตโนมัติ
+2. สร้าง virtualenv (`venv/`) แล้วติดตั้ง dependencies ผ่าน manifest กลางที่ root
+   (`requirements.txt` — รวมทั้ง runtime และ build)
+3. รัน `ruff` ตรวจบั๊ก/เดดโค้ด (`python -m ruff check .` ตั้งค่าใน
+   `pyproject.toml`) — เจอปัญหาจะหยุด build ทันที
 4. ถามว่าต้องการกันโค้ดหรือไม่ (`y/N`):
    - **y** — ติดตั้ง `tools/requirements-build.txt` (Cython + PyArmor) แล้วก็อปปี้โปรเจกต์
      ไป `build_protected/` → compile `sfkeyword_lib/` ด้วย Cython → obfuscate `sfkeyword.pyw`
      ด้วย PyArmor → build จากสำเนาที่กันโค้ดแล้ว *(ต้องมี MSVC Build Tools)*
    - **N** — build จากซอร์สตรงๆ
-5. `PyInstaller --onefile --noconsole` → ไฟล์ออกที่ **`dist\SFKeyword\SFKeyword_v1.0.0.exe`**
+5. `PyInstaller --onefile --noconsole` → ไฟล์ออกที่ **`dist\SFKeyword\SFKeyword_v1.3.21.exe`**
 6. คำนวณ SHA-256 และบันทึกลง `docs/release_history.csv` **เฉพาะเมื่อยืนยันว่าเป็น release**
    (ตอบ "y" หรือตั้ง `SFKeyword_LOG_RELEASE=y`) — ประวัติเก็บเฉพาะเวอร์ชันที่ปล่อยบน GitHub จริง
 
@@ -143,10 +142,9 @@ build_client.bat
 | ไฟล์ | หน้าที่ |
 |---|---|
 | `sfkeyword.pyw` | **Entry point** — bootstrap เท่านั้น: DPI awareness, spawn `pythonw.exe`, single-instance mutex, `--tray` / auto-start detection, สร้าง `App` แล้วเข้า mainloop |
-| `build_client.bat` | สคริปต์ build .exe (venv → check_bugs → กันโค้ด (ไม่บังคับ) → PyInstaller) |
+| `build_client.bat` | สคริปต์ build .exe (venv → ruff → กันโค้ด (ไม่บังคับ) → PyInstaller) |
 | `tools/get_version.py` | อ่าน `VERSION` จาก `sfkeyword_lib/core/constants.py` ให้ build script ตั้งชื่อไฟล์ |
-| `tools/check_bugs.py` | ตรวจ bug pattern ทั่วทั้งแพ็กเกจก่อน build (missing method, import shadowing ฯลฯ) |
-| `tools/find_dead_code.py` | สแกนเดดโค้ด (module-level def ที่ไม่ถูกใช้) ก่อน build — เจอจะหยุด build |
+| `tools/check_venv_manifest.py` | ตรวจว่า venv ตรงกับ manifest dependencies (requirements.txt) ก่อน build |
 | `tools/requirements.txt` | dependencies รันจริง (requests, cryptography, Pillow, pystray, pyinstaller …) |
 | `tools/requirements-build.txt` | dependencies สำหรับกันโค้ด (Cython, PyArmor) |
 | `requirements.txt` | manifest กลาง (root) — รวม dependencies ทั้งหมดผ่าน `-r` ไปยัง `tools/requirements*.txt` (ใช้ `pip install -r requirements.txt` ได้ครบ) |
@@ -201,9 +199,6 @@ build_client.bat
 | `app_run_control_session` / `app_run_control_helpers` / `app_run_control_flows` | relogin รายแถว, run-summary dialog, `start_login` / `start_keyword` / `start_auto_run` |
 | `app_dialogs` | popup กลางที่แชร์ทั้งแอป: alert/confirm/toast helper (ทุก mixin เรียกใช้) |
 | `app_accounts_tab` / `app_keywords_tab` / `app_dashboard_tab` / `app_dailykey_tab` / `app_settings_tab` | UI ของแต่ละแท็บ |
-
-`check_bugs.py` รู้จักการแยกแบบ mixin นี้ (ดู `_MIXIN_GROUP_PREFIXES`) — ตรวจไฟล์
-`app_*.py` ทั้งกลุ่มเป็นหน่วยเดียวตอนหา missing method
 
 ---
 

@@ -116,7 +116,7 @@ venv/Scripts/python.exe -X utf8 tools/build_tools/build_protected_driver.py
 รันจากโฟลเดอร์โปรเจกต์ (ที่มี `sfkeyword.pyw` และ `venv\`)
 
 สคริปต์จะ:
-0. รัน 3 ชุดตรวจ (check_bugs → ruff → find_dead_code) เหมือนวิธีที่ 1 — เจอปัญหาหยุดทันที
+0. รัน ruff (`python -m ruff check .`) ตรวจบั๊ก/เดดโค้ดเหมือนวิธีที่ 1 — เจอปัญหาหยุดทันที
 1. อ่านเวอร์ชันจาก `sfkeyword_lib/core/constants.py` → `SFKeyword_v<เวอร์ชัน>.exe` อัตโนมัติ
 2. หา Build Tools + Windows SDK เวอร์ชันล่าสุด (vswhere / scan โฟลเดอร์)
 3. ก็อปปี้โปรเจกต์ไป `build_protected\` (กันโฟลเดอร์ขยะ รวม `.cython-cache` เหมือน robocopy ใน bat)
@@ -143,10 +143,8 @@ env["MSSdk"] = "1"
 ## การตรวจโค้ดอัตโนมัติก่อน build
 
 ก่อนถึงขั้นตอน Cython/PyArmor/PyInstaller ทุก build (ทั้งวิธีที่ 1 และ 2)
-จะรัน **3 ชุดตรวจ** — เจอปัญหา หยุด build ทันที:
-
-1. **`tools/check_bugs.py`** — custom check: method หาย, import shadowing, compile error
-2. **`python -m ruff check .`** — ตั้งค่าใน `pyproject.toml`:
+จะรัน **`python -m ruff check .`** — เจอปัญหา หยุด build ทันที โดยตั้งค่าใน
+`pyproject.toml`:
 
 ```toml
 select = [
@@ -169,10 +167,6 @@ select = [
 > ไม่มี `ignore` แล้ว — star imports (`import *`) ถูกลบออกจากโค้ดทั้งหมดและแปลงเป็น
 > explicit imports ไปแล้ว ถ้ามีใครเติม `import *` กลับมา `F403`/`F405` จะฟ้องให้
 > build หยุดทันที
-
-3. **`tools/find_dead_code.py`** — สแกนหา module-level functions/classes/constants
-   ที่ไม่ถูกอ้างถึงทั่วทั้งโปรเจกต์ (AST) — เจอเดดโค้ด จะคืน exit code 1 ให้ build
-   หยุด (เหมือนขั้นตอนอื่น) ใช้สแกนซ้ำได้เอง: `python tools/find_dead_code.py`
 
 > ตั้งใจไม่เปิด: `BLE001` broad except, `S110` try-except-pass, `I001` เรียง import,
 > `E501` บรรทัดยาว — เป็นสไตล์ของโปรเจกต์ ไม่ใช่บั๊ก
