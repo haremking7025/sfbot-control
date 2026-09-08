@@ -1,7 +1,7 @@
 {
-  "version": "1.3.36",
-  "url": "https://github.com/haremking7025/sfbot-control/releases/download/v1.3.36/SFKeyword_v1.3.36.exe",
-  "sha256": "d9d07523dcdb666122e4400927a800b62bc3c5cad5356a34163b83d84028e47f",
-  "size": 28112255,
-  "notes": "SFKeyword v1.3.36 — ใส่คีย์เดิมซ้ำบอก 'เคยใช้ไปแล้ว' ตรงๆ แทนการนับเป็นสำเร็จ (popup/สรุป/CSV/ประวัติแยกหมวดชัดเจน)"
+  "version": "1.3.37",
+  "url": "https://github.com/haremking7025/sfbot-control/releases/download/v1.3.37/SFKeyword_v1.3.37.exe",
+  "sha256": "ad6ddc10202752cca39df47f186382ee82b19aabb224eb64b73db08290de936a",
+  "size": 28155491,
+  "notes": "SFKeyword v1.3.37 — แท็บฝาก/ถอนไอเทม + โหมดดู/เลือกไอเทม (เลือกทั้งหมดที่ฝากได้/เบิกได้) + รับคีย์เร็วขึ้น (delay 0, retry ลด)"
 }
