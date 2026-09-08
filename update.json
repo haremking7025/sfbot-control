@@ -1,7 +1,7 @@
 {
-  "version": "1.3.32",
-  "url": "https://github.com/haremking7025/sfbot-control/releases/download/v1.3.32/SFKeyword_v1.3.32.exe",
-  "sha256": "3971ad5d4a88831dc3b8bfedab33eb2c1ab1bdd579dffd4ad805422af529d605",
-  "size": 28110135,
-  "notes": "SFKeyword v1.3.32 — เร่งความเร็วรับคีย์/ล็อกอิน: ดึงคีย์ขนานกับล็อกอิน (กดรับเอง) + retry 2 วิ, แชร์ connection pool + reuse หน้า Keyword (ลด request ต่อบัญชี), ช่อง 'พร้อมกัน' เฉพาะแท็บรับไอเทมฟรีแยกจากแดชบอร์ด (default 8), กันส่ง webhook 'คีย์: None' เมื่อหาคีย์ไม่เจอ"
+  "version": "1.3.33",
+  "url": "https://github.com/haremking7025/sfbot-control/releases/download/v1.3.33/SFKeyword_v1.3.33.exe",
+  "sha256": "dfdb7ceb92402cf213b9cab6b0c49c454ba12fc340dee2c972f0092284968a0e",
+  "size": 28109767,
+  "notes": "SFKeyword v1.3.33 — หน่วงระหว่างล็อกอินต่ำกว่า 1 วินาทีได้: รองรับทศนิยม 0.2–60 วิ (เช่น 0.5 = ครึ่งวินาที), แก้การอ่านค่า int() → float() (พิมพ์ 0.5 เดิม crash), แสดงผล/บันทึก config รองรับทศนิยม"
 }
