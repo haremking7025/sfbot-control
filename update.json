@@ -1,7 +1,7 @@
 {
-  "version": "1.3.25",
-  "url": "https://github.com/haremking7025/sfbot-control/releases/download/v1.3.25/SFKeyword_v1.3.25.exe",
-  "sha256": "D7E93BBA0D8E522151269D738D2680E75A0F6555244B65286819317F0B4A0ECD",
-  "size": 28105281,
-  "notes": "SFKeyword v1.3.25 — เร่งดึงคีย์วันนี้/รับคีย์: ลด request ซ้ำซ้อนของ fetch_sf_coupons (4 → 2-3 ครั้ง)"
+  "version": "1.3.31",
+  "url": "https://github.com/haremking7025/sfbot-control/releases/download/v1.3.31/SFKeyword_v1.3.31.exe",
+  "sha256": "FA2BD6AC129EE883F082FEA883E9129914AD68BCFED8A9825603939D8C4F257D",
+  "size": 28106898,
+  "notes": "SFKeyword v1.3.31 — จัด UI ให้เป็นชุดเดียวกันทั้งแอป: หัวแท็บ/popup/updater/toast/ถาดสี/หัวตาราง + ใช้สีกลางจาก constants ทั้งหมด + รวมสีสถานะเป็นชุดเดียว"
 }
