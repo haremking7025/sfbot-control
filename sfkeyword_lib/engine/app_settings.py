@@ -13,7 +13,7 @@ app_settings_diagnostics.py (preflight check/system health/copy diagnostics)
 
 import logging
 
-from ..core.constants import FG, UNIT_MAP
+from ..core.constants import FG, MAX_CONCURRENCY, UNIT_MAP
 from ..core.deps import datetime, json, os, re, shutil
 from ..core.rows import AccountRow
 from ..core.paths import CONFIG_ACCOUNT_FILE, CONFIG_AUTOMATION_FILE, CONFIG_SYSTEM_FILE, CONFIG_UI_FILE, CONFIG_WEBHOOK_FILE, SAVE_FILE, SETTINGS_BACKUP_DIR, set_startup_enabled
@@ -201,21 +201,21 @@ class AppSettingsMixin:
             try:
                 # ช่อง "พร้อมกัน" อนุญาตให้เว้นว่างได้ตอนพิมพ์ (validate รับ ""
                 # กลางคัน) — ถ้า autosave มาถูกจังหวะตอนกำลังลบเลข จะได้ไม่ crash
-                concurrency = max(1, min(99, int(self._concurrency_var.get() or "5")))
+                concurrency = max(1, min(MAX_CONCURRENCY, int(self._concurrency_var.get() or "5")))
             except Exception:
                 concurrency = 5
             try:
                 # 'พร้อมกัน' ของแท็บรับไอเทมฟรี — แยกจากแดชบอร์ด เก็บ key แยก
-                # (default 8 เร็วกว่าเดิมทันที ผู้ใช้ปรับเองได้ 1–99)
+                # (default 8 เร็วกว่าเดิมทันที ผู้ใช้ปรับเองได้ 1–200)
                 autoitem_concurrency = max(
-                    1, min(99, int(self._autoitem_concurrency_var.get() or "8"))
+                    1, min(MAX_CONCURRENCY, int(self._autoitem_concurrency_var.get() or "8"))
                 )
             except Exception:
                 autoitem_concurrency = 8
             try:
                 # 'พร้อมกัน' ของแท็บฝาก/เบิก — แยกเป็น key ของตัวเอง (default 8)
                 inventory_concurrency = max(
-                    1, min(99, int(self._inv_concurrency_var.get() or "8"))
+                    1, min(MAX_CONCURRENCY, int(self._inv_concurrency_var.get() or "8"))
                 )
             except Exception:
                 inventory_concurrency = 8
@@ -391,7 +391,7 @@ class AppSettingsMixin:
                     # เพื่อไม่ให้ผู้ใช้อัปเกรดแล้วเสียค่าจำนวนพร้อมกันที่ตั้งไว้
                     # (ใน config เก่ายังเก็บเป็น string จากช่องกรอก → ต้อง int() + clamp)
                     val = data.get("concurrency", data.get("max_concurrent"))
-                    self._concurrency_var.set(max(1, min(99, int(val))))
+                    self._concurrency_var.set(max(1, min(MAX_CONCURRENCY, int(val))))
                 except Exception:
                     # ค่าใน config เก่าเสีย (ไม่ใช่ตัวเลข เช่น ว่าง/ตัวอักษร)
                     # → ใช้ค่าเริ่มต้น แต่ต้องแจ้ง log กันเงียบๆ
@@ -404,7 +404,7 @@ class AppSettingsMixin:
             if "autoitem_concurrency" in data:
                 try:
                     val = data["autoitem_concurrency"]
-                    self._autoitem_concurrency_var.set(max(1, min(99, int(val))))
+                    self._autoitem_concurrency_var.set(max(1, min(MAX_CONCURRENCY, int(val))))
                 except Exception:
                     _logger.warning(
                         "config 'autoitem_concurrency' ไม่ใช่ตัวเลขที่ถูกต้อง: %r "
@@ -415,7 +415,7 @@ class AppSettingsMixin:
             if "inventory_concurrency" in data:
                 try:
                     val = data["inventory_concurrency"]
-                    self._inv_concurrency_var.set(max(1, min(99, int(val))))
+                    self._inv_concurrency_var.set(max(1, min(MAX_CONCURRENCY, int(val))))
                 except Exception:
                     _logger.warning(
                         "config 'inventory_concurrency' ไม่ใช่ตัวเลขที่ถูกต้อง: %r "

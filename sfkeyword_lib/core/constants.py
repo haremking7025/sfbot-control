@@ -1,11 +1,14 @@
 """Static configuration: URLs, colors, dropdown option maps, and table
 column widths used throughout the UI."""
 
-VERSION = "1.3.38"
+VERSION = "1.3.39"
 
-# ค่าให้เลือกในช่อง 'พร้อมกัน' (dropdown — กดเลือกได้ หรือพิมพ์เองได้ 1–99)
+# ขีดจำกัดสูงสุดของ 'พร้อมกัน' — รองรับชุด 100-200 ไอดี
+MAX_CONCURRENCY = 200
+
+# ค่าให้เลือกในช่อง 'พร้อมกัน' (dropdown — กดเลือกได้ หรือพิมพ์เองได้ 1–200)
 CONCURRENCY_PRESETS = [str(i) for i in range(1, 31)] + [
-    str(i) for i in range(35, 100, 5)
+    str(i) for i in range(35, MAX_CONCURRENCY + 1, 5)
 ]
 
 # ค่าให้เลือกในช่อง 'หน่วงระหว่างล็อกอิน (วินาที)' — ทศนิยม 0.1–60

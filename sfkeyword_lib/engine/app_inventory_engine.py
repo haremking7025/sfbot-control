@@ -19,6 +19,7 @@ from ..core.inventory_flow import (
     item_can_deposit,
     item_can_withdraw,
     item_display_name,
+    item_in_category,
     item_operation,
     open_inventory,
 )
@@ -74,6 +75,13 @@ class AppInventoryEngineMixin:
             return
 
         verb, _icon = _MODE_META[mode]
+        # หมวดที่เลือกจากปุ่มหลัก (ทั้งหมด/อาวุธ/เครื่องแต่งกาย/ของใช้งาน)
+        category = "ทั้งหมด"
+        try:
+            if hasattr(self, "_inv_cat_var"):
+                category = self._inv_cat_var.get() or "ทั้งหมด"
+        except Exception:
+            pass
 
         usernames = [r["user"].get().strip() for r in accs]
         dupes = [u for u in set(usernames) if usernames.count(u) > 1]
@@ -109,6 +117,7 @@ class AppInventoryEngineMixin:
             lambda: self.log(
                 f"{_icon} {verb}ไอเทมทั้งหมด — {len(acc_tuples)} บัญชี "
                 f"พร้อมกัน {self._inv_max_concurrent(len(acc_tuples))}"
+                + (f" | หมวด: {category}" if category != "ทั้งหมด" else "")
             ),
         )
 
@@ -117,6 +126,7 @@ class AppInventoryEngineMixin:
             accs=acc_tuples,
             mode=mode,
             stop=stop,
+            category=category,
             label="app_inventory.run",
         )
 
@@ -197,11 +207,12 @@ class AppInventoryEngineMixin:
             value = n_accounts
         return max(1, min(n_accounts, value))
 
-    def _inv_run_worker(self, accs, mode, stop, chosen_map=None):
+    def _inv_run_worker(self, accs, mode, stop, chosen_map=None, category="ทั้งหมด"):
         """accs = list ของ (username, password, type_label) — อ่านค่าจาก UI ไว้ก่อนแล้ว
 
         chosen_map = dict {username: [(ItemSerial, ชื่อ), ...]} — ถ้ามี ให้ทำเฉพาะ
-        รายการที่เลือก (จากหน้าต่าง 'ดู/เลือกไอเทม') ของบัญชีนั้น ไม่ใช่ทุกตัว"""
+        รายการที่เลือก (จากหน้าต่าง 'ดู/เลือกไอเทม') ของบัญชีนั้น ไม่ใช่ทุกตัว
+        category = หมวดหลักที่เลือกจากปุ่มหลัก (ทั้งหมด/อาวุธ/เครื่องแต่งกาย/ของใช้งาน)"""
         verb, _icon = _MODE_META[mode]
         t_start = time.time()
         sem = threading.Semaphore(self._inv_max_concurrent(len(accs)))
@@ -217,7 +228,8 @@ class AppInventoryEngineMixin:
                     return
                 chosen = (chosen_map or {}).get(uname)
                 res = self._inv_account_round(
-                    uname, pwd, ltype_label, mode, stop, chosen=chosen
+                    uname, pwd, ltype_label, mode, stop,
+                    chosen=chosen, category=category,
                 )
             if res is not None:
                 with results_lock:
@@ -293,6 +305,14 @@ class AppInventoryEngineMixin:
                     username=username,
                     log_fn=lambda m: self._inv_log(m),
                 )
+                # อัปเดตหมวดในปุ่มหลักให้มีหมวดย่อยจริงที่เจอ (เช่น 'อาวุธ › ปืนไรเฟิล')
+                try:
+                    self.root.after(
+                        0,
+                        lambda its=items: self._inv_sync_main_categories(its),
+                    )
+                except Exception:
+                    pass
                 return sess, page_url, items
             except SessionExpiredError:
                 if attempt == 0:
@@ -316,11 +336,12 @@ class AppInventoryEngineMixin:
         raise Exception("เรียกหน้า Inventory ไม่สำเร็จ")
 
     def _inv_account_round(self, username, password, login_type_label, mode, stop,
-                           chosen=None):
+                           chosen=None, category="ทั้งหมด"):
         """ฝาก/เบิกของ 1 บัญชี (รันใน worker)
 
         chosen: list ของ (ItemSerial, ชื่อไอเทม) ที่ผู้ใช้เลือกจากหน้าต่าง
         'ดู/เลือกไอเทม' — ถ้าเป็น None ให้ทำทุกตัวที่กดได้ (โหมดฝาก/เบิกทั้งหมด)
+        category: หมวดหลักที่เลือกจากปุ่มหลัก — กรองเฉพาะหมวดนั้น (ทั้งหมด = ไม่กรอง)
         """
         verb, _icon = _MODE_META[mode]
         self.root.after(
@@ -361,6 +382,9 @@ class AppInventoryEngineMixin:
             elig = [i for i in items if item_can_deposit(i)]
         else:
             elig = [i for i in items if item_can_withdraw(i)]
+        # กรองตามหมวดที่เลือกจากปุ่มหลัก (ทั้งหมด = ไม่กรอง)
+        if category and category != "ทั้งหมด":
+            elig = [i for i in elig if item_in_category(i, category)]
         if chosen is None:
             targets = elig
             missed = []

@@ -31,10 +31,13 @@ from ..core.constants import (
 )
 from ..core.deps import os, tk, ttk
 from ..core.inventory_flow import (
+    INV_CATEGORIES,
+    inv_category_options,
     item_can_deposit,
     item_can_withdraw,
     item_detail_lines,
     item_display_name,
+    item_in_category,
     item_summary_line,
 )
 from ..core.rows import AccountRow
@@ -121,6 +124,25 @@ class AppInventoryUIMixin:
         )
         self._inv_btn_dep.pack(side="right", padx=(8, 0))
         _bind_button_hover(self._inv_btn_dep, GREEN)
+
+        r_cat = tk.Frame(r_top, bg=BG2)
+        r_cat.pack(side="right", padx=(8, 0))
+        tk.Label(
+            r_cat, text="หมวด", font=("Leelawadee UI", 10), bg=BG2, fg=FG2
+        ).pack(side="left")
+        self._inv_cat_var = tk.StringVar(value="ทั้งหมด")
+        _cat = ttk.Combobox(
+            r_cat,
+            values=INV_CATEGORIES,
+            textvariable=self._inv_cat_var,
+            state="readonly",
+            style="Dark.TCombobox",
+            font=("Leelawadee UI", 10),
+            width=24,
+        )
+        _cat.pack(side="left", padx=(6, 0))
+        _bind_combobox_wheel_local(_cat)
+        self._inv_cat_combo = _cat
 
         self._inv_btn_wd = tk.Button(
             r_top,
@@ -919,6 +941,21 @@ class AppInventoryUIMixin:
         self._inv_set_picker_lock(True)
         self._inv_pk_load(username, password, ltype, win)
 
+    def _inv_sync_main_categories(self, items):
+        """อัปเดตหมวดในปุ่มหลัก (แถวบน) ให้มีหมวดย่อยจริงที่เจอจาก items — เช่น
+        'อาวุธ › ปืนไรเฟิลจู่โจม' — กันซ้ำ และเก็บหมวดที่เลือกไว้ถ้ายังมีอยู่"""
+        combo = getattr(self, "_inv_cat_combo", None)
+        if combo is None:
+            return
+        try:
+            opts = inv_category_options(items or [])
+            combo.configure(values=opts)
+            cur = self._inv_cat_var.get()
+            if cur not in opts:
+                self._inv_cat_var.set("ทั้งหมด")
+        except Exception:
+            pass
+
     # ------------------------------------------------------------------
     # picker helpers
     # ------------------------------------------------------------------
@@ -953,19 +990,12 @@ class AppInventoryUIMixin:
                 # เติมรายการหมวดหมู่ที่พบ (จาก ParentCategoryName › CategoryName)
                 combo = getattr(self, "_inv_pk_cat_combo", None)
                 if combo is not None:
-                    seen = []
-                    for it in self._inv_pk_items:
-                        p = str(it.get("ParentCategoryName") or "").strip()
-                        c = str(it.get("CategoryName") or "").strip()
-                        label = f"{p} › {c}" if p else c
-                        if label and label not in seen:
-                            seen.append(label)
-                    seen.sort()
                     try:
-                        combo.configure(values=["ทั้งหมด"] + seen)
+                        combo.configure(values=inv_category_options(self._inv_pk_items))
                         self._inv_pk_cat_var.set("ทั้งหมด")
                     except Exception:
                         pass
+                self._inv_sync_main_categories(self._inv_pk_items)
                 self._inv_pk_render()
             except Exception:
                 pass
@@ -998,12 +1028,8 @@ class AppInventoryUIMixin:
                 continue
             if filt == "เฉพาะที่เบิกได้" and not item_can_withdraw(it):
                 continue
-            if cat != "ทั้งหมด":
-                p = str(it.get("ParentCategoryName") or "").strip()
-                c = str(it.get("CategoryName") or "").strip()
-                label = f"{p} › {c}" if p else c
-                if label != cat:
-                    continue
+            if cat != "ทั้งหมด" and not item_in_category(it, cat):
+                continue
             if q:
                 hay = (item_display_name(it) + " " + str(it.get("ItemSerial") or "")).lower()
                 if q not in hay:
@@ -1156,6 +1182,12 @@ class AppInventoryUIMixin:
                         r["status_lbl"].configure(text="พร้อมทำงาน", fg=FG2)
                 except Exception:
                     pass
+        cat_combo = getattr(self, "_inv_cat_combo", None)
+        if cat_combo is not None:
+            try:
+                cat_combo.configure(state="disabled" if busy else "readonly")
+            except Exception:
+                pass
         for r in getattr(self, "_inv_rows", []):
             cb = r.get("type_cb")
             if cb is None:

@@ -27,6 +27,33 @@ _logger = logging.getLogger(__name__)
 
 INVENTORY_URL = "http://member.sf.in.th/Inventory/"
 
+# หมวดหลักของไอเทม (ParentCategoryName จากเว็บ) — ใช้กรองฝาก/เบิกทั้งหมด
+INV_CATEGORIES = ["ทั้งหมด", "อาวุธ", "เครื่องแต่งกาย", "ของใช้งาน"]
+
+
+def inv_category_label(item):
+    """ป้ายหมวดของไอเทม 1 ชิ้น — 'พ่อ › ลูก' ถ้ามีหมวดย่อย, 'ลูก' ถ้าไม่มีพ่อ
+    (ตรงกับที่เว็บส่ง ParentCategoryName/CategoryName มาใน item)
+    ถ้ามีพ่อแต่ลูกว่าง → คืนแค่พ่อ (กันป้าย 'อาวุธ › ' งี่เง่า)"""
+    p = str(item.get("ParentCategoryName") or "").strip()
+    c = str(item.get("CategoryName") or "").strip()
+    if p and c:
+        return f"{p} › {c}"
+    return p or c
+
+
+def inv_category_options(items=None):
+    """รายการหมวดให้เลือกในปุ่มหลัก — หมวดหลักคงที่ + หมวดย่อยจริงที่เจอจาก items
+    (เช่น 'อาวุธ › ปืนไรเฟิลจู่โจม') — กันซ้ำ (รวมชนกับหมวดหลักคงที่ด้วย)
+    และ 'ทั้งหมด' อยู่แรกเสมอ"""
+    opts = list(INV_CATEGORIES)
+    if items:
+        for it in items:
+            label = inv_category_label(it)
+            if label and label not in opts:
+                opts.append(label)
+    return opts
+
 _WM_TIMEOUT = (5, 20)
 
 # สัญญาณของ "ยังไม่ล็อกอิน/โดนเด้งกลับหน้าแรก" ของ master page SF Event Center
@@ -170,8 +197,11 @@ def fetch_items_page(
 
 def fetch_all_items(session, page_url, username="", stop_check=None, log_fn=None):
     """ดึงไอเทมทั้งหมด — หน้าแรก sequential (รู้ totalPages) แล้วเรียกหน้าที่เหลือ
-    แบบ parallel (สูงสุด 5 หน้า/รอบ) — เทสจริงแล้วเว็บเป็นคอขวด (ตอบ ~1.6 วิ/หน้า
-    คงที่ไม่ว่า parallel กี่หน้า) — 5 คือจุดสมดุล กันเว็บแถวคอย
+    แบบ parallel (สูงสุด 5 หน้า/รอบ)
+
+    หมายเหตุ: เทสจริงแล้วเว็บเป็นคอขวด (~1.6 วิ/หน้า คงที่ไม่ว่า parallel กี่หน้า)
+    และห้ามล็อกอิน session ซ้ำบัญชีเดียวกัน (เคยลอง dual-session ได้ 25 วิ แทน 33
+    แต่บัญชีโดนล็อก 15 นาที — เว็บนับล็อกอินซ้ำเร็วเป็นผิด → ใช้ session เดียวเสมอ)
 
     stop_check: callable คืน True เมื่อผู้ใช้กดหยุด (เช็คระหว่างรอบหน้า)
     """
@@ -256,6 +286,31 @@ def item_can_withdraw(item):
     return item.get("IsDeposited") == "Y" and not item_is_expired(item)
 
 
+def item_in_category(item, category):
+    """ไอเทมอยู่ในหมวดที่เลือกไหม — รองรับทั้งหมวดหลัก ('อาวุธ') และหมวดย่อย
+    ('อาวุธ › ปืนไรเฟิลจู่โจม')
+
+    - 'ทั้งหมด' = ไม่กรอง
+    - 'พ่อ › ลูก' = ตรง ParentCategoryName และ CategoryName พร้อมกัน
+    - 'ของใช้งาน' = CategoryName เป็น 'ของใช้งาน' หรือไอเทมไม่มีหมวดพ่อ (กันหลุด
+      จาก 'ทั้งหมด' เท่านั้น ให้อยู่ใน 'ของใช้งาน' ด้วย)
+    - หมวดอื่น = ตรง ParentCategoryName หรือ CategoryName (รองรับหมวดไม่มีพ่อ
+      เช่น 'EXP X5' ที่ label เป็นชื่อหมวดลูกตรงๆ)
+    """
+    if not category or category == "ทั้งหมด":
+        return True
+    p = str(item.get("ParentCategoryName") or "").strip()
+    c = str(item.get("CategoryName") or "").strip()
+    if "›" in category:
+        parent, _, child = category.partition("›")
+        return p == parent.strip() and c == child.strip()
+    if p == category or c == category:
+        return True
+    if category == "ของใช้งาน":
+        return c == "ของใช้งาน" or not p
+    return False
+
+
 def item_display_name(item):
     return (
         str(item.get("CleanItemName") or item.get("ItemName") or item.get("ItemCode") or "?")
@@ -338,12 +393,16 @@ def item_operation(session, page_url, operation, item, username=""):
 
 __all__ = [
     "INVENTORY_URL",
+    "INV_CATEGORIES",
     "fetch_all_items",
     "fetch_items_page",
+    "inv_category_label",
+    "inv_category_options",
     "item_can_deposit",
     "item_can_withdraw",
     "item_detail_lines",
     "item_display_name",
+    "item_in_category",
     "item_is_expired",
     "item_operation",
     "item_summary_line",
