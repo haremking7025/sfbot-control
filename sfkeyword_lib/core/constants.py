@@ -1,7 +1,7 @@
 """Static configuration: URLs, colors, dropdown option maps, and table
 column widths used throughout the UI."""
 
-VERSION = "1.3.37"
+VERSION = "1.3.38"
 
 # ค่าให้เลือกในช่อง 'พร้อมกัน' (dropdown — กดเลือกได้ หรือพิมพ์เองได้ 1–99)
 CONCURRENCY_PRESETS = [str(i) for i in range(1, 31)] + [

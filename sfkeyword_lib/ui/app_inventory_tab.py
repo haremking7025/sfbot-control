@@ -1,4 +1,4 @@
-"""The 'ฝาก/ถอนไอเทม' tab (TDP Inventory) — UI half: widgets + account row
+"""The 'ฝาก/เบิก' tab (TDP Inventory) — UI half: widgets + account row
 CRUD (add/remove/load-from-file/counts). Engine half lives in
 app_inventory_engine.py.
 
@@ -78,7 +78,7 @@ class AppInventoryUIMixin:
         canvas.bind("<Configure>", _on_canvas_resize)
         self._bind_mousewheel(canvas, inner)
 
-        _page_header(inner, "ฝาก/ถอนไอเทม", "📦", bg=BG, acc=ACC, border=BORDER)
+        _page_header(inner, "ฝาก/เบิก", "📦", bg=BG, acc=ACC, border=BORDER)
 
         pad = {"padx": 16, "pady": (0, 10)}
 
@@ -96,7 +96,7 @@ class AppInventoryUIMixin:
             f.pack(fill="x", padx=14, pady=pady)
             return f
 
-        card_top = _section("📦  ฝาก / เบิกไอเทม (TDP Inventory บน member.sf.in.th)")
+        card_top = _section("📦  ฝาก / เบิก (TDP Inventory บน member.sf.in.th)")
         r_top = _row(card_top, (8, 4))
         self._inv_status_lbl = tk.Label(
             r_top,
@@ -378,11 +378,11 @@ class AppInventoryUIMixin:
         status_box = _box(_INV_STATUS_COL, 34)
         status_lbl = tk.Label(
             status_box,
-            text="",
+            text="พร้อมทำงาน",
             anchor="w",
             font=("Leelawadee UI", 9),
             bg=BG_ROW,
-            fg="#888",
+            fg=FG2,
         )
         status_lbl.pack(fill="both", expand=True, padx=(4, 0))
 
@@ -407,7 +407,7 @@ class AppInventoryUIMixin:
             frm.destroy()
             self._inv_reindex()
             self._inv_update_acc_count()
-            self.log(f"🗑 ลบบัญชีฝาก/ถอนไอเทม (เหลือ {len(self._inv_rows)} บัญชี)")
+            self.log(f"🗑 ลบบัญชีฝาก/เบิก (เหลือ {len(self._inv_rows)} บัญชี)")
 
         del_btn = tk.Button(
             frm,
@@ -439,7 +439,7 @@ class AppInventoryUIMixin:
         self._inv_update_acc_count()
         if user_action:
             self.log(
-                f"➕ เพิ่มบัญชีฝาก/ถอนไอเทม #{idx} (รวม {len(self._inv_rows)} บัญชี)"
+                f"➕ เพิ่มบัญชีฝาก/เบิก #{idx} (รวม {len(self._inv_rows)} บัญชี)"
             )
 
     def _inv_reindex(self):
@@ -466,7 +466,7 @@ class AppInventoryUIMixin:
             if entry:
                 entry.configure(show="" if visible else "•", fg=FG if visible else FG2)
         self.log(
-            f"{'👁 แสดง' if visible else '🙈 ซ่อน'}รหัสผ่านบัญชีฝาก/ถอนไอเทม "
+            f"{'👁 แสดง' if visible else '🙈 ซ่อน'}รหัสผ่านบัญชีฝาก/เบิก "
             f"({len(self._inv_rows)} บัญชี)"
         )
 
@@ -483,7 +483,7 @@ class AppInventoryUIMixin:
             "_inv_file_cb_paths",
         )
         if not silent:
-            self.log(f"🗑 ล้างบัญชีฝาก/ถอนไอเทมทั้งหมด ({n} บัญชี)")
+            self.log(f"🗑 ล้างบัญชีฝาก/เบิกทั้งหมด ({n} บัญชี)")
 
     def _inv_load_file(self):
         from ..core.deps import filedialog
@@ -516,7 +516,7 @@ class AppInventoryUIMixin:
                 "inv_file_cb",
                 "_inv_file_cb_paths",
             )
-            msg = f" โหลด {added} บัญชี (ฝาก/ถอนไอเทม) จาก: {path}"
+            msg = f" โหลด {added} บัญชี (ฝาก/เบิก) จาก: {path}"
             if skipped:
                 msg += f" (ข้ามซ้ำ {skipped} บัญชี)"
             self.log(msg)
@@ -550,7 +550,7 @@ class AppInventoryUIMixin:
         current = self._inv_valid_accounts()
         if current and getattr(self, "_inv_last_loaded_path", None) != path:
             if not self._confirm_dialog(
-                "แทนที่บัญชีฝาก/ถอนไอเทม",
+                "แทนที่บัญชีฝาก/เบิก",
                 lines=[
                     f"แทนที่บัญชีปัจจุบัน ({len(current)} บัญชี) ด้วยบัญชีจากไฟล์ "
                     f"'{os.path.basename(path)}' ({len(parsed)} บัญชี) หรือไม่?"
@@ -581,7 +581,7 @@ class AppInventoryUIMixin:
             "_inv_file_cb_paths",
         )
         self.log(
-            f"📂 สลับเป็นบัญชีฝาก/ถอนไอเทมจากไฟล์: "
+            f"📂 สลับเป็นบัญชีฝาก/เบิกจากไฟล์: "
             f"{os.path.basename(path)} ({len(parsed)} บัญชี)"
         )
 
@@ -645,6 +645,24 @@ class AppInventoryUIMixin:
         _filt.pack(side="left", padx=(4, 12))
         _bind_combobox_wheel_local(_filt)
         _filt.bind("<<ComboboxSelected>>", self._inv_pk_render)
+
+        tk.Label(
+            top_row, text="หมวด", font=("Leelawadee UI", 10), bg=BG, fg=FG2
+        ).pack(side="left")
+        self._inv_pk_cat_var = tk.StringVar(value="ทั้งหมด")
+        _cat = ttk.Combobox(
+            top_row,
+            textvariable=self._inv_pk_cat_var,
+            values=["ทั้งหมด"],
+            state="readonly",
+            style="Dark.TCombobox",
+            font=("Leelawadee UI", 10),
+            width=24,
+        )
+        _cat.pack(side="left", padx=(4, 12))
+        _bind_combobox_wheel_local(_cat)
+        _cat.bind("<<ComboboxSelected>>", self._inv_pk_render)
+        self._inv_pk_cat_combo = _cat
 
         tk.Label(
             top_row, text="ค้นหา", font=("Leelawadee UI", 10), bg=BG, fg=FG2
@@ -932,6 +950,22 @@ class AppInventoryUIMixin:
                     self._inv_pk_set_details("")
                     return
                 self._inv_pk_items = items or []
+                # เติมรายการหมวดหมู่ที่พบ (จาก ParentCategoryName › CategoryName)
+                combo = getattr(self, "_inv_pk_cat_combo", None)
+                if combo is not None:
+                    seen = []
+                    for it in self._inv_pk_items:
+                        p = str(it.get("ParentCategoryName") or "").strip()
+                        c = str(it.get("CategoryName") or "").strip()
+                        label = f"{p} › {c}" if p else c
+                        if label and label not in seen:
+                            seen.append(label)
+                    seen.sort()
+                    try:
+                        combo.configure(values=["ทั้งหมด"] + seen)
+                        self._inv_pk_cat_var.set("ทั้งหมด")
+                    except Exception:
+                        pass
                 self._inv_pk_render()
             except Exception:
                 pass
@@ -950,6 +984,9 @@ class AppInventoryUIMixin:
     def _inv_pk_current_view(self):
         """ไอเทมที่ควรแสดงตามตัวกรอง/ช่องค้นหาปัจจุบัน"""
         filt = self._inv_pk_filter_var.get() if hasattr(self, "_inv_pk_filter_var") else "ทั้งหมด"
+        cat = (
+            self._inv_pk_cat_var.get() if hasattr(self, "_inv_pk_cat_var") else "ทั้งหมด"
+        )
         q = (
             (self._inv_pk_search_var.get() or "").strip().lower()
             if hasattr(self, "_inv_pk_search_var")
@@ -961,6 +998,12 @@ class AppInventoryUIMixin:
                 continue
             if filt == "เฉพาะที่เบิกได้" and not item_can_withdraw(it):
                 continue
+            if cat != "ทั้งหมด":
+                p = str(it.get("ParentCategoryName") or "").strip()
+                c = str(it.get("CategoryName") or "").strip()
+                label = f"{p} › {c}" if p else c
+                if label != cat:
+                    continue
             if q:
                 hay = (item_display_name(it) + " " + str(it.get("ItemSerial") or "")).lower()
                 if q not in hay:
@@ -1105,6 +1148,14 @@ class AppInventoryUIMixin:
                     ),
                     fg=FG2,
                 )
+        if not busy:
+            # แถวที่ยังค้าง "⏳ กำลังทำงาน..." (ไม่ได้เข้า�รอบนี้) → กลับเป็นพร้อม
+            for r in getattr(self, "_inv_rows", []):
+                try:
+                    if (r["status_lbl"].cget("text") or "").startswith("⏳"):
+                        r["status_lbl"].configure(text="พร้อมทำงาน", fg=FG2)
+                except Exception:
+                    pass
         for r in getattr(self, "_inv_rows", []):
             cb = r.get("type_cb")
             if cb is None:

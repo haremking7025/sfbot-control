@@ -213,7 +213,7 @@ class AppSettingsMixin:
             except Exception:
                 autoitem_concurrency = 8
             try:
-                # 'พร้อมกัน' ของแท็บฝาก/ถอนไอเทม — แยกเป็น key ของตัวเอง (default 8)
+                # 'พร้อมกัน' ของแท็บฝาก/เบิก — แยกเป็น key ของตัวเอง (default 8)
                 inventory_concurrency = max(
                     1, min(99, int(self._inv_concurrency_var.get() or "8"))
                 )
@@ -546,7 +546,7 @@ class AppSettingsMixin:
                         )
                     if _inv_pwd_fail:
                         self.log(
-                            f"⚠ พบ {_inv_pwd_fail} บัญชี (แท็บฝาก/ถอนไอเทม) "
+                            f"⚠ พบ {_inv_pwd_fail} บัญชี (แท็บฝาก/เบิก) "
                             f"ที่ถอดรหัสรหัสผ่านไม่สำเร็จ — กรุณากรอกรหัสผ่านใหม่"
                         )
                 except Exception as _e:

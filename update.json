@@ -1,7 +1,7 @@
 {
-  "version": "1.3.37",
-  "url": "https://github.com/haremking7025/sfbot-control/releases/download/v1.3.37/SFKeyword_v1.3.37.exe",
-  "sha256": "ad6ddc10202752cca39df47f186382ee82b19aabb224eb64b73db08290de936a",
-  "size": 28155491,
-  "notes": "SFKeyword v1.3.37 — แท็บฝาก/ถอนไอเทม + โหมดดู/เลือกไอเทม (เลือกทั้งหมดที่ฝากได้/เบิกได้) + รับคีย์เร็วขึ้น (delay 0, retry ลด)"
+  "version": "1.3.38",
+  "url": "https://github.com/haremking7025/sfbot-control/releases/download/v1.3.38/SFKeyword_v1.3.38.exe",
+  "sha256": "91ab352280f63bcec48e110ffbbe5993840ca12d518ad3d79dc8fd4e191766e4",
+  "size": 28162395,
+  "notes": "SFKeyword v1.3.38 — ฝาก/เบิกเร็วขึ้น (parallel 5, เทสจริง 1891 ชิ้น ~62 วิ) + กรองไอเทมตามหมวดหมู่ + log ละเอียดแต่ไม่รก + สถานะแถวตรง + popup สรุปกระชับ"
 }

@@ -69,7 +69,7 @@ def _webmethod_base(page_url):
     return base
 
 
-def _http_get(session, url, retries=3, timeout=(5, 15)):
+def _http_get(session, url, retries=2, timeout=(5, 15)):
     last = None
     for i in range(retries):
         try:
@@ -79,7 +79,7 @@ def _http_get(session, url, retries=3, timeout=(5, 15)):
             if i < retries - 1:
                 import time
 
-                time.sleep(0.5 * (2 ** i))
+                time.sleep(0.2 * (2 ** i))
     raise last
 
 
@@ -169,29 +169,66 @@ def fetch_items_page(
 
 
 def fetch_all_items(session, page_url, username="", stop_check=None, log_fn=None):
-    """ดึงไอเทมทั้งหมด (วนทุกหน้า) — คืน list ของ dict ไอเทม
+    """ดึงไอเทมทั้งหมด — หน้าแรก sequential (รู้ totalPages) แล้วเรียกหน้าที่เหลือ
+    แบบ parallel (สูงสุด 5 หน้า/รอบ) — เทสจริงแล้วเว็บเป็นคอขวด (ตอบ ~1.6 วิ/หน้า
+    คงที่ไม่ว่า parallel กี่หน้า) — 5 คือจุดสมดุล กันเว็บแถวคอย
 
-    stop_check: callable คืน True เมื่อผู้ใช้กดหยุด (เช็คระหว่างหน้า)
+    stop_check: callable คืน True เมื่อผู้ใช้กดหยุด (เช็คระหว่างรอบหน้า)
     """
     items = []
-    page = 1
-    total_pages = 1
     page_size = 100
-    while page <= total_pages:
-        if stop_check is not None and stop_check():
-            break
-        d = fetch_items_page(
-            session, page_url, page_number=page, page_size=page_size, username=username
-        )
-        data = d.get("data") or []
-        items.extend(data)
+
+    def _stop():
+        return stop_check is not None and stop_check()
+
+    d1 = fetch_items_page(
+        session, page_url, page_number=1, page_size=page_size, username=username
+    )
+    data1 = d1.get("data") or []
+    items.extend(data1)
+    try:
+        total_pages = int(d1.get("totalPages") or 1)
+    except (TypeError, ValueError):
+        total_pages = 1
+    if not data1:
+        _log(log_fn, f" [{username}] ดึงรายการไอเทม: พบ {len(items)} รายการ")
+        return items
+
+    from concurrent.futures import ThreadPoolExecutor
+
+    def _fetch(pg):
+        if _stop():
+            return []
         try:
-            total_pages = int(d.get("totalPages") or 1)
-        except (TypeError, ValueError):
-            total_pages = 1
-        if not data:
-            break
-        page += 1
+            d = fetch_items_page(
+                session, page_url, page_number=pg, page_size=page_size, username=username
+            )
+            return d.get("data") or []
+        except Exception:
+            return None  # หน้าพัง — ถอยไปดึงแบบ sequential เก็บเฉพาะหน้าที่เหลือ
+
+    pending = list(range(2, total_pages + 1))
+    with ThreadPoolExecutor(max_workers=5) as ex:
+        while pending:
+            if _stop():
+                break
+            batch = pending[:5]
+            pending = pending[5:]
+            for pg, chunk in zip(batch, ex.map(_fetch, batch), strict=False):
+                if chunk is None:
+                    # หน้าพลาด (network/เว็บ) — ดึงหน้าคืนแบบเดี่ยว ๆ กันยิงซ้ำ
+                    if _stop():
+                        break
+                    try:
+                        d = fetch_items_page(
+                            session, page_url, page_number=pg, page_size=page_size,
+                            username=username,
+                        )
+                        items.extend(d.get("data") or [])
+                    except Exception:
+                        pass
+                else:
+                    items.extend(chunk)
     _log(log_fn, f" [{username}] ดึงรายการไอเทม: พบ {len(items)} รายการ")
     return items
 
