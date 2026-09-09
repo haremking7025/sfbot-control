@@ -475,7 +475,7 @@ def _themed_popup(
         _logger.debug("ignored error at ui_theme.py:284: %s", _e)
 
     pad = tk.Frame(top, bg=BG2)
-    pad.pack(fill="both", expand=True, padx=24, pady=20)
+    pad.pack(fill="both", expand=True, padx=16, pady=20)
 
     head = tk.Frame(pad, bg=BG2)
     head.pack(fill="x", pady=(0, 2))
@@ -898,14 +898,14 @@ def _ask_color(parent, title="เลือกสี", initial=FG2, preset_cat=No
     result = {"hex": None}
 
     # ── หัวข้อ + เส้นคั่น (สไตล์เดียวกับหัวแท็บ) ──
-    _page_header(top, title, "🎨", padx=24, bg=BG3)
+    _page_header(top, title, "🎨", padx=16, bg=BG3)
 
     preview = tk.Label(
         top, text="", width=16, height=3,
         bg=initial, relief="flat", highlightthickness=0,
         font=("Leelawadee UI", 12),
     )
-    preview.pack(fill="x", padx=24, pady=(0, 8))
+    preview.pack(fill="x", padx=16, pady=(0, 8))
 
     hex_var = tk.StringVar(value=str(initial or "").upper())
     hex_entry = tk.Entry(
@@ -915,7 +915,7 @@ def _ask_color(parent, title="เลือกสี", initial=FG2, preset_cat=No
         highlightbackground=ACC2, highlightcolor=ACC2,
         justify="center",
     )
-    hex_entry.pack(fill="x", padx=24, pady=(0, 8))
+    hex_entry.pack(fill="x", padx=16, pady=(0, 8))
 
     # ── จานสีไล่ระดับ: กล่องความเข้ม (S/L) + แถบสี (H) — คลิกเลือกสีได้อิสระ ──
     hue_var = tk.IntVar(value=0)
@@ -925,7 +925,7 @@ def _ask_color(parent, title="เลือกสี", initial=FG2, preset_cat=No
     grad_photo = {"img": None}
 
     grad_frame = tk.Frame(top, bg=BG3)
-    grad_frame.pack(fill="x", padx=24, pady=(0, 4))
+    grad_frame.pack(fill="x", padx=16, pady=(0, 4))
     grad_cv = tk.Canvas(
         grad_frame,
         width=grad_size["w"],
@@ -1165,11 +1165,11 @@ def _ask_color(parent, title="เลือกสี", initial=FG2, preset_cat=No
         if len(colors) % _cols:
             _row += 1
 
-    secs.pack(fill="x", padx=24, pady=(4, 6))
+    secs.pack(fill="x", padx=16, pady=(4, 6))
 
     # ── ปุ่มล่าง ──
     btns = tk.Frame(top, bg=BG3)
-    btns.pack(fill="x", padx=24, pady=(10, 18))
+    btns.pack(fill="x", padx=16, pady=(10, 18))
 
     def _ok():
         result["hex"] = hex_var.get()

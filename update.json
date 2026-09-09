@@ -1,7 +1,7 @@
 {
-  "version": "1.3.45",
-  "url": "https://github.com/haremking7025/sfbot-control/releases/download/v1.3.45/SFKeyword_v1.3.45.exe",
-  "sha256": "04664fbfd0355ce62ebb3f3b1ad30dc9bd374612a6294620d0f009acaa2a01f1",
-  "size": 28183850,
-  "notes": "SFKeyword v1.3.45 — เพิ่มกรอบการ์ดแท็บ 'รับไอเทมฟรี' + 'ฝาก/เบิก' ให้มีกรอบเหมือนทุกแท็บ ดูเป็นระเบียบสม่ำเสมอ"
+  "version": "1.3.46",
+  "url": "https://github.com/haremking7025/sfbot-control/releases/download/v1.3.46/SFKeyword_v1.3.46.exe",
+  "sha256": "3d62b50331565a8c4ebfc9cf27d310558694e19682e3aa33c418b273fbbdce75",
+  "size": 28182923,
+  "notes": "SFKeyword v1.3.46 — แก้บั๊ก thread race ค่า 'พร้อมกัน' บนแดชบอร์ด + รวมระยะขอบทุกแท็บเป็น 16px + popup/dialog ทุกตัวเข้าชุด 16px"
 }

@@ -752,11 +752,11 @@ class AppInventoryUIMixin:
         win.transient(self.root)
         self._inv_picker_win = win
 
-        _page_header(win, f"ไอเทมของ {username}", "👁", padx=14)
+        _page_header(win, f"ไอเทมของ {username}", "👁", padx=16)
 
         # ── แถวบน: ตัวกรอง + ช่องค้นหา ──
         top_row = tk.Frame(win, bg=BG)
-        top_row.pack(fill="x", padx=14, pady=(2, 4))
+        top_row.pack(fill="x", padx=16, pady=(2, 4))
         tk.Label(
             top_row, text="แสดง", font=("Leelawadee UI", 10), bg=BG, fg=FG2
         ).pack(side="left")
@@ -838,12 +838,12 @@ class AppInventoryUIMixin:
         info_lbl = tk.Label(
             win, text="", font=("Leelawadee UI", 9), bg=BG, fg=FG2
         )
-        info_lbl.pack(anchor="w", padx=14, pady=(0, 2))
+        info_lbl.pack(anchor="w", padx=16, pady=(0, 2))
         self._inv_pk_info_lbl = info_lbl
 
         # ── Listbox รายการไอเทม ──
         list_frame = tk.Frame(win, bg=BG)
-        list_frame.pack(fill="both", expand=True, padx=14)
+        list_frame.pack(fill="both", expand=True, padx=16)
         sb = tk.Scrollbar(list_frame, orient="vertical")
         lb = tk.Listbox(
             list_frame,
@@ -877,7 +877,7 @@ class AppInventoryUIMixin:
 
         # ── แผงรายละเอียดไอเทมที่เลือก ──
         details_frame = tk.Frame(win, bg=BG2)
-        details_frame.pack(fill="x", padx=14, pady=(6, 0))
+        details_frame.pack(fill="x", padx=16, pady=(6, 0))
         tk.Label(
             details_frame,
             text="รายละเอียดไอเทม (ดึงจากเว็บ)",
@@ -904,7 +904,7 @@ class AppInventoryUIMixin:
 
         # ── แถวที่ 1: จำนวนที่เลือก + ปุ่มฝาก/เบิก/ลบ/ดึงใหม่ (หลัก) ──
         btn_row = tk.Frame(win, bg=BG)
-        btn_row.pack(fill="x", padx=14, pady=(8, 2))
+        btn_row.pack(fill="x", padx=16, pady=(8, 2))
         sel_lbl = tk.Label(
             btn_row, text="เลือก 0 ชิ้น", font=("Leelawadee UI", 9, "bold"), bg=BG, fg=FG2
         )
@@ -1079,7 +1079,7 @@ class AppInventoryUIMixin:
 
         # ── แถวที่ 2: ปุ่มเลือกทั้งหมด (ลัด — ตามตัวกรอง/ค้นหาปัจจุบัน) ──
         sel_row = tk.Frame(win, bg=BG)
-        sel_row.pack(fill="x", padx=14, pady=(2, 8))
+        sel_row.pack(fill="x", padx=16, pady=(2, 8))
         tk.Label(
             sel_row, text="ลัด:", font=("Leelawadee UI", 9), bg=BG, fg=FG2
         ).pack(side="left", padx=(0, 6))

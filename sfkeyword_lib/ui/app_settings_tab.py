@@ -68,7 +68,7 @@ class AppSettingsTabMixin:
             parent = parent or cfg_content
             inner = parent is not cfg_content
             hdr = tk.Frame(parent, bg=BG)
-            hdr.pack(fill="x", padx=10 if inner else 20, pady=(10, 0))
+            hdr.pack(fill="x", padx=10 if inner else 16, pady=(10, 0))
             tk.Label(
                 hdr, text=title, font=("Leelawadee UI", 9, "bold"), bg=BG, fg=ACC2
             ).pack(side="left")
@@ -88,7 +88,7 @@ class AppSettingsTabMixin:
             card.pack(
                 fill="both" if inner else "x",
                 expand=bool(inner),
-                padx=10 if inner else 20,
+                padx=10 if inner else 16,
                 pady=(4, 0),
             )
             return card
@@ -111,17 +111,19 @@ class AppSettingsTabMixin:
                 lbl.pack(fill="x")  # แนวตั้ง — ป้ายชื่อเต็มบรรทัด
             return lbl
 
-        _page_header(cfg_content, "การตั้งค่าบอท", "⚙", padx=20)
+        _page_header(cfg_content, "การตั้งค่าบอท", "⚙", padx=16)
 
         # ── การ์ดบนจัด 2 คอลัมน์ (การเชื่อมต่อ | ตัวเลือก) — ย่อความสูงแท็บ ──
         _top_cols = tk.Frame(cfg_content, bg=BG)
         _top_cols.pack(fill="x")
         # anchor="n" สำคัญ: pack(side="left") default anchor="center" — ถ้าคอลัมน์
         # สูงไม่เท่ากัน การ์ดเตี้ยกว่าจะถูกดันลงกลางแนวตั้ง หัวการ์ดเลยไม่เสมอกัน
+        # การ์ดในคอลัมน์ใช้ padx=10 แต่การ์ดล่าง (สี Log) ใช้ padx=16 → ต้องชดเชย
+        # padding ฝั่งนอก 6px ให้ขอบซ้าย/ขวาของการ์ดบนตรงกับการ์ดล่างพอดี (Pixel-perfect)
         _col_l = tk.Frame(_top_cols, bg=BG)
-        _col_l.pack(side="left", fill="both", expand=True, anchor="n")
+        _col_l.pack(side="left", fill="both", expand=True, anchor="n", padx=(6, 0))
         _col_r = tk.Frame(_top_cols, bg=BG)
-        _col_r.pack(side="left", fill="both", expand=True, anchor="n")
+        _col_r.pack(side="left", fill="both", expand=True, anchor="n", padx=(0, 6))
 
         card_http = _section("🌐  การเชื่อมต่อ (HTTP — ไม่เปิด Chrome)", _col_l)
         # แนวตั้ง 3 แถวให้ตรงกริดเดียวกับ card ตัวเลือก (แถวละ 39px: 100/139/178)

@@ -48,11 +48,14 @@ class AppRunControlFlowsMixin:
 
         self.log(f"── เข้าสู่ระบบ  {len(accounts)} บัญชี")
 
+        # อ่าน 'พร้อมกัน' บน UI thread (tkinter var ปลอดภัยแค่ main thread)
+        # แล้วส่งเข้าคลอเชอร์ worker เป็นค่าธรรมดา — worker ห้ามแตะ tk var
+        login_slots = self._get_max_concurrent(len(accounts))
+
         def run_logins():
             n = 0
             try:
                 self._start_deadlock_watchdog(timeout_sec=360)
-                login_slots = self._get_max_concurrent(len(accounts))
                 sem = threading.Semaphore(login_slots)
                 self.log(f"   พร้อมกัน {len(accounts)} บัญชี")
 
@@ -347,10 +350,12 @@ class AppRunControlFlowsMixin:
             self.keyword_btn.configure(state="disabled")
             self.stop_btn.configure(state="disabled", text="หยุด")
 
+        # อ่าน 'พร้อมกัน' บน UI thread ก่อน submit — worker ห้ามแตะ tk var
+        login_slots = self._get_max_concurrent(len(accounts))
+
         def run_auto():
             try:
                 self._start_deadlock_watchdog(timeout_sec=360)
-                login_slots = self._get_max_concurrent(len(accounts))
                 sem = threading.Semaphore(login_slots)
 
                 self.log("   โหมดแข่ง: ใครล็อกอินเสร็จก่อน กรอกคีย์ก่อนทันที")
