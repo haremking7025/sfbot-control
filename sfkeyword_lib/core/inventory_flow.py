@@ -263,6 +263,10 @@ def fetch_all_items(session, page_url, username="", stop_check=None, log_fn=None
     return items
 
 
+# จำนวนวันก่อนหมดอายุที่ถือว่า 'ใกล้หมดอายุ' (กรองดูของที่จะหายเร็ว)
+INV_NEAR_EXPIRE_DAYS = 3
+
+
 def item_is_expired(item, now=None):
     end = str(item.get("EndDate") or "")
     if end == _PERMANENT_END or not end:
@@ -272,6 +276,24 @@ def item_is_expired(item, now=None):
 
         now = datetime.now().strftime("%Y%m%d%H%M%S")
     return end <= now
+
+
+def item_expires_within_days(item, days=INV_NEAR_EXPIRE_DAYS, now=None):
+    """ไอเทมยังใช้ได้ (ยังไม่หมดอายุ) แต่เหลือไม่ถึง days วัน — ใช้กรอง
+    'ใกล้หมดอายุ' เพื่อดูของที่จะหายเร็ว"""
+    end = str(item.get("EndDate") or "")
+    if not end or end == _PERMANENT_END:
+        return False
+    if item_is_expired(item, now):
+        return False
+    try:
+        from datetime import datetime
+
+        dt = datetime.strptime(end, "%Y%m%d%H%M%S")
+        base = datetime.now() if now is None else datetime.strptime(now, "%Y%m%d%H%M%S")
+        return 0 <= (dt - base).total_seconds() <= days * 86400
+    except Exception:
+        return False
 
 
 def item_can_deposit(item):
@@ -284,6 +306,13 @@ def item_can_deposit(item):
 
 def item_can_withdraw(item):
     return item.get("IsDeposited") == "Y" and not item_is_expired(item)
+
+
+def item_can_delete(item):
+    """ลบได้ = ของไม่ถาวร (ItemStatus ≠ PERMANENT เช่น ของชั่วคราว/หมดอายุ) —
+    ของถาวรห้ามลบเด็ดขาด (ลบแล้วหายถาวร) — ไม่รู้สถานะ = ไม่ให้ลบ (กันพลาด)"""
+    status = str(item.get("ItemStatus") or "").strip()
+    return bool(status) and status != "PERMANENT"
 
 
 def item_in_category(item, category):
@@ -317,6 +346,18 @@ def item_display_name(item):
     ).strip()
 
 
+_STATUS_TH = {"PERMANENT": "ถาวร", "TEMPORARY": "ชั่วคราว"}
+
+
+def _status_th(status):
+    """แปลง ItemStatus เป็นไทยอ่านง่าย — PERMANENT→ถาวร, TEMPORARY→ชั่วคราว
+    (เก็บรหัสเดิมต่อท้ายด้วย กันข้อมูลหาย) สถานะอื่นคืนแบบดิบ"""
+    status = str(status or "").strip()
+    if status in _STATUS_TH:
+        return f"{_STATUS_TH[status]} ({status})"
+    return status or "-"
+
+
 def _fmt_end(end):
     """แปลง EndDate (yyyyMMddHHmmss) เป็นข้อความที่อ่านง่าย — ถาวร/ว่างเปล่า → 'ถาวร'"""
     end = str(end or "").strip()
@@ -330,14 +371,44 @@ def _fmt_end(end):
     return end
 
 
+def _fmt_remaining(item, now=None):
+    """เวลาที่เหลือก่อนหมดอายุของไอเทม — ถาวร / หมดอายุแล้ว / เหลืออีก X วัน (หรือ ชม.)"""
+    end = str(item.get("EndDate") or "")
+    if not end or end == _PERMANENT_END:
+        return "ถาวร"
+    if item_is_expired(item, now):
+        return "หมดอายุแล้ว"
+    try:
+        from datetime import datetime
+
+        dt = datetime.strptime(end, "%Y%m%d%H%M%S")
+        base = datetime.now() if now is None else datetime.strptime(now, "%Y%m%d%H%M%S")
+        secs = (dt - base).total_seconds()
+        # ceil (กัน drift ไมโครวินาที) + int (กัน '5.0') — กัน 1 วันพอดี (86399.99 วิ)
+        # ตกไปฝั่งชั่วโมงด้วย epsilon 1 นาที
+        if secs >= 86400 - 60:
+            return f"เหลืออีก {int(-(-secs // 86400))} วัน"
+        return f"เหลืออีก {int(max(1, -(-secs // 3600)))} ชม."
+    except Exception:
+        return ""
+
+
 def item_summary_line(item):
-    """บรรทัดเดียวสั้นๆ สำหรับ Listbox — ฝาก/เบิกได้ไหม + ชื่อ + วันหมดอายุ"""
+    """บรรทัดเดียวสั้นๆ สำหรับ Listbox — ฝาก/เบิกได้ไหม + ชื่อ + วันหมดอายุ
+    (⏳ หน้าชื่อ = หมดอายุแล้ว ฝาก/เบิกไม่ได้)"""
     name = item_display_name(item)
     src = "ARMS" if item.get("SourceTable") == "ARMS" else "ITEM"
     dep = "ฝากได้" if item_can_deposit(item) else "-"
     wd = "เบิกได้" if item_can_withdraw(item) else "-"
     end = _fmt_end(item.get("EndDate"))
-    return f"[{dep:^5}/{wd:^5}] ({src}) {name}  |  สิ้นสุด {end}"
+    mark = "·"
+    if item_is_expired(item):
+        mark = "⏳"
+    elif item_can_delete(item):
+        mark = "🗑"  # ลบได้ (ของไม่ถาวร)
+    elif item_expires_within_days(item):
+        mark = "◷"  # ใกล้หมดอายุ — ยังใช้ได้แต่จะหายเร็ว
+    return f"[{dep:^5}/{wd:^5}] {mark} ({src}) {name}  |  สิ้นสุด {end}"
 
 
 def item_detail_lines(item):
@@ -352,11 +423,12 @@ def item_detail_lines(item):
     out.append(("รหัส (ItemSerial)", str(item.get("ItemSerial") or "-")))
     out.append(("ตารางต้นทาง", "ARMS (อาวุธ)" if item.get("SourceTable") == "ARMS" else str(item.get("SourceTable") or "-")))
     out.append(("รหัสเว็บ (ItemCode)", str(item.get("ItemCode") or "-")))
-    out.append(("สถานะ (ItemStatus)", str(item.get("ItemStatus") or "-")))
+    out.append(("สถานะ (ItemStatus)", _status_th(item.get("ItemStatus"))))
     out.append(("ฝากไว้แล้ว?", "ใช่ (IsDeposited=Y)" if item.get("IsDeposited") == "Y" else "ยังอยู่ที่ตัว"))
-    out.append(("หมดอายุ", _fmt_end(item.get("EndDate"))))
+    out.append(("หมดอายุ / เหลือ", f"{_fmt_end(item.get('EndDate'))} ({_fmt_remaining(item)})"))
     out.append(("ฝากได้ไหม", "ได้" if item_can_deposit(item) else "ไม่ได้"))
     out.append(("เบิกได้ไหม", "ได้" if item_can_withdraw(item) else "ไม่ได้"))
+    out.append(("ลบได้ไหม", "ได้ (ของไม่ถาวร)" if item_can_delete(item) else "ไม่ได้ (ของถาวร)"))
     # fields ที่เหลือแบบดิบ (key อื่นๆ ที่เว็บส่งมา — กันข้อมูลหาย)
     known = {
         "CleanItemName", "ItemName", "ItemCode", "ItemSerial", "SourceTable",
@@ -373,10 +445,10 @@ def item_detail_lines(item):
 
 
 def item_operation(session, page_url, operation, item, username=""):
-    """ฝาก/เบิกไอเทม 1 รายการ — คืน (ok, message)
+    """ฝาก/เบิก/ลบไอเทม 1 รายการ — คืน (ok, message)
 
-    operation: 'DEPOSIT' หรือ 'WITHDRAW' (หน้าเว็บไม่รองรับ DELETE ในโหมดนี้)
-    ⚠ ไม่ retry — POST เปลี่ยนสถานะไอเทมจริง ห้ามส่งซ้ำมั่วๆ
+    operation: 'DEPOSIT' / 'WITHDRAW' / 'DELETE' (WebMethod เดียวกันทั้ง 3)
+    ⚠ ไม่ retry — POST เปลี่ยนสถานะไอเทมจริง (ลบ = หายถาวร) ห้ามส่งซ้ำมั่วๆ
     """
     item_type = "A" if item.get("SourceTable") == "ARMS" else "I"
     ref_id = item.get("ItemSerial")
@@ -394,14 +466,17 @@ def item_operation(session, page_url, operation, item, username=""):
 __all__ = [
     "INVENTORY_URL",
     "INV_CATEGORIES",
+    "INV_NEAR_EXPIRE_DAYS",
     "fetch_all_items",
     "fetch_items_page",
     "inv_category_label",
     "inv_category_options",
+    "item_can_delete",
     "item_can_deposit",
     "item_can_withdraw",
     "item_detail_lines",
     "item_display_name",
+    "item_expires_within_days",
     "item_in_category",
     "item_is_expired",
     "item_operation",

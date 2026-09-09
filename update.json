@@ -1,7 +1,7 @@
 {
-  "version": "1.3.39",
-  "url": "https://github.com/haremking7025/sfbot-control/releases/download/v1.3.39/SFKeyword_v1.3.39.exe",
-  "sha256": "3607014f84a0232f1d27ee1edf2befdacd21e9d0dcc0c77671040bc0ab0afcdc",
-  "size": 28165100,
-  "notes": "SFKeyword v1.3.39 — ปุ่มหมวดฝาก/เบิกเลือกลึกถึงหมวดย่อย + พร้อมกันสูงสุด 200 ไอดี + หน้าต่างมุมมน + เช็คบั๊ก/เดดโค้ด/เกลาคำ 10 รอบ"
+  "version": "1.3.40",
+  "url": "https://github.com/haremking7025/sfbot-control/releases/download/v1.3.40/SFKeyword_v1.3.40.exe",
+  "sha256": "bdb376cab12cade6e7fa0407777e6f654b4cac62187488a60f0b5235a08e9abe",
+  "size": 28176952,
+  "notes": "SFKeyword v1.3.40 — หน้าต่างดู/เลือกไอเทม: แถวปุ่ม 2 แถว (หลัก+ลัด) + หัวแท็บฝาก/เบิกสะอาด + ยืนยันล้างบัญชี + กันล้างตอนรัน + เช็คบั๊ก/เดดโค้ด/ความเร็ว 20 รอบ"
 }

@@ -16,6 +16,7 @@ from ..core.exceptions import LoginLockedError, SessionExpiredError
 from ..core.http_flow import clear_cookies_http
 from ..core.inventory_flow import (
     fetch_all_items,
+    item_can_delete,
     item_can_deposit,
     item_can_withdraw,
     item_display_name,
@@ -30,7 +31,17 @@ _logger = logging.getLogger(__name__)
 _MODE_META = {
     "DEPOSIT": ("ฝาก", "📥"),
     "WITHDRAW": ("เบิก", "📤"),
+    "DELETE": ("ลบ", "🗑"),
 }
+
+
+def _inv_eligible(item, mode):
+    """ไอเทมตรงเงื่อนไขของโหมดนั้นไหม — DEPOSIT/WITHDRAW/DELETE"""
+    if mode == "DEPOSIT":
+        return item_can_deposit(item)
+    if mode == "WITHDRAW":
+        return item_can_withdraw(item)
+    return item_can_delete(item)
 
 # สถานะจบต่อบัญชี (ใช้รวมผล popup/log)
 _ST_OK = "ok"            # ทำครบทุกชิ้น (หรือไม่มีอะไรให้ทำ = none แยกต่างหาก)
@@ -55,6 +66,38 @@ class AppInventoryEngineMixin:
 
     def _inv_withdraw_all(self):
         self._inv_run("WITHDRAW")
+
+    def _inv_delete_all(self):
+        """ลบของไม่ถาวร (ชั่วคราว/หมดอายุ) ทั้งหมดของทุกบัญชี — ยืนยันก่อนเสมอ
+        เพราะลบแล้วหายถาวร (ของถาวรไม่ถูกแตะ)"""
+        if getattr(self, "_inv_busy", False):
+            return
+        if getattr(self, "_inv_picker_active", False):
+            self._alert_warning(
+                "ปิดหน้าต่างดู/เลือกไอเทมก่อน",
+                "ปิดหน้าต่าง '👁 ดู/เลือกไอเทม' ให้เรียบร้อยก่อนกดลบทั้งหมด",
+            )
+            return
+        accs = self._inv_valid_accounts()
+        if not accs:
+            self._alert_warning(
+                "ไม่มีบัญชี",
+                "กรุณาเพิ่มบัญชี (แท็บฝาก/เบิก) ก่อนกดลบทั้งหมด",
+            )
+            return
+        if not self._confirm_dialog(
+            "ลบไอเทมทั้งหมด",
+            lines=[
+                f"ต้องการลบของไม่ถาวร (ชั่วคราว/หมดอายุ) ทั้งหมดของ "
+                f"{len(accs)} บัญชี หรือไม่?",
+                "⚠ ลบแล้วหายถาวร ไม่สามารถกู้คืนได้! (ของถาวรไม่ถูกลบ)",
+            ],
+            confirm_text=f"ลบทั้งหมด {len(accs)} บัญชี",
+            cancel_text="ยกเลิก",
+            danger=True,
+        ):
+            return
+        self._inv_run("DELETE")
 
     def _inv_run(self, mode):
         """เริ่มรอบฝาก/เบิกทั้งหมด (ทุกไอเทมที่กดได้ของทุกบัญชี)"""
@@ -135,6 +178,9 @@ class AppInventoryEngineMixin:
 
     def _inv_withdraw_chosen(self, chosen):
         self._inv_run_chosen_from_dialog("WITHDRAW", chosen)
+
+    def _inv_delete_chosen(self, chosen):
+        self._inv_run_chosen_from_dialog("DELETE", chosen)
 
     def _inv_run_chosen_from_dialog(self, mode, chosen):
         """รันฝาก/เบิกเฉพาะรายการที่เลือก จากหน้าต่าง 'ดู/เลือกไอเทม'
@@ -378,13 +424,18 @@ class AppInventoryEngineMixin:
         # เลือกเฉพาะ (chosen=[(serial,name),...]): เอาเฉพาะ ItemSerial ที่ผู้ใช้เลือก
         # จากหน้าต่าง 'ดู/เลือกไอเทม' — ชิ้นที่เลือกไว้แต่หาไม่เจอ/สถานะเปลี่ยนไปแล้ว
         # จะนับเป็น "ไม่สำเร็จ" ทีละตัว (ผู้ใช้เห็นว่าทำไมถึงไม่ได้ครบ)
-        if mode == "DEPOSIT":
-            elig = [i for i in items if item_can_deposit(i)]
-        else:
-            elig = [i for i in items if item_can_withdraw(i)]
+        elig = [i for i in items if _inv_eligible(i, mode)]
         # กรองตามหมวดที่เลือกจากปุ่มหลัก (ทั้งหมด = ไม่กรอง)
         if category and category != "ทั้งหมด":
             elig = [i for i in elig if item_in_category(i, category)]
+        # โหมดลบ: นับของถาวรในหมวดที่เลือก (ข้าม — ไม่ถูกแตะ) ไว้สรุปท้ายรอบ
+        # (นับเฉพาะในหมวด กันตัวเลขเกินจริงตอนกรองหมวด)
+        skipped_perm = 0
+        if mode == "DELETE":
+            scope = items
+            if category and category != "ทั้งหมด":
+                scope = [i for i in items if item_in_category(i, category)]
+            skipped_perm = sum(1 for i in scope if not item_can_delete(i))
         if chosen is None:
             targets = elig
             missed = []
@@ -394,12 +445,13 @@ class AppInventoryEngineMixin:
             missed = []
             for _serial, _name in chosen:
                 it = by_serial.get(str(_serial))
-                if it is not None and (
-                    item_can_deposit(it) if mode == "DEPOSIT" else item_can_withdraw(it)
-                ):
+                if it is not None and _inv_eligible(it, mode):
                     targets.append(it)
                 else:
-                    missed.append((_name or str(_serial), "ไม่พบ/สถานะเปลี่ยนไปแล้ว"))
+                    reason = "ไม่พบ/สถานะเปลี่ยนไปแล้ว"
+                    if mode == "DELETE" and it is not None:
+                        reason = "ของถาวร (ลบไม่ได้)"
+                    missed.append((_name or str(_serial), reason))
 
         if not targets:
             if missed:
@@ -440,9 +492,17 @@ class AppInventoryEngineMixin:
         # สรุปขั้นตอนแบบไม่รก: บอกได้กี่ชิ้นจากทั้งหมด + เหตุผลที่เหลือไม่ได้ทำ
         if chosen is None and len(items) != len(targets):
             skip = len(items) - len(targets)
+            if mode == "DEPOSIT":
+                skip_reason = "ฝากไว้แล้ว/หมดอายุ/ไม่อยู่ที่ตัว"
+            elif mode == "WITHDRAW":
+                skip_reason = "ยังอยู่ที่ตัว/หมดอายุ/ถาวร"
+            elif category and category != "ทั้งหมด":
+                skip_reason = "ของถาวร/นอกหมวด"
+            else:
+                skip_reason = "ของถาวร (ลบไม่ได้)"
             self._inv_log(
                 f"   ℹ [{username}] {verb}ได้ {len(targets)} จาก {len(items)} รายการ"
-                f" (ข้าม {skip} — ฝากไว้แล้ว/หมดอายุ/ไม่อยู่ที่ตัว)"
+                f" (ข้าม {skip} — {skip_reason})"
             )
         elif chosen is not None:
             self._inv_log(
@@ -543,6 +603,7 @@ class AppInventoryEngineMixin:
         return {
             "u": username, "state": state, "msg": "",
             "attempted": n, "done": done, "item_fail": item_fail,
+            "skipped": skipped_perm,
         }
 
     # ------------------------------------------------------------------
@@ -553,6 +614,15 @@ class AppInventoryEngineMixin:
         if not results:
             self.log(f"{_icon} ไม่มีบัญชีไหนทำงาน (ถูกยกเลิกก่อนเริ่ม)")
             return
+        # สถานะไอเทมเปลี่ยนหลังฝาก/เบิก — ล้าง cache ของหน้าต่างดู/เลือกไอเทม
+        # (ถ้ารวม mixin UI อยู่) ให้รอบหน้าดึงสดเสมอ
+        _drop = getattr(self, "_inv_pk_cache_drop", None)
+        if _drop is not None:
+            for r in results:
+                try:
+                    _drop(r["u"])
+                except Exception:
+                    pass
         ok_ids = [r["u"] for r in results if r["state"] == _ST_OK]
         # เก็บ dict เต็มของบัญชีที่ "ทำได้บางส่วน" ไว้ (ต้องใช้ r['done']/attempted
         # ตอนพิมพ์บรรทัดสรุป — เก็บแค่ username เหมือนหมวดอื่นไม่ได้)
@@ -583,6 +653,15 @@ class AppInventoryEngineMixin:
                 f"── รวม{verb}  {total_done}/{total_attempted} รายการ"
                 + (f" (ไม่สำเร็จ {total_fail})" if total_fail else "")
             )
+        # โหมดลบ: สรุปชัดว่า ลบได้กี่ชิ้น + ข้ามของถาวรกี่ชิ้น
+        if mode == "DELETE":
+            total_skipped = sum(r.get("skipped", 0) for r in results)
+            if total_done or total_skipped or total_fail:
+                self.log(
+                    f"── สรุปลบทั้งหมด  ลบได้ {total_done} ชิ้น"
+                    + (f" (ข้ามของถาวร {total_skipped})" if total_skipped else "")
+                    + (f"  |  ไม่สำเร็จ {total_fail}" if total_fail else "")
+                )
         self.log(f"── TOTAL  {mm:02d}:{ss:02d}")
 
         fail_names = []
@@ -600,7 +679,15 @@ class AppInventoryEngineMixin:
             line1 += f" · ล็อกอินไม่ผ่าน {len(login_ids)}"
         if none_ids:
             line1 += f" · ไม่มีไอเทม {len(none_ids)}"
-        lines = [line1]
+        if mode == "DELETE":
+            # การ์ดสรุปลบ กระชับ: ลบได้ X · ข้ามถาวร Y · ไม่สำเร็จ Z
+            total_skipped = sum(r.get("skipped", 0) for r in results)
+            lines = [
+                f"🗑 ลบได้ {total_done}  ·  ข้ามถาวร {total_skipped}  ·  "
+                f"ไม่สำเร็จ {total_fail}"
+            ]
+        else:
+            lines = [line1]
         if total_attempted:
             lines.append(
                 f"รวมที่{verb}: {total_done}/{total_attempted} รายการ"

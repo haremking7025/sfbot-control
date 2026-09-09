@@ -29,15 +29,22 @@ from ..core.constants import (
     STATUS_OK,
     STATUS_WARN,
 )
-from ..core.deps import os, tk, ttk
+from ..core.deps import os, time, tk, ttk
+
+# วินาที — กันดึงไอเทมซ้ำทุกครั้งที่ปิด-เปิดหน้าต่างดู/เลือกไอเทม (กด 🔄 เพื่อสด)
+_INV_PK_CACHE_TTL = 300
 from ..core.inventory_flow import (
     INV_CATEGORIES,
+    INV_NEAR_EXPIRE_DAYS,
     inv_category_options,
+    item_can_delete,
     item_can_deposit,
     item_can_withdraw,
     item_detail_lines,
     item_display_name,
+    item_expires_within_days,
     item_in_category,
+    item_is_expired,
     item_summary_line,
 )
 from ..core.rows import AccountRow
@@ -99,32 +106,18 @@ class AppInventoryUIMixin:
             f.pack(fill="x", padx=14, pady=pady)
             return f
 
-        card_top = _section("📦  ฝาก / เบิก (TDP Inventory บน member.sf.in.th)")
+        card_top = _section("📦  ฝาก/เบิก")
         r_top = _row(card_top, (8, 4))
         self._inv_status_lbl = tk.Label(
             r_top,
-            text="พร้อมทำงาน — ล็อกอินเหมือนรอบรับคีย์ แล้วไปที่หน้า Inventory",
+            text="พร้อมทำงาน",
             font=("Leelawadee UI", 10),
             bg=BG2,
             fg=FG2,
         )
         self._inv_status_lbl.pack(side="left")
 
-        self._inv_btn_dep = tk.Button(
-            r_top,
-            text="📥 ฝากทั้งหมด",
-            font=("Leelawadee UI", 10, "bold"),
-            bg=GREEN,
-            fg="white",
-            relief="flat",
-            cursor="hand2",
-            command=self._inv_deposit_all,
-            padx=12,
-            pady=3,
-        )
-        self._inv_btn_dep.pack(side="right", padx=(8, 0))
-        _bind_button_hover(self._inv_btn_dep, GREEN)
-
+        # ── ตัวเลือก: หมวด (หลัก) · พร้อมกัน ──
         r_cat = tk.Frame(r_top, bg=BG2)
         r_cat.pack(side="right", padx=(8, 0))
         tk.Label(
@@ -144,21 +137,6 @@ class AppInventoryUIMixin:
         _bind_combobox_wheel_local(_cat)
         self._inv_cat_combo = _cat
 
-        self._inv_btn_wd = tk.Button(
-            r_top,
-            text="📤 เบิกทั้งหมด",
-            font=("Leelawadee UI", 10, "bold"),
-            bg=STATUS_WARN,
-            fg="#1A1A1A",
-            relief="flat",
-            cursor="hand2",
-            command=self._inv_withdraw_all,
-            padx=12,
-            pady=3,
-        )
-        self._inv_btn_wd.pack(side="right", padx=(8, 0))
-        _bind_button_hover(self._inv_btn_wd, STATUS_WARN)
-
         r_conc = tk.Frame(r_top, bg=BG2)
         r_conc.pack(side="right", padx=(8, 0))
         tk.Label(
@@ -174,7 +152,54 @@ class AppInventoryUIMixin:
             width=4,
         ).pack(side="left", padx=(6, 0))
 
-        card_acc = _section("👤  บัญชีที่ใช้ฝาก/เบิก (แยกจากระบบรันหลัก)")
+        # ── ปุ่มหลัก: ฝาก · เบิก ──
+        self._inv_btn_dep = tk.Button(
+            r_top,
+            text="📥 ฝากทั้งหมด",
+            font=("Leelawadee UI", 10, "bold"),
+            bg=GREEN,
+            fg="white",
+            relief="flat",
+            cursor="hand2",
+            command=self._inv_deposit_all,
+            padx=12,
+            pady=3,
+        )
+        self._inv_btn_dep.pack(side="right", padx=(8, 0))
+        _bind_button_hover(self._inv_btn_dep, GREEN)
+
+        self._inv_btn_wd = tk.Button(
+            r_top,
+            text="📤 เบิกทั้งหมด",
+            font=("Leelawadee UI", 10, "bold"),
+            bg=STATUS_WARN,
+            fg="#1A1A1A",
+            relief="flat",
+            cursor="hand2",
+            command=self._inv_withdraw_all,
+            padx=12,
+            pady=3,
+        )
+        self._inv_btn_wd.pack(side="right", padx=(8, 0))
+        _bind_button_hover(self._inv_btn_wd, STATUS_WARN)
+
+        # ── ปุ่มรอง: ลบทั้งหมด (อันตราย วางท้ายสุด กันกดพลาด) ──
+        self._inv_btn_del = tk.Button(
+            r_top,
+            text="🗑 ลบทั้งหมด",
+            font=("Leelawadee UI", 10, "bold"),
+            bg=DANGER,
+            fg="white",
+            relief="flat",
+            cursor="hand2",
+            command=self._inv_delete_all,
+            padx=12,
+            pady=3,
+        )
+        self._inv_btn_del.pack(side="right", padx=(8, 0))
+        _bind_button_hover(self._inv_btn_del, DANGER)
+
+        card_acc = _section("👤  บัญชี")
         r_acc_hdr = _row(card_acc, (8, 2))
         self._inv_count_lbl = tk.Label(
             r_acc_hdr, text="[0 ไอดี]", font=("Leelawadee UI", 10), bg=BG2, fg=FG2
@@ -237,6 +262,7 @@ class AppInventoryUIMixin:
         )
         btn_clear.pack(side="right")
         _bind_button_hover(btn_clear, BG2)
+        self._inv_btn_clear = btn_clear
         btn_load = tk.Button(
             r_acc_hdr,
             text="โหลด .txt",
@@ -291,10 +317,7 @@ class AppInventoryUIMixin:
         self._inv_acc_frame.pack(fill="x", padx=14, pady=(2, 8))
         tk.Label(
             inner,
-            text=(
-                "หมายเหตุ: ฝาก = เก็บไอเทมถาวรที่ยังอยู่ที่ตัวเข้าระบบฝาก "
-                "· เบิก = ดึงไอเทมที่ฝากไว้ออกมา — รอบเดียวจะล็อกอินบัญชีแล้วทำตามปุ่มที่กด"
-            ),
+            text="ฝาก = เก็บไอเทม · เบิก = ดึงไอเทมที่ฝากไว้ออกมา",
             font=("Leelawadee UI", 9),
             bg=BG,
             fg=FG2,
@@ -493,7 +516,27 @@ class AppInventoryUIMixin:
         )
 
     def _inv_clear_acc(self, silent=False):
+        if getattr(self, "_inv_busy", False):
+            self._alert_warning(
+                "กำลังทำงาน", "รอรอบฝาก/เบิกปัจจุบันให้เสร็จก่อนล้างบัญชี"
+            )
+            return
         n = len(self._inv_rows)
+        if n and not silent and not self._confirm_dialog(
+            "ยืนยันการล้างบัญชีทั้งหมด",
+            lines=[
+                f"ต้องการลบบัญชีฝาก/เบิกทั้งหมด {n} บัญชี (รวมรหัสผ่าน) ออกจากตารางหรือไม่?",
+                "",
+                "หมายเหตุ: cookie ของไอดีที่ล็อกอินสำเร็จแล้วยังถูกเก็บไว้ — "
+                "ใส่ไอดีเดิมกลับมาในครั้งหน้าจะล็อกอินผ่านคุกกี้ได้ทันที "
+                "ถ้าต้องการลบคุกกี้จริงให้ใช้ปุ่ม '🍪 ล้าง Cookie ทั้งหมด' ที่แดชบอร์ด",
+            ],
+            warning="⚠ การกระทำนี้ย้อนกลับไม่ได้!",
+            confirm_text="ลบทั้งหมด",
+            cancel_text="ยกเลิก",
+            danger=True,
+        ):
+            return
         for r in self._inv_rows:
             r["frm"].destroy()
         self._inv_rows.clear()
@@ -658,7 +701,7 @@ class AppInventoryUIMixin:
         _filt = ttk.Combobox(
             top_row,
             textvariable=self._inv_pk_filter_var,
-            values=["ทั้งหมด", "เฉพาะที่ฝากได้", "เฉพาะที่เบิกได้"],
+            values=["ทั้งหมด"],
             state="readonly",
             style="Dark.TCombobox",
             font=("Leelawadee UI", 10),
@@ -667,6 +710,7 @@ class AppInventoryUIMixin:
         _filt.pack(side="left", padx=(4, 12))
         _bind_combobox_wheel_local(_filt)
         _filt.bind("<<ComboboxSelected>>", self._inv_pk_render)
+        self._inv_pk_filter_combo = _filt
 
         tk.Label(
             top_row, text="หมวด", font=("Leelawadee UI", 10), bg=BG, fg=FG2
@@ -704,6 +748,28 @@ class AppInventoryUIMixin:
         )
         _search.pack(side="left", padx=(4, 0))
         _bind_entry_context_menu(_search)
+        self._inv_pk_search_placeholder = "ค้นหาชื่อ/รหัสไอเทม..."
+        self._inv_pk_search_var.set(self._inv_pk_search_placeholder)
+        _search.configure(fg="#666")
+
+        def _on_search_focus_in(_e=None):
+            try:
+                if self._inv_pk_search_var.get() == self._inv_pk_search_placeholder:
+                    self._inv_pk_search_var.set("")
+                    _search.configure(fg=FG)
+            except Exception:
+                pass
+
+        def _on_search_focus_out(_e=None):
+            try:
+                if not self._inv_pk_search_var.get().strip():
+                    self._inv_pk_search_var.set(self._inv_pk_search_placeholder)
+                    _search.configure(fg="#666")
+            except Exception:
+                pass
+
+        _search.bind("<FocusIn>", _on_search_focus_in)
+        _search.bind("<FocusOut>", _on_search_focus_out)
         self._inv_pk_search_var.trace_add("write", self._inv_pk_render)
 
         info_lbl = tk.Label(
@@ -734,6 +800,18 @@ class AppInventoryUIMixin:
         self._inv_pk_listbox = lb
         lb.bind("<<ListboxSelect>>", self._inv_pk_on_select)
 
+        def _select_all_visible(_e=None):
+            """Ctrl+A — เลือกไอเทมทั้งหมดในรายการที่แสดงอยู่ (ตามตัวกรอง/ค้นหา)"""
+            try:
+                lb.selection_set(0, "end")
+                self._inv_pk_update_sel()
+                return "break"
+            except Exception:
+                return None
+
+        lb.bind("<Control-a>", _select_all_visible)
+        lb.bind("<Control-A>", _select_all_visible)
+
         # ── แผงรายละเอียดไอเทมที่เลือก ──
         details_frame = tk.Frame(win, bg=BG2)
         details_frame.pack(fill="x", padx=14, pady=(6, 0))
@@ -761,21 +839,25 @@ class AppInventoryUIMixin:
         )
         self._inv_pk_detail_lbl.pack(fill="both", expand=False, padx=(8, 0), pady=(2, 8))
 
-        # ── แถวล่าง: ปุ่มฝาก/เบิกที่เลือก ──
+        # ── แถวที่ 1: จำนวนที่เลือก + ปุ่มฝาก/เบิก/ลบ/ดึงใหม่ (หลัก) ──
         btn_row = tk.Frame(win, bg=BG)
-        btn_row.pack(fill="x", padx=14, pady=8)
+        btn_row.pack(fill="x", padx=14, pady=(8, 2))
         sel_lbl = tk.Label(
-            btn_row, text="เลือก 0 ชิ้น", font=("Leelawadee UI", 9), bg=BG, fg=FG2
+            btn_row, text="เลือก 0 ชิ้น", font=("Leelawadee UI", 9, "bold"), bg=BG, fg=FG2
         )
         sel_lbl.pack(side="left", padx=(0, 8))
         self._inv_pk_sel_lbl = sel_lbl
 
         def _select_all_in_mode(mode):
-            """เลือกทั้งหมดในรายการที่แสดงอยู่ (ตามตัวกรอง/ค้นหาปัจจุบัน) ที่ฝาก/เบิกได้
+            """เลือกทั้งหมดในรายการที่แสดงอยู่ (ตามตัวกรอง/ค้นหาปัจจุบัน) ที่ฝาก/เบิก/ลบได้
             ตามโหมด — กันต้องไล่กดทีละชิ้นตอนมีไอเทมเยอะ"""
             try:
                 view = self._inv_pk_current_view()
-                check = item_can_deposit if mode == "DEPOSIT" else item_can_withdraw
+                check = {
+                    "DEPOSIT": item_can_deposit,
+                    "WITHDRAW": item_can_withdraw,
+                    "DELETE": item_can_delete,
+                }.get(mode, lambda _i: False)
                 idxs = [i for i, it in enumerate(view) if check(it)]
                 lb = self._inv_pk_listbox
                 lb.selection_clear(0, "end")
@@ -785,53 +867,26 @@ class AppInventoryUIMixin:
             except Exception:
                 pass
 
-        btn_sel_dep = tk.Button(
-            btn_row,
-            text="☑ เลือกฝากได้ทั้งหมด",
-            font=("Leelawadee UI", 9),
-            bg=BG2,
-            fg=GREEN,
-            relief="flat",
-            cursor="hand2",
-            command=lambda: _select_all_in_mode("DEPOSIT"),
-            padx=8,
-            pady=2,
-        )
-        btn_sel_dep.pack(side="left", padx=(0, 4))
-        _bind_button_hover(btn_sel_dep, BG2)
-
-        btn_sel_wd = tk.Button(
-            btn_row,
-            text="☑ เลือกเบิกได้ทั้งหมด",
-            font=("Leelawadee UI", 9),
-            bg=BG2,
-            fg=STATUS_WARN,
-            relief="flat",
-            cursor="hand2",
-            command=lambda: _select_all_in_mode("WITHDRAW"),
-            padx=8,
-            pady=2,
-        )
-        btn_sel_wd.pack(side="left", padx=(0, 4))
-        _bind_button_hover(btn_sel_wd, BG2)
-
         def _run_chosen(mode):
             items = self._inv_pk_selected_items()
             if not items:
                 self._alert_warning(
-                    "ยังไม่ได้เลือก", "เลือกไอเทมในรายการก่อนกดฝาก/เบิกที่เลือก"
+                    "ยังไม่ได้เลือก", "เลือกไอเทมในรายการก่อนกดฝาก/เบิก/ลบที่เลือก"
                 )
                 return
-            verb = "ฝาก" if mode == "DEPOSIT" else "เบิก"
+            verb = {"DEPOSIT": "ฝาก", "WITHDRAW": "เบิก", "DELETE": "ลบ"}.get(
+                mode, mode
+            )
             n = len(items)
+            lines = [f"ต้องการ{verb}ไอเทมที่เลือก {n} ชิ้นของ {username} หรือไม่?"]
+            if mode == "DELETE":
+                lines.append("⚠ ลบแล้วหายถาวร ไม่สามารถกู้คืนได้!")
             if not self._confirm_dialog(
                 f"{verb}ไอเทมที่เลือก",
-                lines=[
-                    f"ต้องการ{verb}ไอเทมที่เลือก {n} ชิ้นของ {username} หรือไม่?",
-                ],
+                lines=lines,
                 confirm_text=f"{verb} {n} ชิ้น",
                 cancel_text="ยกเลิก",
-                danger=False,
+                danger=(mode == "DELETE"),
             ):
                 return
             chosen = [(str(i.get("ItemSerial") or ""), item_display_name(i)) for i in items]
@@ -842,6 +897,7 @@ class AppInventoryUIMixin:
                     f"ไอเทมที่เลือกไม่มี ItemSerial — ไม่สามารถ{verb}ได้",
                 )
                 return
+            self._inv_pk_save_filters()
             self._inv_picker_win = None
             try:
                 if win.winfo_exists():
@@ -852,14 +908,20 @@ class AppInventoryUIMixin:
                 f"👁 เลือกไอเทม {n} ชิ้นของ {username} เพื่อ{verb} "
                 f"(จากหน้าต่างดู/เลือกไอเทม)"
             )
+            # ฝาก/เบิก/ลบแล้วสถานะเปลี่ยน — ข้อมูลเก่าใช้ไม่ได้ ให้ดึงสดรอบหน้า
+            self._inv_pk_cache_drop(username)
             # ปลดล็อกจากโหมดดู แล้วส่งต่อให้ engine รันเฉพาะชิ้นที่เลือก
             self._inv_set_picker_lock(False)
             if mode == "DEPOSIT":
                 self._inv_deposit_chosen(
                     [{"user": username, "pwd": password, "type": ltype, "items": chosen}]
                 )
-            else:
+            elif mode == "WITHDRAW":
                 self._inv_withdraw_chosen(
+                    [{"user": username, "pwd": password, "type": ltype, "items": chosen}]
+                )
+            else:
+                self._inv_delete_chosen(
                     [{"user": username, "pwd": password, "type": ltype, "items": chosen}]
                 )
 
@@ -893,6 +955,23 @@ class AppInventoryUIMixin:
         btn_wd.pack(side="right", padx=(6, 0))
         _bind_button_hover(btn_wd, STATUS_WARN)
 
+        btn_del = tk.Button(
+            btn_row,
+            text="🗑 ลบที่เลือก",
+            font=("Leelawadee UI", 10, "bold"),
+            bg=DANGER,
+            fg="white",
+            relief="flat",
+            cursor="hand2",
+            command=lambda: _run_chosen("DELETE"),
+            padx=10,
+            pady=3,
+            state="disabled",  # เปิดให้กดเมื่อเลือกของลบได้เท่านั้น (กันลบของถาวรพลาด)
+        )
+        btn_del.pack(side="right", padx=(6, 0))
+        _bind_button_hover(btn_del, DANGER)
+        self._inv_pk_del_btn = btn_del
+
         btn_refresh = tk.Button(
             btn_row,
             text="🔄 ดึงใหม่",
@@ -907,9 +986,11 @@ class AppInventoryUIMixin:
         )
         btn_refresh.pack(side="right", padx=(6, 0))
         _bind_button_hover(btn_refresh, BG2)
+        self._inv_pk_refresh_btn = btn_refresh
 
         def _close_win():
-            # ปิดหน้าต่าง + ปลดล็อก (ให้กดฝาก/เบิกทั้งหมดได้อีกครั้ง)
+            # จำตัวกรอง + ปิดหน้าต่าง + ปลดล็อก (ให้กดฝาก/เบิกทั้งหมดได้อีกครั้ง)
+            self._inv_pk_save_filters()
             self._inv_picker_win = None
             try:
                 if win.winfo_exists():
@@ -933,13 +1014,90 @@ class AppInventoryUIMixin:
         btn_close.pack(side="right")
         _bind_button_hover(btn_close, BG2)
 
+        # ── แถวที่ 2: ปุ่มเลือกทั้งหมด (ลัด — ตามตัวกรอง/ค้นหาปัจจุบัน) ──
+        sel_row = tk.Frame(win, bg=BG)
+        sel_row.pack(fill="x", padx=14, pady=(2, 8))
+        tk.Label(
+            sel_row, text="ลัด:", font=("Leelawadee UI", 9), bg=BG, fg=FG2
+        ).pack(side="left", padx=(0, 6))
+
+        btn_sel_dep = tk.Button(
+            sel_row,
+            text="☑ เลือกฝากได้ทั้งหมด",
+            font=("Leelawadee UI", 9),
+            bg=BG2,
+            fg=GREEN,
+            relief="flat",
+            cursor="hand2",
+            command=lambda: _select_all_in_mode("DEPOSIT"),
+            padx=8,
+            pady=2,
+        )
+        btn_sel_dep.pack(side="left", padx=(0, 4))
+        _bind_button_hover(btn_sel_dep, BG2)
+
+        btn_sel_wd = tk.Button(
+            sel_row,
+            text="☑ เลือกเบิกได้ทั้งหมด",
+            font=("Leelawadee UI", 9),
+            bg=BG2,
+            fg=STATUS_WARN,
+            relief="flat",
+            cursor="hand2",
+            command=lambda: _select_all_in_mode("WITHDRAW"),
+            padx=8,
+            pady=2,
+        )
+        btn_sel_wd.pack(side="left", padx=(0, 4))
+        _bind_button_hover(btn_sel_wd, BG2)
+
+        btn_sel_del = tk.Button(
+            sel_row,
+            text="🗑 เลือกลบได้ทั้งหมด",
+            font=("Leelawadee UI", 9),
+            bg=BG2,
+            fg=DANGER,
+            relief="flat",
+            cursor="hand2",
+            command=lambda: _select_all_in_mode("DELETE"),
+            padx=8,
+            pady=2,
+        )
+        btn_sel_del.pack(side="left", padx=(0, 4))
+        _bind_button_hover(btn_sel_del, BG2)
+
         win.protocol("WM_DELETE_WINDOW", _close_win)
         _center_window_on_parent(win, self.root)
 
         self._inv_pk_items = []  # ไอเทมทั้งหมดที่ดึงได้ล่าสุด
         # ล็อกไม่ให้กด ฝาก/เบิกทั้งหมด พร้อมกับเปิดหน้าต่างนี้ (กัน session ชน)
         self._inv_set_picker_lock(True)
-        self._inv_pk_load(username, password, ltype, win)
+        cached = self._inv_pk_cache_get(username)
+        if cached is not None:
+            # ใช้ข้อมูลที่ดึงไว้แล้ว (ปิด-เปิดใหม่ไม่ดึงซ้ำ) — กด 🔄 ดึงใหม่เพื่อสด
+            self._inv_pk_items = cached["items"] or []
+            self._inv_pk_cached_ts = time.strftime(
+                "%H:%M:%S", time.localtime(cached["ts"])
+            )
+            combo = getattr(self, "_inv_pk_cat_combo", None)
+            if combo is not None:
+                try:
+                    combo.configure(values=self._inv_pk_cat_values(self._inv_pk_items))
+                    self._inv_pk_cat_var.set("ทั้งหมด")
+                except Exception:
+                    pass
+            self._inv_pk_fetched_ts = None
+            self._inv_sync_main_categories(self._inv_pk_items)
+            self._inv_pk_render()
+            self._inv_pk_restore_filters()
+            self._inv_pk_render()
+            self._inv_pk_set_refresh_style(True)
+            self.log(
+                f"👁 เปิดดูไอเทม {username} — ใช้ข้อมูลเมื่อ "
+                f"{self._inv_pk_cached_ts} (ไม่ดึงซ้ำ — กด 🔄 ดึงสดเพื่อข้อมูลใหม่)"
+            )
+        else:
+            self._inv_pk_load(username, password, ltype, win)
 
     def _inv_sync_main_categories(self, items):
         """อัปเดตหมวดในปุ่มหลัก (แถวบน) ให้มีหมวดย่อยจริงที่เจอจาก items — เช่น
@@ -959,11 +1117,141 @@ class AppInventoryUIMixin:
     # ------------------------------------------------------------------
     # picker helpers
     # ------------------------------------------------------------------
+    def _inv_pk_cache_get(self, username):
+        try:
+            c = getattr(self, "_inv_pk_cache", {}).get(username)
+            if c and time.time() - c["ts"] < _INV_PK_CACHE_TTL:
+                return c
+        except Exception:
+            pass
+        return None
+
+    def _inv_pk_cache_put(self, username, items):
+        cache = getattr(self, "_inv_pk_cache", None)
+        if cache is None:
+            cache = {}
+            self._inv_pk_cache = cache
+        cache[username] = {"items": items, "ts": time.time()}
+
+    def _inv_pk_cache_drop(self, username=None):
+        """ล้าง cache — หลังฝาก/เบิก (สถานะไอเทมเปลี่ยน) หรือ username เดียว"""
+        cache = getattr(self, "_inv_pk_cache", None)
+        if not cache:
+            return
+        if username is None:
+            cache.clear()
+        else:
+            cache.pop(username, None)
+
+    def _inv_pk_cat_values(self, items):
+        """ตัวเลือกหมวดของหน้าต่างดู/เลือก — เรียงตามจำนวนไอเทมในหมวด มากไปน้อย
+        (เช่น 'อาวุธ (230)' ก่อน 'ของใช้งาน (5)') — หมวดที่ไม่มีไอเทมต่อท้าย
+        (กัน dropdown รก) และ 'ทั้งหมด' อยู่แรกเสมอ"""
+        items = items or []
+        counted = []
+        for c in inv_category_options(items)[1:]:
+            n = sum(1 for i in items if item_in_category(i, c))
+            counted.append((c, n))
+        counted.sort(key=lambda t: (-t[1], t[0]))
+        return ["ทั้งหมด"] + [f"{c} ({n})" if n else c for c, n in counted]
+
+    def _inv_pk_cat_bare(self, v):
+        """ตัด '(n)' ท้ายหมวดออก เหลือชื่อหมวดจริงสำหรับ item_in_category"""
+        v = (v or "").strip()
+        if v.endswith(")") and " (" in v:
+            return v.rsplit(" (", 1)[0]
+        return v
+
+    def _inv_pk_set_refresh_style(self, stale):
+        """ปุ่ม 🔄 ด้านล่าง: ตอนใช้ข้อมูล cache = '🔄 ดึงสด' สีเหลืองเด่น (กดแล้ว
+        ดึงของสด), ตอนข้อมูลสดแล้ว = '🔄 ดึงใหม่' เทาปกติ — rebind hover ให้สีตรง"""
+        b = getattr(self, "_inv_pk_refresh_btn", None)
+        if b is None:
+            return
+        try:
+            if stale:
+                b.configure(text="🔄 ดึงสด", bg=STATUS_WARN, fg="#1A1A1A")
+                _bind_button_hover(b, STATUS_WARN)
+            else:
+                b.configure(text="🔄 ดึงใหม่", bg=BG2, fg=FG2)
+                _bind_button_hover(b, BG2)
+        except Exception:
+            pass
+
+    def _inv_pk_filter_values(self, items):
+        """ตัวเลือก 'แสดง' พร้อมจำนวน — เช่น 'เฉพาะที่ฝากได้ (1500)'"""
+        n_dep = sum(1 for i in items if item_can_deposit(i))
+        n_wd = sum(1 for i in items if item_can_withdraw(i))
+        n_exp = sum(1 for i in items if item_is_expired(i))
+        n_near = sum(1 for i in items if item_expires_within_days(i))
+        n_del = sum(1 for i in items if item_can_delete(i))
+        return [
+            "ทั้งหมด",
+            f"เฉพาะที่ฝากได้ ({n_dep})",
+            f"เฉพาะที่เบิกได้ ({n_wd})",
+            f"เฉพาะที่ลบได้ ({n_del})",
+            f"เฉพาะที่หมดอายุ ({n_exp})",
+            f"ใกล้หมดอายุ (ภายใน {INV_NEAR_EXPIRE_DAYS} วัน) ({n_near})",
+        ]
+
+    def _inv_pk_filter_bare(self, v):
+        """ตัดจำนวน '(n)' ท้ายตัวเลือก 'แสดง' ออก — ตัวเลือกที่ชื่อมีวงเล็บอยู่แล้ว
+        (เช่น 'ใกล้หมดอายุ (ภายใน 3 วัน) (12)') จะตัดเฉพาะ '(12)' ท้ายเท่านั้น"""
+        v = (v or "").strip()
+        head, sep, tail = v.rpartition(" (")
+        if sep and tail.rstrip(")").isdigit():
+            return head
+        return v
+
+    def _inv_pk_save_filters(self):
+        """บันทึกตัวกรอง/หมวด/ค้นหาปัจจุบัน ก่อนปิดหน้าต่าง — เปิดใหม่ใช้ค่าเดิม"""
+        try:
+            self._inv_pk_last_filter = self._inv_pk_filter_bare(
+                self._inv_pk_filter_var.get()
+            )
+            self._inv_pk_last_cat = self._inv_pk_cat_bare(
+                self._inv_pk_cat_var.get()
+            )
+            q = (self._inv_pk_search_var.get() or "").strip()
+            self._inv_pk_last_search = (
+                ""
+                if q == (getattr(self, "_inv_pk_search_placeholder", "") or "")
+                else q
+            )
+        except Exception:
+            pass
+
+    def _inv_pk_restore_filters(self):
+        """เรียกหลังข้อมูลพร้อม (ดึงสด/ใช้ cache) — คืนค่า filter/หมวด/ค้นหาเดิม
+        ถ้ายังมีอยู่ (หมวดที่ไม่มีแล้ว → ปล่อยเป็น 'ทั้งหมด' กันค้างค่าเก่า)"""
+        try:
+            fc = getattr(self, "_inv_pk_filter_combo", None)
+            sf = getattr(self, "_inv_pk_last_filter", "")
+            if fc is not None and sf and sf != "ทั้งหมด":
+                for v in (fc.cget("values") or []):
+                    if self._inv_pk_filter_bare(str(v)) == sf:
+                        self._inv_pk_filter_var.set(v)
+                        break
+            cc = getattr(self, "_inv_pk_cat_combo", None)
+            sc = getattr(self, "_inv_pk_last_cat", "")
+            if cc is not None and sc and sc != "ทั้งหมด":
+                for v in (cc.cget("values") or []):
+                    if self._inv_pk_cat_bare(str(v)) == sc:
+                        self._inv_pk_cat_var.set(v)
+                        break
+            sq = getattr(self, "_inv_pk_last_search", "")
+            if sq:
+                self._inv_pk_search_var.set(sq)
+        except Exception:
+            pass
+
     def _inv_pk_load(self, username, password, ltype, win):
         """ล็อกอิน + ดึงไอเทมสด (worker) แล้ววาดรายการ"""
         win = win or getattr(self, "_inv_picker_win", None)
         if win is None:
             return
+        self._inv_pk_fetched_ts = None
+        self._inv_pk_set_refresh_style(False)
         try:
             info = self._inv_pk_info_lbl
             info.configure(text=f"⏳ กำลังล็อกอิน/ดึงไอเทมของ {username}...", fg=STATUS_WARN)
@@ -985,18 +1273,25 @@ class AppInventoryUIMixin:
                     lb.insert("end", "(โหลดไม่สำเร็จ — กด 🔄 ดึงใหม่)")
                     lb.configure(state="disabled")
                     self._inv_pk_set_details("")
+                    self._inv_pk_set_refresh_style(False)
                     return
                 self._inv_pk_items = items or []
+                self._inv_pk_cached_ts = None  # เพิ่งดึงสด — ไม่ใช่ข้อมูลเก่า
+                self._inv_pk_cache_put(username, self._inv_pk_items)
                 # เติมรายการหมวดหมู่ที่พบ (จาก ParentCategoryName › CategoryName)
                 combo = getattr(self, "_inv_pk_cat_combo", None)
                 if combo is not None:
                     try:
-                        combo.configure(values=inv_category_options(self._inv_pk_items))
+                        combo.configure(values=self._inv_pk_cat_values(self._inv_pk_items))
                         self._inv_pk_cat_var.set("ทั้งหมด")
                     except Exception:
                         pass
+                self._inv_pk_fetched_ts = time.strftime("%H:%M:%S")
                 self._inv_sync_main_categories(self._inv_pk_items)
                 self._inv_pk_render()
+                self._inv_pk_restore_filters()
+                self._inv_pk_render()
+                self._inv_pk_set_refresh_style(False)
             except Exception:
                 pass
 
@@ -1013,20 +1308,39 @@ class AppInventoryUIMixin:
 
     def _inv_pk_current_view(self):
         """ไอเทมที่ควรแสดงตามตัวกรอง/ช่องค้นหาปัจจุบัน"""
-        filt = self._inv_pk_filter_var.get() if hasattr(self, "_inv_pk_filter_var") else "ทั้งหมด"
+        filt = (
+            self._inv_pk_filter_bare(self._inv_pk_filter_var.get())
+            if hasattr(self, "_inv_pk_filter_var")
+            else "ทั้งหมด"
+        )
         cat = (
-            self._inv_pk_cat_var.get() if hasattr(self, "_inv_pk_cat_var") else "ทั้งหมด"
+            self._inv_pk_cat_bare(self._inv_pk_cat_var.get())
+            if hasattr(self, "_inv_pk_cat_var")
+            else "ทั้งหมด"
         )
         q = (
             (self._inv_pk_search_var.get() or "").strip().lower()
             if hasattr(self, "_inv_pk_search_var")
             else ""
         )
+        # ตัวเลือก 'ใกล้หมดอายุ (ภายใน 3 วัน)' — ชื่อเต็ม (bare ตัดเฉพาะจำนวนท้าย)
+        _NEAR_EXPIRE_LABEL = f"ใกล้หมดอายุ (ภายใน {INV_NEAR_EXPIRE_DAYS} วัน)"
+        # placeholder ของช่องค้นหาไม่นับเป็นคำค้น
+        if q == (
+            getattr(self, "_inv_pk_search_placeholder", "") or ""
+        ).lower():
+            q = ""
         out = []
         for it in getattr(self, "_inv_pk_items", []) or []:
             if filt == "เฉพาะที่ฝากได้" and not item_can_deposit(it):
                 continue
             if filt == "เฉพาะที่เบิกได้" and not item_can_withdraw(it):
+                continue
+            if filt == "เฉพาะที่ลบได้" and not item_can_delete(it):
+                continue
+            if filt == "เฉพาะที่หมดอายุ" and not item_is_expired(it):
+                continue
+            if filt == _NEAR_EXPIRE_LABEL and not item_expires_within_days(it):
                 continue
             if cat != "ทั้งหมด" and not item_in_category(it, cat):
                 continue
@@ -1045,8 +1359,14 @@ class AppInventoryUIMixin:
             view = self._inv_pk_current_view()
             lb.configure(state="normal")
             lb.delete(0, "end")
-            for it in view:
+            for i, it in enumerate(view):
                 lb.insert("end", item_summary_line(it))
+                if item_is_expired(it):
+                    lb.itemconfig(i, fg="#555")
+                elif item_can_delete(it):
+                    lb.itemconfig(i, fg="#D98C8C")  # ลบได้ (ของไม่ถาวร) — สีแดงอ่อน
+                elif item_expires_within_days(it):
+                    lb.itemconfig(i, fg="#E8B33D")
             if not view:
                 lb.insert("end", "(ไม่พบไอเทมที่ตรงกับเงื่อนไข)")
                 lb.configure(state="disabled")
@@ -1055,10 +1375,27 @@ class AppInventoryUIMixin:
             all_items = getattr(self, "_inv_pk_items", []) or []
             n_dep = sum(1 for i in all_items if item_can_deposit(i))
             n_wd = sum(1 for i in all_items if item_can_withdraw(i))
+            n_exp = sum(1 for i in all_items if item_is_expired(i))
+            n_near = sum(1 for i in all_items if item_expires_within_days(i))
+            n_del = sum(1 for i in all_items if item_can_delete(i))
+            fc = getattr(self, "_inv_pk_filter_combo", None)
+            if fc is not None:
+                try:
+                    fc.configure(values=self._inv_pk_filter_values(all_items))
+                except Exception:
+                    pass
+            extra = ""
+            ts = getattr(self, "_inv_pk_cached_ts", None)
+            if ts:
+                extra = f"  ·  ⏱ ใช้ข้อมูล {ts}"
+            elif getattr(self, "_inv_pk_fetched_ts", None):
+                extra = f"  ·  ดึงเมื่อ {self._inv_pk_fetched_ts}"
             self._inv_pk_info_lbl.configure(
                 text=(
                     f"รวม {len(all_items)} ชิ้น  |  ฝากได้ {n_dep}  |  เบิกได้ {n_wd}  "
-                    f"|  กำลังแสดง {len(view)} ชิ้น — ลากคลุม/กด Ctrl เพื่อเลือกหลายชิ้น"
+                    f"|  ลบได้ {n_del}  |  หมดอายุ {n_exp}  |  ใกล้หมดอายุ {n_near}  |  "
+                    f"กำลังแสดง {len(view)} ชิ้น{extra} "
+                    "— ลากคลุม / Ctrl เลือกหลาย / Ctrl+A ทั้งหมด"
                 ),
                 fg=FG2,
             )
@@ -1108,13 +1445,27 @@ class AppInventoryUIMixin:
             sel = [i for i in sel if i]
             n_dep = sum(1 for i in sel if item_can_deposit(i))
             n_wd = sum(1 for i in sel if item_can_withdraw(i))
+            n_del = sum(1 for i in sel if item_can_delete(i))
+            extra = f"ฝากได้ {n_dep} · เบิกได้ {n_wd}"
+            if n_del:
+                extra += f" · ลบได้ {n_del}"
             self._inv_pk_sel_lbl.configure(
                 text=(
                     f"เลือก {len(sel)} ชิ้น"
-                    + (f"  (ฝากได้ {n_dep} · เบิกได้ {n_wd})" if sel else "")
+                    + (f"  ({extra})" if sel else "")
                 ),
                 fg=STATUS_OK if sel else FG2,
             )
+            # ปุ่มลบ: แสดงจำนวนที่ลบได้จากการเลือกปัจจุบัน + ปิดเมื่อไม่มีของลบได้
+            db = getattr(self, "_inv_pk_del_btn", None)
+            if db is not None:
+                try:
+                    db.configure(
+                        text=f"🗑 ลบที่เลือก ({n_del})" if n_del else "🗑 ลบที่เลือก",
+                        state="disabled" if not n_del else "normal",
+                    )
+                except Exception:
+                    pass
         except Exception:
             pass
 
@@ -1129,11 +1480,11 @@ class AppInventoryUIMixin:
             pass
 
     def _inv_set_picker_lock(self, active):
-        """ล็อก/ปลดล็อกปุ่มฝาก/เบิกทั้งหมด ขณะเปิดหน้าต่าง '👁 ดู/เลือกไอเทม' — ใช้
-        flag แยก (_inv_picker_active) ไม่อิง _inv_busy เพื่อไม่ให้ปุ่มหลักแสดงข้อความ
-        'กำลัง...' ค้างตอนแค่เปิดดู"""
+        """ล็อก/ปลดล็อกปุ่มฝาก/เบิก/ลบทั้งหมด ขณะเปิดหน้าต่าง '👁 ดู/เลือกไอเทม' —
+        ใช้ flag แยก (_inv_picker_active) ไม่อิง _inv_busy เพื่อไม่ให้ปุ่มหลักแสดง
+        ข้อความ 'กำลัง...' ค้างตอนแค่เปิดดู"""
         self._inv_picker_active = bool(active)
-        for _nm in ("_inv_btn_dep", "_inv_btn_wd"):
+        for _nm in ("_inv_btn_dep", "_inv_btn_wd", "_inv_btn_del"):
             b = getattr(self, _nm, None)
             if b is not None:
                 try:
@@ -1160,6 +1511,12 @@ class AppInventoryUIMixin:
                 state="disabled" if busy else "normal",
                 text=f"⏳ กำลัง{verb}..." if busy else "📤 เบิกทั้งหมด",
             )
+        dl = getattr(self, "_inv_btn_del", None)
+        if dl is not None:
+            dl.configure(
+                state="disabled" if busy else "normal",
+                text=f"⏳ กำลัง{verb}..." if busy else "🗑 ลบทั้งหมด",
+            )
         lbl = getattr(self, "_inv_status_lbl", None)
         if lbl is not None:
             if busy:
@@ -1169,13 +1526,11 @@ class AppInventoryUIMixin:
                 )
             else:
                 lbl.configure(
-                    text=(
-                        "พร้อมทำงาน — ล็อกอินเหมือนรอบรับคีย์ แล้วไปที่หน้า Inventory"
-                    ),
+                    text="พร้อมทำงาน",
                     fg=FG2,
                 )
         if not busy:
-            # แถวที่ยังค้าง "⏳ กำลังทำงาน..." (ไม่ได้เข้า�รอบนี้) → กลับเป็นพร้อม
+            # แถวที่ยังค้าง "⏳ กำลังทำงาน..." (ไม่ได้เข้ารอบนี้) → กลับเป็นพร้อม
             for r in getattr(self, "_inv_rows", []):
                 try:
                     if (r["status_lbl"].cget("text") or "").startswith("⏳"):
@@ -1194,6 +1549,12 @@ class AppInventoryUIMixin:
                 continue
             try:
                 cb.configure(state="disabled" if busy else "readonly")
+            except Exception:
+                pass
+        cl = getattr(self, "_inv_btn_clear", None)
+        if cl is not None:
+            try:
+                cl.configure(state="disabled" if busy else "normal")
             except Exception:
                 pass
 
