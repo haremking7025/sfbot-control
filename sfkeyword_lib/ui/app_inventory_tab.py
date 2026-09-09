@@ -117,56 +117,23 @@ class AppInventoryUIMixin:
         )
         self._inv_status_lbl.pack(side="left")
 
-        # ── ตัวเลือก: หมวด (หลัก) · พร้อมกัน ──
-        r_cat = tk.Frame(r_top, bg=BG2)
-        r_cat.pack(side="right", padx=(8, 0))
-        tk.Label(
-            r_cat, text="หมวด", font=("Leelawadee UI", 10), bg=BG2, fg=FG2
-        ).pack(side="left")
-        self._inv_cat_var = tk.StringVar(value="ทั้งหมด")
-        _cat = ttk.Combobox(
-            r_cat,
-            values=INV_CATEGORIES,
-            textvariable=self._inv_cat_var,
-            state="readonly",
-            style="Dark.TCombobox",
-            font=("Leelawadee UI", 10),
-            width=24,
-        )
-        _cat.pack(side="left", padx=(6, 0))
-        _bind_combobox_wheel_local(_cat)
-        self._inv_cat_combo = _cat
-
-        r_conc = tk.Frame(r_top, bg=BG2)
-        r_conc.pack(side="right", padx=(8, 0))
-        tk.Label(
-            r_conc, text="พร้อมกัน", font=("Leelawadee UI", 10), bg=BG2, fg=FG2
-        ).pack(side="left")
-        self._inv_concurrency_var = tk.StringVar(value="8")
-        ttk.Combobox(
-            r_conc,
-            values=CONCURRENCY_PRESETS,
-            textvariable=self._inv_concurrency_var,
-            style="Dark.TCombobox",
-            font=("Consolas", 10),
-            width=4,
-        ).pack(side="left", padx=(6, 0))
-
-        # ── ปุ่มหลัก: ฝาก · เบิก ──
-        self._inv_btn_dep = tk.Button(
+        # ── ปุ่มหลัก เรียงซ้าย→ขวา: ฝาก · เบิก · ลบ (ชิดขวาสุด) ──
+        # pack(side=right) เรียงจากขวาไปซ้าย → pack ลบก่อน (ขวาสุด) แล้วเบิก แล้วฝาก
+        # (ซ้ายสุด) เพื่อให้หน้าจอแสดง ฝากทั้งหมด → เบิกทั้งหมด → ลบทั้งหมด
+        self._inv_btn_del = tk.Button(
             r_top,
-            text="📥 ฝากทั้งหมด",
+            text="🗑 ลบทั้งหมด",
             font=("Leelawadee UI", 10, "bold"),
-            bg=GREEN,
+            bg=DANGER,
             fg="white",
             relief="flat",
             cursor="hand2",
-            command=self._inv_deposit_all,
+            command=self._inv_delete_all,
             padx=12,
             pady=3,
         )
-        self._inv_btn_dep.pack(side="right", padx=(8, 0))
-        _bind_button_hover(self._inv_btn_dep, GREEN)
+        self._inv_btn_del.pack(side="right", padx=(8, 0))
+        _bind_button_hover(self._inv_btn_del, DANGER)
 
         self._inv_btn_wd = tk.Button(
             r_top,
@@ -183,21 +150,57 @@ class AppInventoryUIMixin:
         self._inv_btn_wd.pack(side="right", padx=(8, 0))
         _bind_button_hover(self._inv_btn_wd, STATUS_WARN)
 
-        # ── ปุ่มรอง: ลบทั้งหมด (อันตราย วางท้ายสุด กันกดพลาด) ──
-        self._inv_btn_del = tk.Button(
+        self._inv_btn_dep = tk.Button(
             r_top,
-            text="🗑 ลบทั้งหมด",
+            text="📥 ฝากทั้งหมด",
             font=("Leelawadee UI", 10, "bold"),
-            bg=DANGER,
+            bg=GREEN,
             fg="white",
             relief="flat",
             cursor="hand2",
-            command=self._inv_delete_all,
+            command=self._inv_deposit_all,
             padx=12,
             pady=3,
         )
-        self._inv_btn_del.pack(side="right", padx=(8, 0))
-        _bind_button_hover(self._inv_btn_del, DANGER)
+        self._inv_btn_dep.pack(side="right", padx=(8, 0))
+        _bind_button_hover(self._inv_btn_dep, GREEN)
+
+        # ── ตัวเลือก: หมวดหมู่ (หลัก) · พร้อมกัน ──
+        # pack(side=right) เรียงจากขวาไปซ้าย → pack พร้อมกันก่อน (ขวาสุด)
+        # แล้วหมวดหมู่ (ซ้ายกว่า) ให้หน้าจอแสดง หมวดหมู่ → พร้อมกัน
+        r_conc = tk.Frame(r_top, bg=BG2)
+        r_conc.pack(side="right", padx=(8, 0))
+        tk.Label(
+            r_conc, text="พร้อมกัน", font=("Leelawadee UI", 10), bg=BG2, fg=FG2
+        ).pack(side="left")
+        self._inv_concurrency_var = tk.StringVar(value="8")
+        ttk.Combobox(
+            r_conc,
+            values=CONCURRENCY_PRESETS,
+            textvariable=self._inv_concurrency_var,
+            style="Dark.TCombobox",
+            font=("Consolas", 10),
+            width=4,
+        ).pack(side="left", padx=(6, 0))
+
+        r_cat = tk.Frame(r_top, bg=BG2)
+        r_cat.pack(side="right", padx=(8, 0))
+        tk.Label(
+            r_cat, text="หมวดหมู่", font=("Leelawadee UI", 10), bg=BG2, fg=FG2
+        ).pack(side="left")
+        self._inv_cat_var = tk.StringVar(value="ทั้งหมด")
+        _cat = ttk.Combobox(
+            r_cat,
+            values=INV_CATEGORIES,
+            textvariable=self._inv_cat_var,
+            state="readonly",
+            style="Dark.TCombobox",
+            font=("Leelawadee UI", 10),
+            width=24,
+        )
+        _cat.pack(side="left", padx=(6, 0))
+        _bind_combobox_wheel_local(_cat)
+        self._inv_cat_combo = _cat
 
         card_acc = _section("👤  บัญชี")
         r_acc_hdr = _row(card_acc, (8, 2))

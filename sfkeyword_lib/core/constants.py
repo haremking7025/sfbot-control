@@ -1,7 +1,7 @@
 """Static configuration: URLs, colors, dropdown option maps, and table
 column widths used throughout the UI."""
 
-VERSION = "1.3.40"
+VERSION = "1.3.41"
 
 # ขีดจำกัดสูงสุดของ 'พร้อมกัน' — รองรับชุด 100-200 ไอดี
 MAX_CONCURRENCY = 200
