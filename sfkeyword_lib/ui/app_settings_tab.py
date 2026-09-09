@@ -124,10 +124,11 @@ class AppSettingsTabMixin:
         _col_r.pack(side="left", fill="both", expand=True, anchor="n")
 
         card_http = _section("🌐  การเชื่อมต่อ (HTTP — ไม่เปิด Chrome)", _col_l)
-        # แนวตั้ง: ป้ายชื่อ → ช่องกรอก + ปุ่มใช้ค่า → toggle ใช้ค่าอัตโนมัติ
-        r1a = _row(card_http, (12, 2))
+        # แนวตั้ง 3 แถวให้ตรงกริดเดียวกับ card ตัวเลือก (แถวละ 39px: 100/139/178)
+        # — ป้ายชื่อ → ช่องกรอก + ปุ่มใช้ค่า → toggle ใช้ค่าอัตโนมัติ
+        r1a = _row(card_http, (8, 0))
         _lbl(r1a, "หน่วงระหว่างล็อกอิน (วินาที)")
-        r1b = _row(card_http, (0, 2))
+        r1b = _row(card_http, (16, 0))
         # dropdown เลือกค่าได้เลย ไม่ต้องพิมพ์เอง (หน่วย = วินาที)
         self._login_delay_values = list(LOGIN_DELAY_PRESETS)
         self.version_entry = ttk.Combobox(
@@ -165,7 +166,7 @@ class AppSettingsTabMixin:
             bg=BG2,
             fg=FG2,
         )
-        _tgl_autover.pack(anchor="w", padx=16, pady=(2, 12))
+        _tgl_autover.pack(anchor="w", padx=16, pady=(9, 0))
 
         self._fixed_delay = FIXED_DELAY_SEC
         self._fixed_retry = FIXED_RETRY_COUNT

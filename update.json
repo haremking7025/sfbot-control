@@ -1,7 +1,7 @@
 {
-  "version": "1.3.43",
-  "url": "https://github.com/haremking7025/sfbot-control/releases/download/v1.3.43/SFKeyword_v1.3.43.exe",
-  "sha256": "e236421862d9f07b0d788483caacc105158924f75195bfd868d7cfd08154eca9",
-  "size": 28183656,
-  "notes": "SFKeyword v1.3.43 — จัดเรียง UI ทุกแท็บให้เสมอกัน, ปิด session ค่าถาวร (ลบตัวเลือกออก), แก้ crash spawn_tracked, แก้ tkinter race concurrency"
+  "version": "1.3.44",
+  "url": "https://github.com/haremking7025/sfbot-control/releases/download/v1.3.44/SFKeyword_v1.3.44.exe",
+  "sha256": "0404a76aee2d8ac67f2cf7c8c6ca9457e9305d8b6e742af80d73ba8dec4b79cf",
+  "size": 28182204,
+  "notes": "SFKeyword v1.3.44 — จัดกริดการ์ดตั้งค่า: แถว 'การเชื่อมต่อ' กับ 'ตัวเลือก' เรียงตรงกัน ขอบบน-ล่างเท่ากัน ไม่มีช่องว่างก้นการ์ด"
 }
