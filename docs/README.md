@@ -4,7 +4,7 @@
 กรอกคีย์เวิร์ด/โค้ดกิจกรรมให้ทุกไอดีอัตโนมัติ ดึงคีย์ของแจกประจำวันส่งเข้า Discord
 และรับไอเทมฟรีอัตโนมัติ
 
-เวอร์ชันปัจจุบัน: **1.3.21**
+เวอร์ชันปัจจุบัน: **1.3.47**
 
 ---
 
@@ -15,6 +15,7 @@
 | ▶ แดชบอร์ด | ล็อกอินทุกบัญชี, กรอกคีย์เวิร์ด, เริ่มรันอัตโนมัติ, log/สถิติ |
 | ◉ บัญชี | จัดการบัญชี (เพิ่มทีละราย / โหลด .txt), เลือกหน่วยเซิร์ฟเวอร์, บันทึกรหัสแบบเข้ารหัส, เก็บ cookie ต่อไอดี |
 | ▤ คีย์เวิร์ด | จัดการลิสต์คีย์เวิร์ด/โค้ดกิจกรรม |
+| 📦 ฝาก/เบิก | ดู/เลือกไอเทม (กรองหมวด, หมดอายุ, ลบได้) + ฝาก/เบิก/ลบทั้งหมด — หลายบัญชีพร้อมกัน, ปิด session อัตโนมัติหลังจบรอบ |
 | 🔑 คีย์ประจำวัน | ดึงคีย์แจกประจำวัน + ส่งเข้า Discord Webhook อัตโนมัติ (00:05 ทุกวัน) / ด้วยมือ, ประวัติข้อความที่เคยส่ง |
 | 🎁 รับไอเทมฟรี | ระบบแยกต่างหาก (บัญชี/Webhook ของตัวเอง) รับไอเทมฟรีอัตโนมัติ |
 | ⚙ ตั้งค่า | หน่วงระหว่างล็อกอิน (กันล็อก 15 นาที), เปิดพร้อมวินโดวส์ |
@@ -76,20 +77,49 @@ build_client.bat
 
 สคริปต์จะทำตามลำดับ:
 
-1. อ่านเวอร์ชันจาก `sfkeyword_lib/core/constants.py` (`VERSION = "1.3.21"`) ผ่าน `tools/get_version.py`
-   → ตั้งชื่อไฟล์เป็น `SFKeyword_v1.3.21.exe` อัตโนมัติ
-2. สร้าง virtualenv (`venv/`) แล้วติดตั้ง dependencies ผ่าน manifest กลางที่ root
-   (`requirements.txt` — รวมทั้ง runtime และ build)
-3. รัน `ruff` ตรวจบั๊ก/เดดโค้ด (`python -m ruff check .` ตั้งค่าใน
+1. อ่านเวอร์ชันจาก `sfkeyword_lib/core/constants.py` (`VERSION = "1.3.47"`) ผ่าน `tools/get_version.py`
+   → ตั้งชื่อไฟล์เป็น `SFKeyword_v1.3.47.exe` อัตโนมัติ
+2. **ล้าง artifacts รอบก่อนอัตโนมัติ** (spec/exe/zip/workdir) — กันขยะสะสมทุก build
+3. ตรวจ venv ตรง manifest + รัน `ruff` ตรวจบั๊ก/เดดโค้ด (`python -m ruff check .` ตั้งค่าใน
    `pyproject.toml`) — เจอปัญหาจะหยุด build ทันที
 4. ถามว่าต้องการกันโค้ดหรือไม่ (`y/N`):
    - **y** — ติดตั้ง `tools/requirements-build.txt` (Cython + PyArmor) แล้วก็อปปี้โปรเจกต์
      ไป `build_protected/` → compile `sfkeyword_lib/` ด้วย Cython → obfuscate `sfkeyword.pyw`
      ด้วย PyArmor → build จากสำเนาที่กันโค้ดแล้ว *(ต้องมี MSVC Build Tools)*
    - **N** — build จากซอร์สตรงๆ
-5. `PyInstaller --onefile --noconsole` → ไฟล์ออกที่ **`dist\SFKeyword\SFKeyword_v1.3.21.exe`**
-6. คำนวณ SHA-256 และบันทึกลง `docs/release_history.csv` **เฉพาะเมื่อยืนยันว่าเป็น release**
-   (ตอบ "y" หรือตั้ง `SFKeyword_LOG_RELEASE=y`) — ประวัติเก็บเฉพาะเวอร์ชันที่ปล่อยบน GitHub จริง
+5. `PyInstaller --onefile --noconsole` → ไฟล์ออกที่ **`dist\SFKeyword\SFKeyword_v1.3.47.exe`**
+   + สร้าง `SFKeyword_v1.3.47.zip` + คำนวณ SHA-256
+
+### Build แบบ headless (ใช้จริงตอนปล่อย release)
+
+```bat
+rem สร้าง wrapper แล้วรัน detached (ข้าม pip/คำถาม/CSV กันค้างรอ stdin):
+@echo off
+cd /d "%~dp0"
+set SFKEYWORD_NO_PAUSE=y
+set SFKEYWORD_SKIP_PIP=y
+set SFKEYWORD_LOG_RELEASE=n
+call "%~dp0build_client.bat"
+```
+
+```bash
+# Git Bash — poll log จนเจอ "Done! Files ready":
+(cmd //c ".\\_run_build_<ver>.bat" > _build_<ver>.log 2>&1 &)
+```
+
+> หมายเหตุ: build ไม่ deterministic — SHA ของ build เทสรอบนั้นจะต่างจากตัวที่ปล่อยจริง
+> (timestamp ต่างกัน) ไม่ใช่ปัญหา
+
+### ปล่อย release (แนวปฏิบัติล่าสุด)
+
+ก่อนปล่อย: gates = ruff + compileall + **boot smoke headless** (สร้าง `App` จากซอร์ส → สลับครบ
+7 แท็บ → วัดกริดการ์ดตั้งค่า) แล้วปล่อยตาม `docs/RELEASE_CHECKLIST.md`:
+
+1. `_do_release_<ver>.py` — สร้าง release + อัปโหลด EXE/ZIP ผ่าน GitHub REST API
+   (token จาก `git credential fill` — เครื่องนี้ไม่มี `gh` CLI)
+2. อัปเดต `update.json` (version/url/sha256/size) + append `docs/release_history.csv` → commit + push
+3. **E2E** — ดาวน์โหลด EXE จาก release จริง → size + sha ต้อง MATCH เป๊ะ
+4. ล้างของ (wrapper/script/log/zip/dist/build) + ลบ release/tag เก่าบน GitHub เหลือแค่ล่าสุด
 
 > ไฟล์ `.exe` ตัวเดียวเท่านั้นที่ต้องแจกจ่ายให้ลูกค้า — ทำงานได้เองโดยไม่ต้องมีไฟล์อื่น
 > ข้างๆ
@@ -208,7 +238,8 @@ build_client.bat
   ไม่ติดต่ออินเทอร์เน็ต (ตรวจสอบแล้วทั้งแบบ static และ dynamic)- network call ที่เหลือทั้งหมดเป็นฟีเจอร์หลักและเกิดจากผู้ใช้กดเท่านั้น:
   - หน้าเว็บ SF ระหว่างล็อกอิน/กรอกคีย์เวิร์ด — ผ่าน HTTP (requests) โดยตรง
   - ส่ง/ดึงข้อมูล Discord webhook ตาม URL ที่ผู้ใช้ตั้งเอง
-- **กันล็อก 15 นาที**: ล็อกอิน HTTP มี rate limit ในตัว (ค่าเริ่มต้น 8 วิ/ไอดี ปรับได้ที่แท็บตั้งค่า)
+- **กันล็อก 15 นาที**: ล็อกอิน HTTP เว้นจังหวะ 0.1 วิ/ไอดี (ปรับได้ที่แท็บตั้งค่า —
+  ล็อก 15 นาทีจริงๆ เกิดจากใส่รหัสผิดซ้ำในบัญชีเดียวกัน ไม่ใช่ตัวหน่วงนี้)
 - รหัสผ่านถูกเข้ารหัสตอนเก็บ (DPAPI/Fernet) และทุก log ผ่าน redaction filter —
   password/cookie/token ไม่เคยหลุดลงไฟล์หรือจอ
 

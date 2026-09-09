@@ -172,9 +172,24 @@ class AppInventoryUIMixin:
         self._inv_btn_dep.pack(side="right", padx=(8, 0))
         _bind_button_hover(self._inv_btn_dep, GREEN)
 
-        # ── ตัวเลือก: หมวดหมู่ (หลัก) · พร้อมกัน ──
-        # pack(side=right) เรียงจากขวาไปซ้าย → pack พร้อมกันก่อน (ขวาสุด)
-        # แล้วหมวดหมู่ (ซ้ายกว่า) ให้หน้าจอแสดง หมวดหมู่ → พร้อมกัน
+        # ── ตัวเลือก: หมวดหมู่ (หลัก) · พร้อมกัน · ต่อบัญชี ──
+        # pack(side=right) เรียงจากขวาไปซ้าย → pack ต่อบัญชีก่อน (ขวาสุด)
+        # แล้วพร้อมกัน แล้วหมวดหมู่ (ซ้ายสุด) ให้หน้าจอแสดง หมวดหมู่ → พร้อมกัน → ต่อบัญชี
+        r_op = tk.Frame(r_top, bg=BG2)
+        r_op.pack(side="right", padx=(8, 0))
+        tk.Label(
+            r_op, text="ต่อบัญชี", font=("Leelawadee UI", 10), bg=BG2, fg=FG2
+        ).pack(side="left")
+        self._inv_op_concurrency_var = tk.StringVar(value="5")
+        ttk.Combobox(
+            r_op,
+            values=[str(i) for i in (3, 5, 8, 12)],
+            textvariable=self._inv_op_concurrency_var,
+            style="Dark.TCombobox",
+            font=("Consolas", 10),
+            width=4,
+        ).pack(side="left", padx=(6, 0))
+
         r_conc = tk.Frame(r_top, bg=BG2)
         r_conc.pack(side="right", padx=(8, 0))
         tk.Label(

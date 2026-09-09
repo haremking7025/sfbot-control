@@ -195,7 +195,8 @@ def fetch_items_page(
     return d
 
 
-def fetch_all_items(session, page_url, username="", stop_check=None, log_fn=None):
+def fetch_all_items(session, page_url, username="", stop_check=None, log_fn=None,
+                    on_page=None):
     """ดึงไอเทมทั้งหมด — หน้าแรก sequential (รู้ totalPages) แล้วเรียกหน้าที่เหลือ
     แบบ parallel (สูงสุด 5 หน้า/รอบ)
 
@@ -204,12 +205,23 @@ def fetch_all_items(session, page_url, username="", stop_check=None, log_fn=None
     แต่บัญชีโดนล็อก 15 นาที — เว็บนับล็อกอินซ้ำเร็วเป็นผิด → ใช้ session เดียวเสมอ)
 
     stop_check: callable คืน True เมื่อผู้ใช้กดหยุด (เช็คระหว่างรอบหน้า)
+    on_page: callable(page_items, total_pages) — เรียกทุกครั้งที่ได้ข้อมูลหน้าใดหน้า
+        หนึ่ง (หน้าแรก + ทุกหน้าถัดไปตามลำดับที่ดึงเสร็จ) ให้ผู้เรียกเริ่มทำงานกับ
+        ข้อมูลหน้านั้นทันที โดยไม่ต้องรอครบทุกหน้า (ใช้สตรีมฝาก/เบิกทับ fetch)
+        ถ้า on_page โยน exception จะถูกกลืน (ไม่พังการ fetch)
     """
     items = []
     page_size = 100
 
     def _stop():
         return stop_check is not None and stop_check()
+
+    def _emit(page_items):
+        if on_page is not None and page_items:
+            try:
+                on_page(page_items, total_pages)
+            except Exception:
+                pass
 
     d1 = fetch_items_page(
         session, page_url, page_number=1, page_size=page_size, username=username
@@ -220,6 +232,7 @@ def fetch_all_items(session, page_url, username="", stop_check=None, log_fn=None
         total_pages = int(d1.get("totalPages") or 1)
     except (TypeError, ValueError):
         total_pages = 1
+    _emit(data1)
     if not data1:
         _log(log_fn, f" [{username}] ดึงรายการไอเทม: พบ {len(items)} รายการ")
         return items
@@ -254,11 +267,14 @@ def fetch_all_items(session, page_url, username="", stop_check=None, log_fn=None
                             session, page_url, page_number=pg, page_size=page_size,
                             username=username,
                         )
-                        items.extend(d.get("data") or [])
+                        ret = d.get("data") or []
+                        items.extend(ret)
+                        _emit(ret)
                     except Exception:
                         pass
                 else:
                     items.extend(chunk)
+                    _emit(chunk)
     _log(log_fn, f" [{username}] ดึงรายการไอเทม: พบ {len(items)} รายการ")
     return items
 

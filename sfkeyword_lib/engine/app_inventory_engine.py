@@ -216,6 +216,7 @@ class AppInventoryEngineMixin:
             category=category,
             auto_close=auto_close,
             concurrency=self._inv_max_concurrent(len(acc_tuples)),
+            op_concurrency=self._inv_op_concurrent(),
             label="app_inventory.run",
         )
 
@@ -280,6 +281,7 @@ class AppInventoryEngineMixin:
             chosen_map=chosen_map,
             auto_close=auto_close,
             concurrency=self._inv_max_concurrent(len(acc_tuples)),
+            op_concurrency=self._inv_op_concurrent(),
             label="app_inventory.run_selected",
         )
 
@@ -302,8 +304,19 @@ class AppInventoryEngineMixin:
             value = n_accounts
         return max(1, min(n_accounts, value))
 
+    def _inv_op_concurrent(self):
+        """จำนวนชิ้นที่ฝาก/เบิกพร้อมกันต่อ 1 บัญชี (dropdown 'ต่อบัญชี')
+
+        อ่านบน UI thread ก่อน submit — worker ใช้ค่าธรรมดา (ไม่แตะ tkinter var)
+        ค่าเริ่มต้น 5 = เทสจริงแล้วสมดุลที่สุด (1891 ชิ้น ~62 วิ, 8 ชิ้นช้ากว่า)
+        """
+        try:
+            value = int(self._inv_op_concurrency_var.get())
+        except Exception:
+            value = 5
+        return max(1, min(12, value))
     def _inv_run_worker(self, accs, mode, stop, chosen_map=None, category="ทั้งหมด",
-                        auto_close=False, concurrency=None):
+                        auto_close=False, concurrency=None, op_concurrency=None):
         """accs = list ของ (username, password, type_label) — อ่านค่าจาก UI ไว้ก่อนแล้ว
 
         chosen_map = dict {username: [(ItemSerial, ชื่อ), ...]} — ถ้ามี ให้ทำเฉพาะ
@@ -311,7 +324,9 @@ class AppInventoryEngineMixin:
         category = หมวดหลักที่เลือกจากปุ่มหลัก (ทั้งหมด/อาวุธ/เครื่องแต่งกาย/ของใช้งาน)
         auto_close = ค่าถาวร True (ปิด session ของบัญชีที่เข้ารอบนี้ทันทีหลังจบรอบ
         — ไม่มี toggle ให้ปิดได้)
-        concurrency = อ่านบน UI thread ตอน submit แล้วส่งมา (worker ไม่อ่าน tkinter var)"""
+        concurrency = จำนวนบัญชีพร้อมกัน — อ่านบน UI thread ตอน submit แล้วส่งมา
+        op_concurrency = จำนวนชิ้นที่ฝาก/เบิกพร้อมกันต่อบัญชี (dropdown 'ต่อบัญชี')
+        — อ่านบน UI thread ตอน submit แล้วส่งมา (worker ไม่อ่าน tkinter var)"""
         verb, _icon = _MODE_META[mode]
         t_start = time.time()
         if concurrency is None or concurrency < 1:
@@ -331,6 +346,7 @@ class AppInventoryEngineMixin:
                 res = self._inv_account_round(
                     uname, pwd, ltype_label, mode, stop,
                     chosen=chosen, category=category,
+                    op_concurrency=op_concurrency,
                 )
             if res is not None:
                 with results_lock:
@@ -451,13 +467,205 @@ class AppInventoryEngineMixin:
                 raise
         raise Exception("เรียกหน้า Inventory ไม่สำเร็จ")
 
+    def _inv_account_round_stream(self, username, password, login_type_label, mode,
+                                  stop, category="ทั้งหมด", op_concurrency=5):
+        """ฝาก/เบิกทั้งหมดแบบสตรีม — เริ่ม op ทันทีที่แต่ละหน้า fetch เสร็จ (ไม่รอครบ)
+
+        ใช้เฉพาะโหมดฝาก/เบิกทั้งหมด (chosen=None) — ผลลัพธ์เหมือน path เดิมทุกอย่าง
+        (สถานะแถว/สรุป/สถิติ) แค่เวลา fetch ทับกับ op แทนรอเฉยๆ
+        op_concurrency = จำนวนชิ้นที่ฝาก/เบิกพร้อมกันต่อบัญชี (dropdown 'ต่อบัญชี')
+        """
+        verb, _icon = _MODE_META[mode]
+
+        def _fail_login(msg):
+            return {
+                "u": username, "state": _ST_LOGIN, "msg": msg,
+                "attempted": 0, "done": 0, "item_fail": [],
+            }
+
+        ltype = TYPE_MAP.get(login_type_label, "gameid")
+        t_login = time.time()
+        try:
+            self.do_login(None, None, username, password, login_type=ltype)
+        except LoginLockedError as e:
+            self._inv_log(f"   🔒 [{username}] {e}")
+            return _fail_login("บัญชีถูกล็อก 15 นาที")
+        except Exception as e:
+            err = _err_short(e)
+            self._inv_log(f"   ❌ [{username}] {err}")
+            return _fail_login(err)
+        sess = self._get_http_session(username)
+        if sess is None:
+            return _fail_login("ล็อกอินไม่สำเร็จ (ไม่มี session)")
+        self._inv_log(
+            f"   ✔ [{username}] ล็อกอินสำเร็จ {time.time()-t_login:.1f}วิ — "
+            "เปิดหน้า Inventory..."
+        )
+        try:
+            page_url = open_inventory(sess, username=username)
+        except SessionExpiredError:
+            clear_cookies_http(username)
+            try:
+                self.do_login(None, None, username, password, login_type=ltype)
+            except Exception as e:
+                err = _err_short(e)
+                self._inv_log(f"   ❌ [{username}] {err}")
+                return _fail_login(err)
+            sess = self._get_http_session(username)
+            if sess is None:
+                return _fail_login("ล็อกอินใหม่ไม่สำเร็จ (ไม่มี session)")
+            try:
+                page_url = open_inventory(sess, username=username)
+            except Exception as e:
+                err = _err_short(e)
+                self._inv_log(f"   ❌ [{username}] {err}")
+                return _fail_login(err)
+        except Exception as e:
+            err = _err_short(e)
+            self._inv_log(f"   ❌ [{username}] {err}")
+            return _fail_login(err)
+
+        from concurrent.futures import ThreadPoolExecutor
+
+        stats = {"items": 0, "targets": 0, "done": 0}
+        item_fail = []
+        _op_lock = threading.Lock()
+        t_fetch0 = time.time()
+        pool = ThreadPoolExecutor(max_workers=op_concurrency)
+
+        def _run_op(item):
+            if stop.is_set():
+                return
+            name = item_display_name(item)
+            try:
+                ok, msg = item_operation(sess, page_url, mode, item, username)
+            except Exception as e:
+                ok, msg = False, _err_short(e)
+            with _op_lock:
+                if ok:
+                    stats["done"] += 1
+                else:
+                    short = str(msg or "เว็บไม่ตอบกลับสำเร็จ").strip()
+                    if len(short) > 120:
+                        short = short[:120] + "…"
+                    item_fail.append((name, short))
+                    if len(item_fail) <= 5:
+                        self._inv_log(
+                            f"   ✗ [{username}] {verb} '{name}' ไม่สำเร็จ — {short}"
+                        )
+
+        def _on_page(page_items, total_pages):
+            """เรียกจาก fetch_all_items ทุกครั้งที่ได้หน้า — กรองแล้วส่งเข้าคิว op"""
+            if not page_items:
+                return
+            elig = [i for i in page_items if _inv_eligible(i, mode)]
+            if category and category != "ทั้งหมด":
+                elig = [i for i in elig if item_in_category(i, category)]
+            with _op_lock:
+                stats["items"] += len(page_items)
+                stats["targets"] += len(elig)
+            for it in elig:
+                if stop.is_set():
+                    break
+                pool.submit(_run_op, it)
+
+        try:
+            all_items = fetch_all_items(
+                sess,
+                page_url,
+                username=username,
+                log_fn=lambda m: self._inv_log(m),
+                stop_check=stop.is_set,
+                on_page=_on_page,
+            )
+            t_fetch = time.time() - t_fetch0
+            pool.shutdown(wait=True)
+            t_op = time.time() - t_fetch0 - t_fetch
+        except Exception as e:
+            err = _err_short(e)
+            self._inv_log(f"   ❌ [{username}] {err}")
+            pool.shutdown(wait=False)
+            return _fail_login(err)
+
+        # อัปเดตหมวดในปุ่มหลักให้มีหมวดย่อยจริงที่เจอ (เหมือน path เดิม)
+        try:
+            self.root.after(
+                0,
+                lambda its=all_items: self._inv_sync_main_categories(its),
+            )
+        except Exception:
+            pass
+
+        with _op_lock:
+            items_n = stats["items"]
+            targets_n = stats["targets"]
+            done_n = stats["done"]
+
+        if targets_n == 0:
+            self.root.after(
+                0,
+                lambda u=username: self._inv_set_row_status(
+                    u, f"⏭ ไม่มีไอเทมให้{verb}", fg="#888"
+                ),
+            )
+            self._inv_log(
+                f"   ⏭ [{username}] ไม่มีไอเทมให้{verb} (มีทั้งหมด {items_n} รายการ)"
+            )
+            return {
+                "u": username, "state": _ST_NONE, "msg": "",
+                "attempted": 0, "done": 0, "item_fail": [],
+            }
+
+        if items_n != targets_n:
+            skip = items_n - targets_n
+            if mode == "DEPOSIT":
+                skip_reason = "ฝากไว้แล้ว/หมดอายุ/ไม่อยู่ที่ตัว"
+            else:
+                skip_reason = "ยังอยู่ที่ตัว/หมดอายุ/ถาวร"
+            self._inv_log(
+                f"   ℹ [{username}] {verb}ได้ {targets_n} จาก {items_n} รายการ"
+                f" (ข้าม {skip} — {skip_reason})"
+            )
+        self._inv_log(
+            f"   ▶ [{username}] เริ่ม{verb} {targets_n} ชิ้น (ต่อบัญชี {op_concurrency})"
+        )
+        state = _ST_OK if (done_n == targets_n and done_n > 0) else _ST_PART
+        if done_n == targets_n:
+            self._inv_log(
+                f"   ✓ [{username}] {verb}ครบ {done_n}/{targets_n} รายการ"
+                f" (fetch {t_fetch:.1f}วิ + op {t_op:.1f}วิ)"
+            )
+        else:
+            self._inv_log(
+                f"   ⚠ [{username}] {verb}สำเร็จ {done_n}/{targets_n} "
+                f"(fetch {t_fetch:.1f}วิ + op {t_op:.1f}วิ "
+                f"| ไม่สำเร็จ {len(item_fail)})"
+            )
+        self.root.after(
+            0,
+            lambda u=username: self._inv_set_row_status(
+                u,
+                (
+                    f"✅ {verb}ครบ {done_n}/{targets_n}"
+                    if done_n == targets_n
+                    else f"⚠ {verb} {done_n}/{targets_n} (พลาด {len(item_fail)})"
+                ),
+                fg=STATUS_OK if done_n == targets_n else STATUS_FAIL,
+            ),
+        )
+        return {
+            "u": username, "state": state, "msg": "",
+            "attempted": targets_n, "done": done_n, "item_fail": item_fail,
+        }
+
     def _inv_account_round(self, username, password, login_type_label, mode, stop,
-                           chosen=None, category="ทั้งหมด"):
+                           chosen=None, category="ทั้งหมด", op_concurrency=5):
         """ฝาก/เบิกของ 1 บัญชี (รันใน worker)
 
         chosen: list ของ (ItemSerial, ชื่อไอเทม) ที่ผู้ใช้เลือกจากหน้าต่าง
         'ดู/เลือกไอเทม' — ถ้าเป็น None ให้ทำทุกตัวที่กดได้ (โหมดฝาก/เบิกทั้งหมด)
         category: หมวดหลักที่เลือกจากปุ่มหลัก — กรองเฉพาะหมวดนั้น (ทั้งหมด = ไม่กรอง)
+        op_concurrency = จำนวนชิ้นที่ฝาก/เบิกพร้อมกันต่อบัญชี (dropdown 'ต่อบัญชี')
         """
         verb, _icon = _MODE_META[mode]
         self.root.after(
@@ -466,6 +674,15 @@ class AppInventoryEngineMixin:
                 u, f"⏳ กำลัง{verb}...", fg="#F5C542"
             ),
         )
+
+        # ── ฝาก/เบิกทั้งหมด: ใช้เส้นทางสตรีม — เริ่ม op ทันทีที่แต่ละหน้า fetch เสร็จ
+        # (ไม่รอครบทุกหน้า — ประหยัดเวลา fetch ทับ op สำหรับบัญชี 1,000+ ชิ้น)
+        # ใช้เฉพาะโหมดทั้งหมด (เลือกชิ้น/โหมดลบต้องรู้ครบทุกหน้าก่อน จึงใช้ path เดิม)
+        if chosen is None and mode in ("DEPOSIT", "WITHDRAW"):
+            return self._inv_account_round_stream(
+                username, password, login_type_label, mode, stop, category,
+                op_concurrency=op_concurrency,
+            )
 
         def _fail_login(msg):
             return {
@@ -581,7 +798,7 @@ class AppInventoryEngineMixin:
             )
         self._inv_log(
             f"   ▶ [{username}] เริ่ม{verb} {len(targets)} ชิ้น "
-            f"(พร้อมกัน {min(5, len(targets))})"
+            f"(ต่อบัญชี {min(op_concurrency, len(targets))})"
         )
         t_op = time.time()
 
@@ -605,11 +822,12 @@ class AppInventoryEngineMixin:
                         self._inv_log(f"   ✗ [{username}] {verb} '{name}' ไม่สำเร็จ — {short}")
             return ok
 
-        # ฝาก/เบิกหลายชิ้นพร้อมกัน (สูงสุด 5 ต่อบัญชี) — เทสจริง: 5 เร็วสุด
-        # (1891 ชิ้น ~62 วิ), 8 ชิ้นช้ากว่า (79 วิ) เพราะเว็บแถวคอย — 5 คือสมดุล
+        # ฝาก/เบิกหลายชิ้นพร้อมกัน (ค่าเริ่มต้น 5 ต่อบัญชี — เทสจริง: 5 เร็วสุด
+        # (1891 ชิ้น ~62 วิ), 8 ชิ้นช้ากว่า (79 วิ) เพราะเว็บแถวคอย) ปรับได้จาก
+        # dropdown 'ต่อบัญชี' (3/5/8/12) เพื่อเทสกับบัญชีของจริงหาค่าที่เว็บรับได้
         from concurrent.futures import ThreadPoolExecutor
 
-        with ThreadPoolExecutor(max_workers=min(5, n)) as _ex:
+        with ThreadPoolExecutor(max_workers=min(op_concurrency, n)) as _ex:
             futures = []
             for item in targets:
                 if stop.is_set():
@@ -650,12 +868,12 @@ class AppInventoryEngineMixin:
         dt_op = time.time() - t_op
         if done == n:
             self._inv_log(
-                f"   ✓ [{username}] {verb}ครบ {done}/{n} รายการ ({dt_op:.1f}วิ)"
+                f"   ✓ [{username}] {verb}ครบ {done}/{n} รายการ (op {dt_op:.1f}วิ)"
                 + (f" (ข้าม {len(missed)} รายการที่เลือกไว้)" if missed else "")
             )
         else:
             self._inv_log(
-                f"   ⚠ [{username}] {verb}สำเร็จ {done}/{n} ({dt_op:.1f}วิ) "
+                f"   ⚠ [{username}] {verb}สำเร็จ {done}/{n} (op {dt_op:.1f}วิ) "
                 f"(ไม่สำเร็จ {len(item_fail)})"
             )
         self.root.after(
