@@ -93,7 +93,14 @@ class AppInventoryUIMixin:
         pad = {"padx": 16, "pady": (0, 10)}
 
         def _section(title):
-            card = tk.Frame(inner, bg=BG2, bd=0, relief="flat")
+            card = tk.Frame(
+                inner,
+                bg=BG2,
+                highlightbackground=BORDER,
+                highlightcolor=BORDER,
+                highlightthickness=1,
+                takefocus=0,
+            )
             card.pack(fill="x", **pad)
             tk.Label(
                 card, text=title, font=("Leelawadee UI", 9, "bold"), bg=BG2, fg=ACC2

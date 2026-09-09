@@ -1,7 +1,7 @@
 {
-  "version": "1.3.44",
-  "url": "https://github.com/haremking7025/sfbot-control/releases/download/v1.3.44/SFKeyword_v1.3.44.exe",
-  "sha256": "0404a76aee2d8ac67f2cf7c8c6ca9457e9305d8b6e742af80d73ba8dec4b79cf",
-  "size": 28182204,
-  "notes": "SFKeyword v1.3.44 — จัดกริดการ์ดตั้งค่า: แถว 'การเชื่อมต่อ' กับ 'ตัวเลือก' เรียงตรงกัน ขอบบน-ล่างเท่ากัน ไม่มีช่องว่างก้นการ์ด"
+  "version": "1.3.45",
+  "url": "https://github.com/haremking7025/sfbot-control/releases/download/v1.3.45/SFKeyword_v1.3.45.exe",
+  "sha256": "04664fbfd0355ce62ebb3f3b1ad30dc9bd374612a6294620d0f009acaa2a01f1",
+  "size": 28183850,
+  "notes": "SFKeyword v1.3.45 — เพิ่มกรอบการ์ดแท็บ 'รับไอเทมฟรี' + 'ฝาก/เบิก' ให้มีกรอบเหมือนทุกแท็บ ดูเป็นระเบียบสม่ำเสมอ"
 }
