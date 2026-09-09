@@ -202,6 +202,28 @@ class AppInventoryUIMixin:
         _bind_combobox_wheel_local(_cat)
         self._inv_cat_combo = _cat
 
+        # ── ปิดเซสชันอัตโนมัติหลังจบรอบ (ตัวเดียวกับหน้าตั้งค่า — sync กัน) ──
+        # build แท็บนี้มาก่อน settings → สร้าง var เองถ้ายังไม่มี (default เปิด)
+        if not hasattr(self, "_inv_auto_close_var"):
+            self._inv_auto_close_var = tk.BooleanVar(value=True)
+
+        def _on_inv_auto_close_toggle():
+            on = self._inv_auto_close_var.get()
+            self.log(
+                f"{'✅ เปิด' if on else '⛔ ปิด'}ปิดเซสชันอัตโนมัติหลังฝาก/เบิก"
+            )
+            self._save_settings()
+
+        _tgl_auto_close, _ = _make_toggle(
+            r_top,
+            self._inv_auto_close_var,
+            "ปิด session อัตโนมัติ",
+            command=_on_inv_auto_close_toggle,
+            bg=BG2,
+            fg=FG2,
+        )
+        _tgl_auto_close.pack(side="right", padx=(8, 0))
+
         card_acc = _section("👤  บัญชี")
         r_acc_hdr = _row(card_acc, (8, 2))
         self._inv_count_lbl = tk.Label(
@@ -263,6 +285,22 @@ class AppInventoryUIMixin:
             padx=8,
             pady=2,
         )
+        btn_close = tk.Button(
+            r_acc_hdr,
+            text="⛔ ปิดเซสชัน",
+            font=("Leelawadee UI", 10),
+            bg=BG2,
+            fg=STATUS_WARN,
+            relief="flat",
+            cursor="hand2",
+            command=self._inv_close_sessions,
+            padx=8,
+            pady=2,
+        )
+        btn_close.pack(side="right", padx=(0, 6))
+        _bind_button_hover(btn_close, BG2)
+        self._inv_btn_close = btn_close
+        self._inv_refresh_close_btn_state()
         btn_clear.pack(side="right")
         _bind_button_hover(btn_clear, BG2)
         self._inv_btn_clear = btn_clear
@@ -450,6 +488,36 @@ class AppInventoryUIMixin:
         view_btn.pack(side="left", padx=(0, 2))
         _bind_button_hover(view_btn, BG_ROW)
 
+        def close_row_session():
+            u = user_var.get().strip()
+            if not u:
+                return
+            if getattr(self, "_inv_busy", False):
+                self._alert_warning(
+                    "กำลังทำงาน", "รอรอบฝาก/เบิกปัจจุบันให้เสร็จก่อนปิดเซสชัน"
+                )
+                return
+            closed = self._inv_close_sessions_for([u], announce=False)
+            if closed:
+                status_lbl.configure(text="🔒 ปิดเซสชันแล้ว", fg=FG2)
+                self.log(f"⛔ ปิดเซสชัน [{u}] (ฝาก/เบิก)")
+                self._inv_refresh_close_btn_state()
+            else:
+                self.log(f"⛔ [{u}] ยังไม่มีเซสชันค้าง — ไม่ต้องปิด")
+
+        row_close_btn = tk.Button(
+            frm,
+            text="⛔",
+            font=("Leelawadee UI", 9),
+            bg=BG_ROW,
+            fg=STATUS_WARN,
+            relief="flat",
+            cursor="hand2",
+            command=close_row_session,
+        )
+        row_close_btn.pack(side="left", padx=(0, 2))
+        _bind_button_hover(row_close_btn, BG_ROW)
+
         def delete():
             self._inv_rows.remove(row_data)
             frm.destroy()
@@ -480,11 +548,13 @@ class AppInventoryUIMixin:
             "type_cb": type_cb,
             "status_lbl": status_lbl,
             "view_btn": view_btn,
+            "close_btn": row_close_btn,
         }
         self._inv_rows.append(row_data)
         if getattr(self, "_inv_show_pwd", None) and self._inv_show_pwd.get():
             pwd_entry.configure(show="", fg=FG)
         self._inv_update_acc_count()
+        self._inv_refresh_close_btn_state()
         if user_action:
             self.log(
                 f"➕ เพิ่มบัญชีฝาก/เบิก #{idx} (รวม {len(self._inv_rows)} บัญชี)"
@@ -544,6 +614,7 @@ class AppInventoryUIMixin:
             r["frm"].destroy()
         self._inv_rows.clear()
         self._inv_update_acc_count()
+        self._inv_refresh_close_btn_state()
         self._inv_last_loaded_path = None
         self._refresh_file_combobox(
             getattr(self, "_inv_recent_files", None) or [],
@@ -588,6 +659,7 @@ class AppInventoryUIMixin:
             if skipped:
                 msg += f" (ข้ามซ้ำ {skipped} บัญชี)"
             self.log(msg)
+            self._inv_refresh_close_btn_state()
         except Exception as e:
             self._alert_error("ข้อผิดพลาด", f"โหลดไฟล์ไม่ได้: {e}")
 
@@ -1487,7 +1559,8 @@ class AppInventoryUIMixin:
         ใช้ flag แยก (_inv_picker_active) ไม่อิง _inv_busy เพื่อไม่ให้ปุ่มหลักแสดง
         ข้อความ 'กำลัง...' ค้างตอนแค่เปิดดู"""
         self._inv_picker_active = bool(active)
-        for _nm in ("_inv_btn_dep", "_inv_btn_wd", "_inv_btn_del"):
+        for _nm in ("_inv_btn_dep", "_inv_btn_wd", "_inv_btn_del",
+                    "_inv_btn_close"):
             b = getattr(self, _nm, None)
             if b is not None:
                 try:
@@ -1498,6 +1571,29 @@ class AppInventoryUIMixin:
     # ------------------------------------------------------------------
     # busy state (เรียกจาก engine)
     # ------------------------------------------------------------------
+    def _inv_refresh_close_btn_state(self):
+        """เกรย์ปุ่ม ⛔ ปิดเซสชันเมื่อไม่มี session ค้างของบัญชีในแท็บนี้
+        (เรียกบน UI thread — หลังจบรอบ / ล้างบัญชี / โหลดไฟล์)"""
+        btn = getattr(self, "_inv_btn_close", None)
+        if btn is None:
+            return
+        has_session = False
+        try:
+            for r in getattr(self, "_inv_rows", []):
+                u = r["user"].get().strip()
+                if not u:
+                    continue
+                if getattr(self, "_get_http_session", None) is not None:
+                    if self._get_http_session(u) is not None:
+                        has_session = True
+                        break
+        except Exception:
+            pass
+        try:
+            btn.configure(state="normal" if has_session else "disabled")
+        except Exception:
+            pass
+
     def _inv_set_busy(self, busy, verb=""):
         """เปลี่ยนสถานะปุ่มฝาก/เบิก + ข้อความสถานะ + ล็อก dropdown ประเภทไอดี
         ระหว่างรัน (เรียกบน UI thread เท่านั้น)"""
@@ -1554,10 +1650,22 @@ class AppInventoryUIMixin:
                 cb.configure(state="disabled" if busy else "readonly")
             except Exception:
                 pass
+            rb = r.get("close_btn")
+            if rb is not None:
+                try:
+                    rb.configure(state="disabled" if busy else "normal")
+                except Exception:
+                    pass
         cl = getattr(self, "_inv_btn_clear", None)
         if cl is not None:
             try:
                 cl.configure(state="disabled" if busy else "normal")
+            except Exception:
+                pass
+        cs = getattr(self, "_inv_btn_close", None)
+        if cs is not None:
+            try:
+                cs.configure(state="disabled" if busy else "normal")
             except Exception:
                 pass
 

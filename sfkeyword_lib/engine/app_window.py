@@ -190,6 +190,29 @@ class AppWindowMixin:
             self.root.after_cancel(self._timer_after_id)
             self._timer_after_id = None
         self._save_settings()
+        # ตั้งค่า 'ปิดเซสชันเมื่อปิดหน้าต่างแอป' (หน้าตั้งค่า) — ล้าง session
+        # ทั้งหมดในหน่วยความจำก่อนออกโปรแกรม ไม่เหลือค้าง (คุกกี้บนดิสก์ยังอยู่
+        # → รอบหน้าเปิดมาล็อกอินผ่านคุกกี้ได้ไวเหมือนเดิม) ทำแบบ sync ตรงนี้
+        # เพราะ root กำลังจะ destroy — ใช้ root.after ไม่ทัน
+        try:
+            _ce = getattr(self, "_close_on_exit_var", None)
+            if _ce is not None and _ce.get():
+                with self._sessions_lock:
+                    users = [
+                        s.get("username") for s in self._sessions
+                        if s.get("username")
+                    ]
+                    self._sessions.clear()
+                    self._logged_in_users.clear()
+                store = self._http_session_store()
+                for u in users:
+                    store.pop(u, None)
+                if users:
+                    self.log(
+                        f"⛔ ปิดเซสชันทั้งหมดก่อนออก ({len(users)} บัญชี)"
+                    )
+        except Exception as _e:
+            _logger.debug("ignored error at on_close_window session close: %s", _e)
         # โหมด Pure HTTP — ไม่มี Chrome ให้บังคับปิด worker ตรวจ _stop_event แล้วหยุดเอง
         perf_logger = getattr(self, "_perf_logger", None)
         if perf_logger is not None:

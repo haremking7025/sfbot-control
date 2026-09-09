@@ -67,6 +67,47 @@ class AppInventoryEngineMixin:
     def _inv_withdraw_all(self):
         self._inv_run("WITHDRAW")
 
+    def _inv_close_sessions(self):
+        """ปิดเซสชัน HTTP ของบัญชีในแท็บฝาก/เบิกเท่านั้น (ไม่แตะบัญชีแท็บอื่น)
+        — เซสชันถูกเก็บในลิสต์/แมปเดียวกับระบบรันหลัก จึงลบเฉพาะไอดีในแท็บนี้
+        คุกกี้บนดิสก์ยังอยู่ → รอบหน้าล็อกอินผ่านคุกกี้ได้ไวเหมือนเดิม"""
+        if getattr(self, "_inv_busy", False):
+            self._alert_warning(
+                "กำลังทำงาน", "รอรอบฝาก/เบิกปัจจุบันให้เสร็จก่อนปิดเซสชัน"
+            )
+            return
+        accs = self._inv_valid_accounts()
+        users = {r["user"].get().strip() for r in accs if r["user"].get().strip()}
+        if not users:
+            self._alert_warning(
+                "ไม่มีบัญชี",
+                "กรุณาเพิ่มบัญชี (แท็บฝาก/เบิก) ก่อนปิดเซสชัน",
+            )
+            return
+        self._inv_close_sessions_for(users)
+
+    def _inv_close_sessions_for(self, users, announce=True):
+        """ปิด session ของบัญชีตามรายชื่อ (ใช้ทั้งปุ่ม ⛔ และ auto-close หลังจบรอบ)
+        users = iterable ของ username — เก็บไว้เป็น set กันซ้ำ"""
+        users = {str(u).strip() for u in users if str(u).strip()}
+        if not users:
+            return 0
+        with self._sessions_lock:
+            before = len(self._sessions)
+            self._sessions = [
+                s for s in self._sessions if s.get("username") not in users
+            ]
+            removed = before - len(self._sessions)
+        store = self._http_session_store()
+        removed += sum(1 for u in users if store.pop(u, None) is not None)
+        if announce:
+            self.log(
+                f"⛔ ปิดเซสชันฝาก/เบิก {len(users)} บัญชี"
+                + (f" (ปิดไปแล้ว {removed} เซสชัน)" if removed
+                   else " — ยังไม่มีเซสชันค้าง")
+            )
+        return removed
+
     def _inv_delete_all(self):
         """ลบของไม่ถาวร (ชั่วคราว/หมดอายุ) ทั้งหมดของทุกบัญชี — ยืนยันก่อนเสมอ
         เพราะลบแล้วหายถาวร (ของถาวรไม่ถูกแตะ)"""
@@ -164,12 +205,18 @@ class AppInventoryEngineMixin:
             ),
         )
 
+        # อ่านค่าตั้งค่า 'ปิดเซสชันอัตโนมัติ' บน UI thread (tkinter var ปลอดภัย
+        # แค่บน main thread) แล้วส่งเข้า worker เป็นค่าธรรมดา — worker แค่ใช้ค่า
+        auto_close = self._bool_setting(
+            getattr(self, "_inv_auto_close_var", None)
+        )
         self._worker_manager.submit(
             self._inv_run_worker,
             accs=acc_tuples,
             mode=mode,
             stop=stop,
             category=category,
+            auto_close=auto_close,
             label="app_inventory.run",
         )
 
@@ -225,12 +272,16 @@ class AppInventoryEngineMixin:
             ),
         )
 
+        auto_close = self._bool_setting(
+            getattr(self, "_inv_auto_close_var", None)
+        )
         self._worker_manager.submit(
             self._inv_run_worker,
             accs=acc_tuples,
             mode=mode,
             stop=stop,
             chosen_map=chosen_map,
+            auto_close=auto_close,
             label="app_inventory.run_selected",
         )
 
@@ -253,12 +304,15 @@ class AppInventoryEngineMixin:
             value = n_accounts
         return max(1, min(n_accounts, value))
 
-    def _inv_run_worker(self, accs, mode, stop, chosen_map=None, category="ทั้งหมด"):
+    def _inv_run_worker(self, accs, mode, stop, chosen_map=None, category="ทั้งหมด",
+                        auto_close=False):
         """accs = list ของ (username, password, type_label) — อ่านค่าจาก UI ไว้ก่อนแล้ว
 
         chosen_map = dict {username: [(ItemSerial, ชื่อ), ...]} — ถ้ามี ให้ทำเฉพาะ
         รายการที่เลือก (จากหน้าต่าง 'ดู/เลือกไอเทม') ของบัญชีนั้น ไม่ใช่ทุกตัว
-        category = หมวดหลักที่เลือกจากปุ่มหลัก (ทั้งหมด/อาวุธ/เครื่องแต่งกาย/ของใช้งาน)"""
+        category = หมวดหลักที่เลือกจากปุ่มหลัก (ทั้งหมด/อาวุธ/เครื่องแต่งกาย/ของใช้งาน)
+        auto_close = อ่านจาก UI thread ก่อน submit — True = ปิด session ของบัญชี
+        ที่เข้ารอบนี้ทันทีหลังจบรอบ (ไม่ต้องอ่าน tkinter var ใน worker)"""
         verb, _icon = _MODE_META[mode]
         t_start = time.time()
         sem = threading.Semaphore(self._inv_max_concurrent(len(accs)))
@@ -304,7 +358,23 @@ class AppInventoryEngineMixin:
                     ),
                 )
 
-        self.root.after(0, self._inv_summary, results, mode, t_start)
+        # ตั้งค่า 'ปิดเซสชันอัตโนมัติหลังฝาก/เบิก' — จบรอบแล้วปิด session ของ
+        # บัญชีที่เข้ารอบนี้ทันที ไม่ค้างในหน่วยความจำ (คุกกี้บนดิสก์ยังอยู่ →
+        # รอบหน้าล็อกอินผ่านคุกกี้ได้ไวเหมือนเดิม) — ค่า auto_close อ่านบน UI
+        # thread ตอน submit แล้ว ส่งมาเป็นค่าธรรมดา
+        auto_closed = 0
+        try:
+            if auto_close:
+                done_users = [r.get("u") for r in results if r.get("u")]
+                if done_users:
+                    auto_closed = self._inv_close_sessions_for(
+                        done_users, announce=False
+                    )
+        except Exception:
+            pass
+        self.root.after(
+            0, self._inv_summary, results, mode, t_start, auto_closed
+        )
         self.root.after(0, lambda: self._inv_set_busy(False, verb=verb))
 
     # ------------------------------------------------------------------
@@ -609,11 +679,23 @@ class AppInventoryEngineMixin:
     # ------------------------------------------------------------------
     # summary / popup
     # ------------------------------------------------------------------
-    def _inv_summary(self, results, mode, t_start):
+    def _inv_summary(self, results, mode, t_start, auto_closed=0):
         verb, _icon = _MODE_META[mode]
         if not results:
             self.log(f"{_icon} ไม่มีบัญชีไหนทำงาน (ถูกยกเลิกก่อนเริ่ม)")
             return
+        if auto_closed:
+            self.log(f"⛔ ปิดเซสชันอัตโนมัติหลังจบรอบ ({auto_closed} เซสชัน)")
+            # อัปเดตแถวสถานะของบัญชีที่เข้ารอบ (รันบน UI thread แล้ว)
+            closed_users = {r["u"] for r in results if r.get("u")}
+            for r in getattr(self, "_inv_rows", []):
+                try:
+                    if r["user"].get().strip() in closed_users:
+                        r["status_lbl"].configure(
+                            text="🔒 ปิดเซสชันแล้ว", fg="#B9B7C7"
+                        )
+                except Exception:
+                    pass
         # สถานะไอเทมเปลี่ยนหลังฝาก/เบิก — ล้าง cache ของหน้าต่างดู/เลือกไอเทม
         # (ถ้ารวม mixin UI อยู่) ให้รอบหน้าดึงสดเสมอ
         _drop = getattr(self, "_inv_pk_cache_drop", None)
@@ -700,6 +782,8 @@ class AppInventoryEngineMixin:
             )
         if fail_names:
             lines.append(f"รายการที่{verb}ไม่สำเร็จ: {', '.join(fail_names)}")
+        if auto_closed:
+            lines.append(f"⛔ ปิดเซสชันแล้ว {auto_closed} เซสชัน")
         lines.append(f"⏱ เวลารวม: {mm:02d}:{ss:02d}")
 
         has_fail = bool(part_ids or login_ids)
@@ -707,6 +791,13 @@ class AppInventoryEngineMixin:
             self._alert_warning(f"{verb}ไอเทมเสร็จสิ้น!", "\n".join(lines))
         else:
             self._alert_info(f"{verb}ไอเทมเสร็จสิ้น!", "\n".join(lines))
+        # รีเฟรชสถานะปุ่ม ⛔ ปิดเซสชัน (เกรย์ถ้าไม่มี session ค้างแล้ว)
+        try:
+            _rf = getattr(self, "_inv_refresh_close_btn_state", None)
+            if _rf is not None:
+                _rf()
+        except Exception:
+            pass
 
 
 __all__ = ["AppInventoryEngineMixin"]

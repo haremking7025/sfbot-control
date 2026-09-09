@@ -201,6 +201,43 @@ class AppSettingsTabMixin:
             explain="ไม่กรอกคีย์ซ้ำกับไอดีที่สำเร็จไปแล้ว — ลดงานซ้ำและกันคีย์ถูกใช้ซ้ำ",
         )
 
+        # 2.5) ปิดเซสชันอัตโนมัติหลังฝาก/เบิก — ล้าง session ค้างทุกจบรอบ
+        # (ค่าเริ่มต้นเปิด — ปิดเซสชันหลังจบรอบ = ปลอดภัย ไม่ค้างในหน่วยความจำ
+        # คุกกี้บนดิสก์ยังอยู่ รอบหน้าล็อกอินผ่านคุกกี้ได้ไวเหมือนเดิม)
+        # ใช้ BooleanVar ตัวเดียวกับ toggle ในแท็บฝาก/เบิก (สร้างไว้แล้วตอน build
+        # แท็บ — settings สร้างทีหลังสุด) — เปลี่ยนที่ไหนก็ sync กันหมด
+        if not hasattr(self, "_inv_auto_close_var"):
+            self._inv_auto_close_var = tk.BooleanVar(value=True)
+        self._tgl_inv_auto_close_update = _opt_toggle(
+            self._inv_auto_close_var,
+            "ปิดเซสชันอัตโนมัติหลังฝาก/เบิก",
+            explain="จบรอบแล้วปิด session ของไอดีในแท็บฝาก/เบิกทันที — "
+            "รอบหน้าใช้คุกกี้ล็อกอินใหม่ (ไวเท่าเดิม ไม่มี session ค้าง)",
+        )
+
+        # 2.6) ปิดเซสชันอัตโนมัติหลังรับไอเทมฟรี — เหมือนฝาก/เบิก แต่แท็บนี้
+        # (ค่าเริ่มต้นเปิด — เหตุผลเดียวกับฝาก/เบิก) — ใช้ var เดียวกับแท็บ
+        if not hasattr(self, "_autoitem_auto_close_var"):
+            self._autoitem_auto_close_var = tk.BooleanVar(value=True)
+        self._tgl_autoitem_auto_close_update = _opt_toggle(
+            self._autoitem_auto_close_var,
+            "ปิดเซสชันอัตโนมัติหลังรับไอเทมฟรี",
+            explain="จบรอบแล้วปิด session ของไอดีในแท็บรับไอเทมฟรีทันที — "
+            "รอบหน้าใช้คุกกี้ล็อกอินใหม่ (แดชบอร์ดมีปุ่มปิดเองอยู่แล้ว)",
+        )
+
+        # 2.7) ปิดเซสชันเมื่อปิดหน้าต่างแอป — ไม่ค้างหลังออกโปรแกรม
+        # (ค่าเริ่มต้นเปิด — session ในหน่วยความจำถูกล้างก่อนปิด ไม่เหลือค้าง
+        # คุกกี้บนดิสก์ยังอยู่ รอบหน้าเปิดมาล็อกอินผ่านคุกกี้ได้ไวเหมือนเดิม)
+        if not hasattr(self, "_close_on_exit_var"):
+            self._close_on_exit_var = tk.BooleanVar(value=True)
+        self._tgl_close_on_exit_update = _opt_toggle(
+            self._close_on_exit_var,
+            "ปิดเซสชันเมื่อปิดหน้าต่างแอป",
+            explain="ออกโปรแกรมแล้วล้าง session ทั้งหมดในหน่วยความจำทันที — "
+            "ไม่เหลือค้าง (คุกกี้บนดิสก์ยังอยู่ รอบหน้าล็อกอินผ่านคุกกี้ไวเหมือนเดิม)",
+        )
+
         # 3) เปิดพร้อมวินโดวส์ — เปิดคอมค้างไว้แล้วค่อยรัน (สำคัญน้อยสุด)
         self._start_with_windows_var = tk.BooleanVar(value=False)
         self._tgl_startup_update = _opt_toggle(
