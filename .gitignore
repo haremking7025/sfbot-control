@@ -19,6 +19,14 @@ __pycache__/
 *.pyc
 *.pyo
 
+# --- Source code (ห้ามเผยแพร่ขึ้น GitHub — เก็บเฉพาะเครื่อง) ---
+sfkeyword.pyw
+sfkeyword_lib/
+tools/
+build_client.bat
+pyproject.toml
+requirements.txt
+
 # --- Editor / OS / tooling ---
 .vscode/
 .idea/
