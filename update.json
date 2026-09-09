@@ -1,7 +1,7 @@
 {
-  "version": "1.3.42",
-  "url": "https://github.com/haremking7025/sfbot-control/releases/download/v1.3.42/SFKeyword_v1.3.42.exe",
-  "sha256": "9d3f4fb006c26d15ecdff3f2d0f54a171f4548020162c47053a0736c2a579c81",
-  "size": 28184300,
-  "notes": "SFKeyword v1.3.42 — ปิดเซสชันอัตโนมัติหลังฝาก/เบิก + รับไอเทมฟรี (เปิดค่าเริ่มต้น), ปุ่ม ⛔ ปิดเซสชันรายแถว (แดชบอร์ด + ฝาก/เบิก), ปิดเซสชันเมื่อปิดหน้าต่างแอป, log สรุป auto-close"
+  "version": "1.3.43",
+  "url": "https://github.com/haremking7025/sfbot-control/releases/download/v1.3.43/SFKeyword_v1.3.43.exe",
+  "sha256": "e236421862d9f07b0d788483caacc105158924f75195bfd868d7cfd08154eca9",
+  "size": 28183656,
+  "notes": "SFKeyword v1.3.43 — จัดเรียง UI ทุกแท็บให้เสมอกัน, ปิด session ค่าถาวร (ลบตัวเลือกออก), แก้ crash spawn_tracked, แก้ tkinter race concurrency"
 }

@@ -193,17 +193,6 @@ def _sanitize_delay_config(raw):
 
 
 class AppSettingsMixin:
-    @staticmethod
-    def _bool_setting(var):
-        """อ่าน BooleanVar ตั้งค่าแบบปลอดภัย — คืน False ถ้ายังไม่ถูกสร้าง
-        (ใช้ใน _save_settings กัน getattr 2 รอบซ้ำซ้อน)"""
-        if var is None:
-            return False
-        try:
-            return bool(var.get())
-        except Exception:
-            return False
-
     def _save_settings(self):
         try:
             if self.container is self.root:
@@ -260,15 +249,6 @@ class AppSettingsMixin:
                 "concurrency": concurrency,
                 "autoitem_concurrency": autoitem_concurrency,
                 "inventory_concurrency": inventory_concurrency,
-                "inv_auto_close_sessions": self._bool_setting(
-                    getattr(self, "_inv_auto_close_var", None)
-                ),
-                "autoitem_auto_close_sessions": self._bool_setting(
-                    getattr(self, "_autoitem_auto_close_var", None)
-                ),
-                "close_on_exit": self._bool_setting(
-                    getattr(self, "_close_on_exit_var", None)
-                ),
                 "autoitem_accounts": [
                     {
                         "user": r["user"].get(),
@@ -451,20 +431,6 @@ class AppSettingsMixin:
                 self._resume_var.set(data["resume"])
                 if getattr(self, "_tgl_resume_update", None):
                     self._tgl_resume_update()
-            if "inv_auto_close_sessions" in data:
-                self._inv_auto_close_var.set(bool(data["inv_auto_close_sessions"]))
-                if getattr(self, "_tgl_inv_auto_close_update", None):
-                    self._tgl_inv_auto_close_update()
-            if "autoitem_auto_close_sessions" in data:
-                self._autoitem_auto_close_var.set(
-                    bool(data["autoitem_auto_close_sessions"])
-                )
-                if getattr(self, "_tgl_autoitem_auto_close_update", None):
-                    self._tgl_autoitem_auto_close_update()
-            if "close_on_exit" in data:
-                self._close_on_exit_var.set(bool(data["close_on_exit"]))
-                if getattr(self, "_tgl_close_on_exit_update", None):
-                    self._tgl_close_on_exit_update()
             if "start_with_windows" in data:
                 self._start_with_windows_var.set(bool(data["start_with_windows"]))
                 if getattr(self, "_tgl_startup_update", None):

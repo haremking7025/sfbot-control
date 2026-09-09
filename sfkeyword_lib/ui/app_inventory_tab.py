@@ -202,27 +202,8 @@ class AppInventoryUIMixin:
         _bind_combobox_wheel_local(_cat)
         self._inv_cat_combo = _cat
 
-        # ── ปิดเซสชันอัตโนมัติหลังจบรอบ (ตัวเดียวกับหน้าตั้งค่า — sync กัน) ──
-        # build แท็บนี้มาก่อน settings → สร้าง var เองถ้ายังไม่มี (default เปิด)
-        if not hasattr(self, "_inv_auto_close_var"):
-            self._inv_auto_close_var = tk.BooleanVar(value=True)
-
-        def _on_inv_auto_close_toggle():
-            on = self._inv_auto_close_var.get()
-            self.log(
-                f"{'✅ เปิด' if on else '⛔ ปิด'}ปิดเซสชันอัตโนมัติหลังฝาก/เบิก"
-            )
-            self._save_settings()
-
-        _tgl_auto_close, _ = _make_toggle(
-            r_top,
-            self._inv_auto_close_var,
-            "ปิด session อัตโนมัติ",
-            command=_on_inv_auto_close_toggle,
-            bg=BG2,
-            fg=FG2,
-        )
-        _tgl_auto_close.pack(side="right", padx=(8, 0))
+        # ปิด session หลังจบรอบ = ค่าถาวร (ทำเสมอ ไม่มี toggle ให้ปิดได้)
+        # — โค้ด engine ส่ง auto_close=True เสมอ ดู app_inventory_engine
 
         card_acc = _section("👤  บัญชี")
         r_acc_hdr = _row(card_acc, (8, 2))

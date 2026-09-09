@@ -207,9 +207,7 @@ class AppInventoryEngineMixin:
 
         # อ่านค่าตั้งค่า 'ปิดเซสชันอัตโนมัติ' บน UI thread (tkinter var ปลอดภัย
         # แค่บน main thread) แล้วส่งเข้า worker เป็นค่าธรรมดา — worker แค่ใช้ค่า
-        auto_close = self._bool_setting(
-            getattr(self, "_inv_auto_close_var", None)
-        )
+        auto_close = True  # ค่าถาวร — ปิด session หลังจบรอบเสมอ
         self._worker_manager.submit(
             self._inv_run_worker,
             accs=acc_tuples,
@@ -217,6 +215,7 @@ class AppInventoryEngineMixin:
             stop=stop,
             category=category,
             auto_close=auto_close,
+            concurrency=self._inv_max_concurrent(len(acc_tuples)),
             label="app_inventory.run",
         )
 
@@ -272,9 +271,7 @@ class AppInventoryEngineMixin:
             ),
         )
 
-        auto_close = self._bool_setting(
-            getattr(self, "_inv_auto_close_var", None)
-        )
+        auto_close = True  # ค่าถาวร — ปิด session หลังจบรอบเสมอ
         self._worker_manager.submit(
             self._inv_run_worker,
             accs=acc_tuples,
@@ -282,6 +279,7 @@ class AppInventoryEngineMixin:
             stop=stop,
             chosen_map=chosen_map,
             auto_close=auto_close,
+            concurrency=self._inv_max_concurrent(len(acc_tuples)),
             label="app_inventory.run_selected",
         )
 
@@ -305,17 +303,20 @@ class AppInventoryEngineMixin:
         return max(1, min(n_accounts, value))
 
     def _inv_run_worker(self, accs, mode, stop, chosen_map=None, category="ทั้งหมด",
-                        auto_close=False):
+                        auto_close=False, concurrency=None):
         """accs = list ของ (username, password, type_label) — อ่านค่าจาก UI ไว้ก่อนแล้ว
 
         chosen_map = dict {username: [(ItemSerial, ชื่อ), ...]} — ถ้ามี ให้ทำเฉพาะ
         รายการที่เลือก (จากหน้าต่าง 'ดู/เลือกไอเทม') ของบัญชีนั้น ไม่ใช่ทุกตัว
         category = หมวดหลักที่เลือกจากปุ่มหลัก (ทั้งหมด/อาวุธ/เครื่องแต่งกาย/ของใช้งาน)
-        auto_close = อ่านจาก UI thread ก่อน submit — True = ปิด session ของบัญชี
-        ที่เข้ารอบนี้ทันทีหลังจบรอบ (ไม่ต้องอ่าน tkinter var ใน worker)"""
+        auto_close = ค่าถาวร True (ปิด session ของบัญชีที่เข้ารอบนี้ทันทีหลังจบรอบ
+        — ไม่มี toggle ให้ปิดได้)
+        concurrency = อ่านบน UI thread ตอน submit แล้วส่งมา (worker ไม่อ่าน tkinter var)"""
         verb, _icon = _MODE_META[mode]
         t_start = time.time()
-        sem = threading.Semaphore(self._inv_max_concurrent(len(accs)))
+        if concurrency is None or concurrency < 1:
+            concurrency = len(accs)
+        sem = threading.Semaphore(max(1, min(concurrency, len(accs))))
         results = []
         results_lock = threading.Lock()
         threads = []
@@ -358,10 +359,9 @@ class AppInventoryEngineMixin:
                     ),
                 )
 
-        # ตั้งค่า 'ปิดเซสชันอัตโนมัติหลังฝาก/เบิก' — จบรอบแล้วปิด session ของ
-        # บัญชีที่เข้ารอบนี้ทันที ไม่ค้างในหน่วยความจำ (คุกกี้บนดิสก์ยังอยู่ →
-        # รอบหน้าล็อกอินผ่านคุกกี้ได้ไวเหมือนเดิม) — ค่า auto_close อ่านบน UI
-        # thread ตอน submit แล้ว ส่งมาเป็นค่าธรรมดา
+        # ปิด session หลังจบรอบ = ค่าถาวร — จบรอบแล้วปิด session ของบัญชีที่
+        # เข้ารอบนี้ทันที ไม่ค้างในหน่วยความจำ (คุกกี้บนดิสก์ยังอยู่ → รอบหน้า
+        # ล็อกอินผ่านคุกกี้ได้ไวเหมือนเดิม)
         auto_closed = 0
         try:
             if auto_close:

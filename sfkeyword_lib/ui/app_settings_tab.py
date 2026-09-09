@@ -83,7 +83,14 @@ class AppSettingsTabMixin:
                 highlightthickness=1,
                 takefocus=0,
             )
-            card.pack(fill="x", padx=10 if inner else 20, pady=(4, 0))
+            # inner (การ์ดในคอลัมน์ซ้าย/ขวา) ยืดเต็มความสูงคอลัมน์ → การ์ด 2 ใบ
+            # สูงเสมอกัน (การ์ดเต็มความยาวแถวเดิมใช้ fill="x" ตามเดิม)
+            card.pack(
+                fill="both" if inner else "x",
+                expand=bool(inner),
+                padx=10 if inner else 20,
+                pady=(4, 0),
+            )
             return card
 
         def _row(parent, pady=(8, 4)):
@@ -109,10 +116,12 @@ class AppSettingsTabMixin:
         # ── การ์ดบนจัด 2 คอลัมน์ (การเชื่อมต่อ | ตัวเลือก) — ย่อความสูงแท็บ ──
         _top_cols = tk.Frame(cfg_content, bg=BG)
         _top_cols.pack(fill="x")
+        # anchor="n" สำคัญ: pack(side="left") default anchor="center" — ถ้าคอลัมน์
+        # สูงไม่เท่ากัน การ์ดเตี้ยกว่าจะถูกดันลงกลางแนวตั้ง หัวการ์ดเลยไม่เสมอกัน
         _col_l = tk.Frame(_top_cols, bg=BG)
-        _col_l.pack(side="left", fill="x", expand=True)
+        _col_l.pack(side="left", fill="both", expand=True, anchor="n")
         _col_r = tk.Frame(_top_cols, bg=BG)
-        _col_r.pack(side="left", fill="x", expand=True)
+        _col_r.pack(side="left", fill="both", expand=True, anchor="n")
 
         card_http = _section("🌐  การเชื่อมต่อ (HTTP — ไม่เปิด Chrome)", _col_l)
         # แนวตั้ง: ป้ายชื่อ → ช่องกรอก + ปุ่มใช้ค่า → toggle ใช้ค่าอัตโนมัติ
@@ -199,43 +208,6 @@ class AppSettingsTabMixin:
             self._resume_var,
             "ข้ามรายการที่ทำสำเร็จแล้ว",
             explain="ไม่กรอกคีย์ซ้ำกับไอดีที่สำเร็จไปแล้ว — ลดงานซ้ำและกันคีย์ถูกใช้ซ้ำ",
-        )
-
-        # 2.5) ปิดเซสชันอัตโนมัติหลังฝาก/เบิก — ล้าง session ค้างทุกจบรอบ
-        # (ค่าเริ่มต้นเปิด — ปิดเซสชันหลังจบรอบ = ปลอดภัย ไม่ค้างในหน่วยความจำ
-        # คุกกี้บนดิสก์ยังอยู่ รอบหน้าล็อกอินผ่านคุกกี้ได้ไวเหมือนเดิม)
-        # ใช้ BooleanVar ตัวเดียวกับ toggle ในแท็บฝาก/เบิก (สร้างไว้แล้วตอน build
-        # แท็บ — settings สร้างทีหลังสุด) — เปลี่ยนที่ไหนก็ sync กันหมด
-        if not hasattr(self, "_inv_auto_close_var"):
-            self._inv_auto_close_var = tk.BooleanVar(value=True)
-        self._tgl_inv_auto_close_update = _opt_toggle(
-            self._inv_auto_close_var,
-            "ปิดเซสชันอัตโนมัติหลังฝาก/เบิก",
-            explain="จบรอบแล้วปิด session ของไอดีในแท็บฝาก/เบิกทันที — "
-            "รอบหน้าใช้คุกกี้ล็อกอินใหม่ (ไวเท่าเดิม ไม่มี session ค้าง)",
-        )
-
-        # 2.6) ปิดเซสชันอัตโนมัติหลังรับไอเทมฟรี — เหมือนฝาก/เบิก แต่แท็บนี้
-        # (ค่าเริ่มต้นเปิด — เหตุผลเดียวกับฝาก/เบิก) — ใช้ var เดียวกับแท็บ
-        if not hasattr(self, "_autoitem_auto_close_var"):
-            self._autoitem_auto_close_var = tk.BooleanVar(value=True)
-        self._tgl_autoitem_auto_close_update = _opt_toggle(
-            self._autoitem_auto_close_var,
-            "ปิดเซสชันอัตโนมัติหลังรับไอเทมฟรี",
-            explain="จบรอบแล้วปิด session ของไอดีในแท็บรับไอเทมฟรีทันที — "
-            "รอบหน้าใช้คุกกี้ล็อกอินใหม่ (แดชบอร์ดมีปุ่มปิดเองอยู่แล้ว)",
-        )
-
-        # 2.7) ปิดเซสชันเมื่อปิดหน้าต่างแอป — ไม่ค้างหลังออกโปรแกรม
-        # (ค่าเริ่มต้นเปิด — session ในหน่วยความจำถูกล้างก่อนปิด ไม่เหลือค้าง
-        # คุกกี้บนดิสก์ยังอยู่ รอบหน้าเปิดมาล็อกอินผ่านคุกกี้ได้ไวเหมือนเดิม)
-        if not hasattr(self, "_close_on_exit_var"):
-            self._close_on_exit_var = tk.BooleanVar(value=True)
-        self._tgl_close_on_exit_update = _opt_toggle(
-            self._close_on_exit_var,
-            "ปิดเซสชันเมื่อปิดหน้าต่างแอป",
-            explain="ออกโปรแกรมแล้วล้าง session ทั้งหมดในหน่วยความจำทันที — "
-            "ไม่เหลือค้าง (คุกกี้บนดิสก์ยังอยู่ รอบหน้าล็อกอินผ่านคุกกี้ไวเหมือนเดิม)",
         )
 
         # 3) เปิดพร้อมวินโดวส์ — เปิดคอมค้างไว้แล้วค่อยรัน (สำคัญน้อยสุด)
