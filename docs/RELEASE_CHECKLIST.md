@@ -188,6 +188,13 @@
 
 > ⚠️ **ห้าม commit ไฟล์ ZIP/EXE ลงใน repo** — .gitignore กันไว้แล้ว แนบเป็น release asset เท่านั้น
 
+> 🔒 **แนวปฏิบัติถาวร (v1.3.50+):** แอปอ่าน `update.json` + `kill_switch.json` แบบ **raw-first**
+> — เรียก `raw.githubusercontent.com` ก่อน (ไม่มี rate limit) แล้วค่อย fallback ไป
+> GitHub Contents API เผื่อ raw ล่ม **ห้ามสลับกลับเป็น API-first**: Contents API แบบไม่ login
+> จำกัด 60 req/hr/IP (IP ร่วมของ NAT เบิร์นหมดเร็ว) และ api.github.com contents ก็แคช CDN จริง
+> (ไม่ได้ "เห็นใหม่ทันที" ตามที่เคยเข้าใจ) — raw จึงทั้งไม่จำกัดและสดพอใช้ (อัปเดตโค้ดใน
+> `sfkeyword_lib/core/updater.py`: `_fetch_update_json` + `check_kill_switch`)
+
 ---
 
 ## 7. ทดสอบอัปเดตจริง (สำคัญที่สุด)
