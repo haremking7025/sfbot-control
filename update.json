@@ -1,7 +1,7 @@
 {
-  "version": "1.3.46",
-  "url": "https://github.com/haremking7025/sfbot-control/releases/download/v1.3.46/SFKeyword_v1.3.46.exe",
-  "sha256": "3d62b50331565a8c4ebfc9cf27d310558694e19682e3aa33c418b273fbbdce75",
-  "size": 28182923,
-  "notes": "SFKeyword v1.3.46 — แก้บั๊ก thread race ค่า 'พร้อมกัน' บนแดชบอร์ด + รวมระยะขอบทุกแท็บเป็น 16px + popup/dialog ทุกตัวเข้าชุด 16px"
+  "version": "1.3.47",
+  "url": "https://github.com/haremking7025/sfbot-control/releases/download/v1.3.47/SFKeyword_v1.3.47.exe",
+  "sha256": "baf2beeb122607e41618fcc9fa66846b5deb5c058ec5f7f3626670e509a41972",
+  "size": 28183588,
+  "notes": "SFKeyword v1.3.47 — ล็อกการเขียนประวัติ CSV กันแถวปนกันตอนหลายไอดีจบพร้อมกัน + ยืนยันเส้นทางหลัก/รองทั้งหมดเร็วสุด ไม่มี sleep/retry ที่ไม่จำเป็น"
 }
