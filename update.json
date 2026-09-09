@@ -1,7 +1,7 @@
 {
-  "version": "1.3.48",
-  "url": "https://github.com/haremking7025/sfbot-control/releases/download/v1.3.48/SFKeyword_v1.3.48.exe",
-  "sha256": "b3e7c913b72221d09596ccac9a4342e0504046cab26e9161e547fbe8a9249fc2",
-  "size": 28187534,
-  "notes": "SFKeyword v1.3.48 — ฝาก/เบิก: ตัวเลือก 'ต่อบัญชี' (3/5/8/12 ชิ้นพร้อมกันต่อบัญชี) + สตรีม fetch→op ทับกัน + log สรุปแยกเวลา fetch vs op"
+  "version": "1.3.49",
+  "url": "https://github.com/haremking7025/sfbot-control/releases/download/v1.3.49/SFKeyword_v1.3.49.exe",
+  "sha256": "6075599276ad60e8e17bf974141a7b353e57edb6bc5a4489bc9b9f1db3a4ae08",
+  "size": 28194143,
+  "notes": "SFKeyword v1.3.49 — ⚡ รับคีย์เร็วขึ้น (fix classic + reuse state คีย์ซ้ำ ~50%) · ฝาก/เบิก: ต่อบัญชี 10 เร็วสุด +15%, timeout 45 วิ เก็บครบ, ข้าม verify, โหมดเลือกชิ้นสตรีม · ขยายหน้าต่างหลัก/ดูไอเทม · แก้ race เขียนประวัติ webhook · hover ทุกปุ่ม · เกลาคำทั้งโปรแกรม · รูปบอท Discord ใช้ลิงก์ถาวร"
 }
