@@ -1,7 +1,7 @@
 {
-  "version": "1.3.53",
-  "url": "https://github.com/haremking7025/sfbot-control/releases/download/v1.3.53/SFKeyword_v1.3.53.exe",
-  "sha256": "0E445BB77E6840FC0BFBC6998BCDF4284D1103A90E72FC1BFEA565584922A72B",
-  "size": 28231815,
-  "notes": "SFKeyword v1.3.53 — 🐛 แก้ log 32 บรรทัดท้ายสุดหายตอนปิดโปรแกรม (flush ก่อน os._exit) · 🐛 แก้โพเซสค้างใน Task Manager หลังออกจากถาด (กันวงจร drain ตาย + watchdog ฆ่าเองถ้า cleanup ไม่จบ เปิดแอปใหม่ได้ทันที) · ✅ audit รอบลึก: ตรวจ 21 จุด worker thread ปลอดภัย, settings เขียน atomic + backup, DPI 100/125/150% scale ถูก, first-run เครื่องสะอาดผ่าน"
+  "version": "1.3.54",
+  "url": "https://github.com/haremking7025/sfbot-control/releases/download/v1.3.54/SFKeyword_v1.3.54.exe",
+  "sha256": "81B5287399307BFFC968C27D4D8BE488D4647D454922DBF6A80A16206BD2CC0F",
+  "size": 28230937,
+  "notes": "SFKeyword v1.3.54 — 💡 ข้อความ error ล็อกอินชัดขึ้น: แยก \\\"เว็บยังไม่ยืนยันว่าล็อกอินสำเร็จ\\\" (เว็บปิด/ขัดข้อง) ออกจากปัญหาบัญชี · 🛑 เช็คเว็บปิดปรับปรุงก่อนรันล็อกอิน/คีย์/อัตโนมัติ — เจอ = แจ้ง + ข้ามทั้งชุด ไม่รัน 22 ไอดีเสียเวลา"
 }
