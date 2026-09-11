@@ -20,7 +20,8 @@
   daemon + ตรวจ `_stop_event`, เส้นปิดแอป = stop event + after_cancel + ล้าง session +
   `worker_manager.shutdown(wait=False)` + `root.destroy()` + `os._exit(0)`
 - ✅ **Gates ก่อนปล่อย** — ruff ✓ / compileall ✓ / boot smoke headless (7 แท็บสร้าง +
-  สลับครบ + กริดการ์ดตั้งค่าเสมอกัน) / E2E ดาวน์โหลดจริง MATCH (size + sha)
+  สลับครบ + กริดการ์ดตั้งค่าเสมอกัน) / **harness ทั้งชุด** (`tools/run_harness_suite.py`,
+  ~150 วิ) / E2E ดาวน์โหลดจริง MATCH (size + sha)
 
 ---
 
@@ -41,6 +42,15 @@
   venv/Scripts/python.exe -m compileall -q sfkeyword_lib sfkeyword.pyw
   venv/Scripts/ruff.exe check .        # ตรวจบั๊ก/เดดโค้ด (build รันให้อัตโนมัติ)
   ```
+
+- [ ] **Harness ทั้งชุด** — build รันให้อัตโนมัติก่อน build จริง (แดงแม้ตัวเดียว = หยุด)
+      แต่วิ่งเองก่อนก็ได้เพื่อดูผลไว ๆ:
+
+  ```bash
+  venv/Scripts/python.exe -X utf8 tools/run_harness_suite.py
+  ```
+
+  → ต้องขึ้น `HARNESS SUITE OK — เขียว N/N`
 
 - [ ] **Boot smoke headless** (จำลองเปิดแอปจากซอร์ส — DATA_DIR ชี้ temp กันแตะ config จริง):
   สร้าง `App(root)` → สลับครบ 7 แท็บ (`run/accounts/keywords/autoitem/inventory/dailykey/settings`)
@@ -82,7 +92,10 @@
   ```
 
   > build จะล้าง artifacts รอบก่อนอัตโนมัติ (spec/exe/zip/workdir) + รัน ruff ตรวจบั๊ก/
-  > เดดโค้ด (`python -m ruff check .`) — ถ้าติดให้แก้ก่อน ไม่งั้น build หยุดทันที (errorlevel 1)
+  > เดดโค้ด (`python -m ruff check .`) + **harness ทั้งชุด**
+  > (`python tools/run_harness_suite.py`) — ถ้าติดข้อใดให้แก้ก่อน ไม่งั้น build หยุดทันที
+  > (errorlevel 1) · รันเดี่ยวตัวที่แดงได้:
+  > `venv\Scripts\python.exe -X utf8 tools\<ชื่อไฟล์>.py`
   > ใช้ build ไม่ป้องกัน (headless ตอบ n) — อยากป้องกันจริงตั้ง `SFKeyword_PROTECT=y`
   > หมายเหตุ: build ไม่ deterministic — SHA ของ build เทสรอบนั้นจะต่างจากตัวที่ปล่อยจริง
   > (timestamp ต่างกัน) ไม่ใช่ปัญหา
@@ -237,7 +250,7 @@
 ## 🔁 สรุป flow คร่าวๆ
 
 ```
-constants.py (VERSION) → gates (ruff + compile + boot smoke 7 แท็บ)
+constants.py (VERSION) → gates (ruff + compile + boot smoke 7 แท็บ + harness ทั้งชุด)
     → build_client.bat headless (EXE) → zip → sha256/size
     → _do_release_<ver>.py (API: create release + upload EXE/ZIP, token จาก git credential)
     → update.json (version/url/sha256/size) + docs/release_history.csv → commit + push

@@ -82,6 +82,8 @@ build_client.bat
 2. **ล้าง artifacts รอบก่อนอัตโนมัติ** (spec/exe/zip/workdir) — กันขยะสะสมทุก build
 3. ตรวจ venv ตรง manifest + รัน `ruff` ตรวจบั๊ก/เดดโค้ด (`python -m ruff check .` ตั้งค่าใน
    `pyproject.toml`) — เจอปัญหาจะหยุด build ทันที
+   แล้วรัน **harness ทั้งชุด** (`python tools/run_harness_suite.py`) — แดงแม้ตัวเดียว
+   build จะหยุดก่อนถึงขั้น PyInstaller (กันเวอร์ชันที่พังถึงมือลูกค้า)
 4. ถามว่าต้องการกันโค้ดหรือไม่ (`y/N`):
    - **y** — ติดตั้ง `tools/requirements-build.txt` (Cython + PyArmor) แล้วก็อปปี้โปรเจกต์
      ไป `build_protected/` → compile `sfkeyword_lib/` ด้วย Cython → obfuscate `sfkeyword.pyw`
