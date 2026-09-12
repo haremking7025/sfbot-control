@@ -4,7 +4,7 @@
 กรอกคีย์เวิร์ด/โค้ดกิจกรรมให้ทุกไอดีอัตโนมัติ ดึงคีย์ของแจกประจำวันส่งเข้า Discord
 และรับไอเทมฟรีอัตโนมัติ
 
-เวอร์ชันปัจจุบัน: **1.3.63**
+เวอร์ชันปัจจุบัน: **1.3.73**
 
 ---
 
@@ -77,20 +77,31 @@ build_client.bat
 
 สคริปต์จะทำตามลำดับ:
 
-1. อ่านเวอร์ชันจาก `sfkeyword_lib/core/constants.py` (`VERSION = "1.3.63"`) ผ่าน `tools/get_version.py`
-   → ตั้งชื่อไฟล์เป็น `SFKeyword_v1.3.63.exe` อัตโนมัติ
+1. อ่านเวอร์ชันจาก `sfkeyword_lib/core/constants.py` (`VERSION = "1.3.73"`) ผ่าน `tools/get_version.py`
+   → ตั้งชื่อไฟล์เป็น `SFKeyword_v1.3.73.exe` อัตโนมัติ
 2. **ล้าง artifacts รอบก่อนอัตโนมัติ** (spec/exe/zip/workdir) — กันขยะสะสมทุก build
-3. ตรวจ venv ตรง manifest + รัน `ruff` ตรวจบั๊ก/เดดโค้ด (`python -m ruff check .` ตั้งค่าใน
+3. ตรวจ venv ตรง manifest + รัน `ruff` ตรวจบั๊ก/เดดโค้ด (`python -m ruff check
+   --no-respect-gitignore .` ตั้งค่าใน
    `pyproject.toml`) — เจอปัญหาจะหยุด build ทันที
    แล้วรัน **harness ทั้งชุด** (`python tools/run_harness_suite.py`) — แดงแม้ตัวเดียว
    build จะหยุดก่อนถึงขั้น PyInstaller (กันเวอร์ชันที่พังถึงมือลูกค้า)
+
+   > หน้าต่างเทสต์ถูกซ่อนไม่ให้โผล่บนจอผู้ใช้เสมอ: ตัวรันตั้งค่าให้ทุกหน้าต่างของเทสต์
+   > โปร่งใสตั้งแต่ถูกสร้าง + ย้ายออกนอกจอ ถ้าจะรันไฟล์เทสต์เดี่ยว **ให้เรียกผ่าน
+   > `python tools/run_harness.py tools/_xxx_verify.py`** (เรียกไฟล์ตรงๆ หน้าต่างจะโผล่)
+>
+> **ด่านเดดโค้ด** (`tools/_deadcode_verify.py`) อยู่ในชุดนี้ด้วย — ตรวจ static ล้วน
+> (ไม่เปิดหน้าต่าง): ฟังก์ชัน/เมธอด/คลาสที่ไม่มีใครเรียก, `self.x` ที่เขียนแต่ไม่เคยอ่าน,
+> ค่าคงที่ที่ไม่ถูกอ่าน, โค้ดที่เข้าไม่ถึงหลัง return/raise, เงื่อนไขค่าคงที่เท็จ และ
+> ความสดของ allowlist · ใช้ `python tools/run_harness.py tools/_deadcode_verify.py`
+> เมื่อต้องการตรวจเฉพาะด่านนี้ (ใช้เวลา ~2 วิ)
 4. ถามว่าต้องการกันโค้ดหรือไม่ (`y/N`):
    - **y** — ติดตั้ง `tools/requirements-build.txt` (Cython + PyArmor) แล้วก็อปปี้โปรเจกต์
      ไป `build_protected/` → compile `sfkeyword_lib/` ด้วย Cython → obfuscate `sfkeyword.pyw`
      ด้วย PyArmor → build จากสำเนาที่กันโค้ดแล้ว *(ต้องมี MSVC Build Tools)*
    - **N** — build จากซอร์สตรงๆ
-5. `PyInstaller --onefile --noconsole` → ไฟล์ออกที่ **`dist\SFKeyword\SFKeyword_v1.3.63.exe`**
-   + สร้าง `SFKeyword_v1.3.63.zip` + คำนวณ SHA-256
+5. `PyInstaller --onefile --noconsole` → ไฟล์ออกที่ **`dist\SFKeyword\SFKeyword_v1.3.73.exe`**
+   + สร้าง `SFKeyword_v1.3.73.zip` + คำนวณ SHA-256
 
 ### Build แบบ headless (ใช้จริงตอนปล่อย release)
 
@@ -183,7 +194,8 @@ build_client.bat
 | `tools/build_tools/` | สคริปต์กันโค้ด: `cythonize_lib.py`, `obfuscate_entry.py`, `list_lib_modules.py`, `build_protected_driver.py` (driver build แบบกันโค้ด ไม่ต้องใช้ vcvarsall) |
 | `docs/README.md` | เอกสารนี้ |
 | `docs/build-protected.md` | วิธี build แบบกันโค้ด (Cython + PyArmor) โดยไม่ใช้ vcvarsall.bat + ขั้นตอน Release |
-| `pyproject.toml` | config `ruff` — ตรวจบั๊ก/เดดโค้ด (รัน `python -m ruff check .`) |
+| `pyproject.toml` | config `ruff` — ตรวจบั๊ก/เดดโค้ด (รัน `python -m ruff check
+  --no-respect-gitignore .` — ต้องมี flag เพราะ `.gitignore` ซ่อนซอร์สไว้) |
 | `docs/release_history.csv` | ประวัติ release (ตรงกับ release จริงบน GitHub) |
 | `docs/RELEASE_CHECKLIST.md` | checklist ปล่อยเวอร์ชันใหม่ (build → zip → sha256 → release → update.json) — ไล่ตามลำดับทุกครั้ง |
 | `assets/sf_logo.ico` + `sf_logo.jpg` | ไอคอนแอป |
@@ -210,7 +222,7 @@ build_client.bat
 | `updater` | อัปเดตอัตโนมัติ + kill-switch ผ่าน GitHub (`update.json` / `kill_switch.json`) |
 | `worker_manager` | จัดการ background thread ส่วนกลาง (สร้าง/ติดตาม/หยุดเป็นระบบ แทนที่การ `threading.Thread(...).start()` กระจาย) |
 | `app` | คลาส `App` — ประกอบ mixin ทั้งหมด (ไม่มีความ logic เอง) |
-| `app_core` | `__init__`, properties กัน thread race, geometry, `_build_ui()` ทั้งหน้าต่าง |
+| `app_core` | `__init__`, properties กัน thread race, วางหน้าต่างกลางจอหลัก (ไม่จำพิกัดเดิม), `_build_ui()` ทั้งหน้าต่าง |
 | `app_settings` | โหลด/บันทึกตั้งค่า, migrate ไฟล์ตั้งค่า, reset, สำรอง/กู้คืน |
 | `app_settings_diagnostics` | stub class สำหรับ MRO compatibility (ฟีเจอร์ diagnostic ถูกลบแล้ว) |
 | `app_settings_tab` | UI แท็บ "ตั้งค่า" |

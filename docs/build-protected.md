@@ -116,7 +116,8 @@ venv/Scripts/python.exe -X utf8 tools/build_tools/build_protected_driver.py
 รันจากโฟลเดอร์โปรเจกต์ (ที่มี `sfkeyword.pyw` และ `venv\`)
 
 สคริปต์จะ:
-0. รัน ruff (`python -m ruff check .`) ตรวจบั๊ก/เดดโค้ดเหมือนวิธีที่ 1 — เจอปัญหาหยุดทันที
+0. รัน ruff (`python -m ruff check --no-respect-gitignore .`) ตรวจบั๊ก/เดดโค้ด
+   เหมือนวิธีที่ 1 — เจอปัญหาหยุดทันที
 1. อ่านเวอร์ชันจาก `sfkeyword_lib/core/constants.py` → `SFKeyword_v<เวอร์ชัน>.exe` อัตโนมัติ
 2. หา Build Tools + Windows SDK เวอร์ชันล่าสุด (vswhere / scan โฟลเดอร์)
 3. ก็อปปี้โปรเจกต์ไป `build_protected\` (กันโฟลเดอร์ขยะ รวม `.cython-cache` เหมือน robocopy ใน bat)
@@ -143,7 +144,8 @@ env["MSSdk"] = "1"
 ## การตรวจโค้ดอัตโนมัติก่อน build
 
 ก่อนถึงขั้นตอน Cython/PyArmor/PyInstaller ทุก build (ทั้งวิธีที่ 1 และ 2)
-จะรัน **`python -m ruff check .`** — เจอปัญหา หยุด build ทันที โดยตั้งค่าใน
+จะรัน **`python -m ruff check --no-respect-gitignore .`** — เจอปัญหา หยุด build ทันที
+โดยตั้งค่าใน
 `pyproject.toml`:
 
 ```toml

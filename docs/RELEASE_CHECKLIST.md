@@ -40,7 +40,7 @@
 
   ```bash
   venv/Scripts/python.exe -m compileall -q sfkeyword_lib sfkeyword.pyw
-  venv/Scripts/ruff.exe check .        # ตรวจบั๊ก/เดดโค้ด (build รันให้อัตโนมัติ)
+  venv/Scripts/ruff.exe check --no-respect-gitignore .        # ตรวจบั๊ก/เดดโค้ด (build รันให้อัตโนมัติ)
   ```
 
 - [ ] **Harness ทั้งชุด** — build รันให้อัตโนมัติก่อน build จริง (แดงแม้ตัวเดียว = หยุด)
@@ -92,10 +92,13 @@
   ```
 
   > build จะล้าง artifacts รอบก่อนอัตโนมัติ (spec/exe/zip/workdir) + รัน ruff ตรวจบั๊ก/
-  > เดดโค้ด (`python -m ruff check .`) + **harness ทั้งชุด**
+  > เดดโค้ด (`python -m ruff check --no-respect-gitignore .`) + **harness ทั้งชุด**
   > (`python tools/run_harness_suite.py`) — ถ้าติดข้อใดให้แก้ก่อน ไม่งั้น build หยุดทันที
   > (errorlevel 1) · รันเดี่ยวตัวที่แดงได้:
   > `venv\Scripts\python.exe -X utf8 tools\<ชื่อไฟล์>.py`
+  > ⚠️ **ปิดโปรแกรม SFKeyword ให้หมดก่อน build** — ถ้ามีตัวเก่าเปิดค้างอยู่ ไฟล์ EXE
+  > จะถูกล็อก ลบ/เขียนทับไม่ได้; ด่านจะหยุดทันทีพร้อมป้าย `EXE_LOCKED` แทนที่จะปล่อย
+  > "Done!" ปลอมที่แนบ SHA ของไฟล์เก่า (ดูโปรเซสค้าง: `tasklist | findstr /i SFKeyword`)
   > ใช้ build ไม่ป้องกัน (headless ตอบ n) — อยากป้องกันจริงตั้ง `SFKeyword_PROTECT=y`
   > หมายเหตุ: build ไม่ deterministic — SHA ของ build เทสรอบนั้นจะต่างจากตัวที่ปล่อยจริง
   > (timestamp ต่างกัน) ไม่ใช่ปัญหา
