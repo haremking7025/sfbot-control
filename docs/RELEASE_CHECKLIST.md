@@ -232,14 +232,26 @@
 
 ## 8. ล้างของเก่า (แล้วแต่)
 
-- [ ] ลบ release เก่าบน GitHub ไหม? (เก็บเฉพาะล่าสุด — API script, ลบ release ด้วย id ก่อนแล้วค่อยลบ tag):
+- [ ] **สำรอง asset ก่อนลบ (บังคับ)** — ลบ release/tag บน GitHub กู้คืนไม่ได้ ถ้าไม่สำรอง
+      แล้ว asset หาย = ลูกค้าที่ค้างเวอร์ชันเก่าจะอัปเดตไม่ได้ · ใช้สคริปต์ถาวร
+      `tools/prune_releases.py` ที่ **ดาวน์โหลด → ตรวจ sha256 + ขนาด → ค่อยลบ** และ
+      **ไม่ลบอะไรเลยถ้ามีไฟล์เดียวที่ไม่ผ่าน**:
 
-  ```python
-  # token จาก git credential fill → h = {"Authorization": f"token {tok}"}
-  # 1) GET /repos/{repo}/releases?per_page=100 → ลบทุกตัวที่ tag != ล่าสุด:
-  #    DELETE /repos/{repo}/releases/{id}         → 204
-  # 2) DELETE /repos/{repo}/git/refs/tags/{tag}   → 204
+  ```bash
+  venv/Scripts/python.exe tools/prune_releases.py                  # ดูเฉย ๆ ก่อน (ดีฟอลต์ ไม่ลบ)
+  venv/Scripts/python.exe tools/prune_releases.py --apply          # ลบจริงหลังสำรอง+ตรวจผ่านครบ
+  venv/Scripts/python.exe tools/prune_releases.py --keep v1.2.2    # ระบุ tag ที่เก็บ (ดีฟอลต์ = ล่าสุด)
+  venv/Scripts/python.exe tools/prune_releases.py --selftest       # ตรวจตรรกะในเครื่อง (ไม่แตะเน็ต)
   ```
+
+  → สำรองลง `C:\tmp\gh_release_backup\<tag>\` พร้อม `manifest.json` (เก็บ tag · วันที่ปล่อย ·
+  release notes เดิม · url เดิม ไว้กู้คืน) · token ดึงจาก `git credential fill` (ไม่ฝังในไฟล์) ·
+  ลบ release ด้วย id ก่อนแล้วค่อยลบ tag · **exit 1 = มีอะไรไม่ผ่าน → ไม่ลบอะไรเลย**
+  · `tools/` อยู่ใน .gitignore ⇒ สคริปต์นี้อยู่เฉพาะเครื่องนี้ ไม่ขึ้น repo (คู่กับ harness อื่น ๆ)
+  — อย่าลบไฟล์นี้ทิ้ง
+
+- [ ] ตรวจผลหลังลบ: คำสั่ง `--apply` จะพิมพ์ release ที่เหลือบน GitHub ให้ดูก่อนจบ
+      → ต้องเหลือแค่ตัวล่าสุด และต้องอัปเดต `docs/release_history.csv` ให้ตรง (ข้อถัดไป)
 
 - [ ] ลบ EXE/ZIP เก่าในโปรเจกต์ + build artifacts (`build\` `build_protected\`) ไหม?
   > ⚠️ **ห้ามลบ `.cython-cache\`** — เป็นแคช .pyd ที่ทำให้ build รอบหน้าวิ่งแบบ cache hit
@@ -258,6 +270,7 @@ constants.py (VERSION) → gates (ruff + compile + boot smoke 7 แท็บ + h
     → _do_release_<ver>.py (API: create release + upload EXE/ZIP, token จาก git credential)
     → update.json (version/url/sha256/size) + docs/release_history.csv → commit + push
     → E2E ดาวน์โหลดจริง MATCH (size + sha) → ล้างของเก่า (wrapper/script/log/zip/dist/build)
+    → สำรอง asset + ตรวจ sha ผ่านครบ (tools/prune_releases.py --apply)
     → ลบ release/tag เก่าบน GitHub เหลือแค่ล่าสุด → ✅ เสร็จ
 ```
 
