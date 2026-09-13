@@ -83,20 +83,20 @@ venv/Scripts/python.exe -m pip list --not-required
 vcvarsall) รันจาก **Command Prompt** ปกติ:
 
 ```bat
-set SFKeyword_PROTECT=y
+set SFKEYWORD_PROTECT=y
 build_client.bat
 ```
 
-- `SFKeyword_PROTECT=y` = ตอบ "y" ข้อ "Protect source with Cython + PyArmor?" อัตโนมัติ
-- `SFKeyword_NO_PAUSE=y` = ข้ามทุก `pause` ท้ายสคริปต์ (ใช้ตอนรันอัตโนมัติ/headless กันค้าง)
+- `SFKEYWORD_PROTECT=y` = ตอบ "y" ข้อ "Protect source with Cython + PyArmor?" อัตโนมัติ
+- `SFKEYWORD_NO_PAUSE=y` = ข้ามทุก `pause` ท้ายสคริปต์ (ใช้ตอนรันอัตโนมัติ/headless กันค้าง)
 - Cython compile แบบขนาน (`-j` ตามจำนวน CPU) + แคช `.pyd` ข้าม build
   (`.cython-cache\` ที่ root โปรเจกต์ — ห้ามลบ ไม่งั้นรอบหน้าต้อง compile ใหม่ทั้งหมด)
   → รอบแรก ~50 วิ รอบถัดไป (เนื้อหาไม่เปลี่ยน) เหลือ ~20-25 วิ
 - ผลลัพธ์: `dist\SFKeyword\SFKeyword_v<เวอร์ชัน>.exe`
-- บันทึก `docs/release_history.csv` **เฉพาะเมื่อยืนยันว่าเป็น release** — ตั้ง `SFKeyword_LOG_RELEASE=y`
+- บันทึก `docs/release_history.csv` **เฉพาะเมื่อยืนยันว่าเป็น release** — ตั้ง `SFKEYWORD_LOG_RELEASE=y`
   หรือตอบ "y" ข้อถาม "Release build - log this build to docs/release_history.csv?" (ค่าเริ่มต้น N = ไม่บันทึก)
 - ถ้าเจอ MSVC ไม่ครบ สคริปต์จะถามให้ข้ามไป build แบบไม่กันโค้ดแทน
-  (ตอบอัตโนมัติได้ด้วย env `SFKeyword_SKIP_PROTECT=y`)
+  (ตอบอัตโนมัติได้ด้วย env `SFKEYWORD_SKIP_PROTECT=y`)
 
 > ⚠️ ถ้ารันใน Git Bash / sandbox แล้ว `cmd.exe` ค้างเอง (แม้แต่ `echo` ก็ไม่จบ)
 > ให้ใช้ **วิธีที่ 2** ข้างล่างแทน

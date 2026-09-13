@@ -120,6 +120,22 @@ call "%~dp0build_client.bat"
 (cmd //c ".\\_run_build_<ver>.bat" > _build_<ver>.log 2>&1 &)
 ```
 
+#### สวิตช์ของสคริปต์ build (ตั้งเป็น env ก่อนเรียก — สคริปต์นี้ไม่มี argument)
+
+| สวิตช์ | ผลเมื่อตั้งค่า |
+|---|---|
+| `SFKEYWORD_NO_PAUSE=y` | ข้ามทุก `pause` ท้ายสคริปต์ (โหมด headless — ใช้ตอนรันอัตโนมัติ) |
+| `SFKEYWORD_SKIP_PIP=y` | ข้ามขั้นติดตั้ง dependency + ตรวจ venv manifest (venv พร้อมแล้ว) |
+| `SFKEYWORD_PROTECT=y` | กันโค้ด (Cython + PyArmor) โดยไม่ต้องตอบคำถาม |
+| `SFKEYWORD_SKIP_PROTECT=y` | ข้ามการกันโค้ด โดยไม่ต้องตอบคำถาม |
+| `SFKEYWORD_LOG_RELEASE=y` | บันทึก build นี้ลง `docs/release_history.csv` (ค่าเริ่มต้น = ไม่บันทึก) |
+
+> โหมด headless (`SFKEYWORD_NO_PAUSE=y`) ไม่ถามอะไรเลย: คำถามกันโค้ด = n และคำถาม
+> บันทึก CSV = n — บังคับทับได้ด้วย `SFKEYWORD_PROTECT=y` / `SFKEYWORD_LOG_RELEASE=y`
+> · ต้องพิมพ์ `SFKEYWORD_` ตัวใหญ่ให้ตรงกับสคริปต์ (cmd.exe ไม่สนตัวพิมพ์ แต่เชลล์อื่นสน
+> และการพิมพ์ปนทำให้อ่านโค้ดไม่ตรงกัน) · ด่าน `tools/_doccmd_verify.py` บังคับว่า
+> เอกสารต้องพูดถึงทุกสวิตช์ที่สคริปต์รับจริง
+
 > หมายเหตุ: build ไม่ deterministic — SHA ของ build เทสรอบนั้นจะต่างจากตัวที่ปล่อยจริง
 > (timestamp ต่างกัน) ไม่ใช่ปัญหา
 
@@ -160,7 +176,7 @@ call "%~dp0build_client.bat"
 ### กันโค้ด (Cython + PyArmor) — ทางเลือก
 
 ```bat
-set SFKeyword_PROTECT=y
+set SFKEYWORD_PROTECT=y
 build_client.bat
 ```
 
