@@ -131,6 +131,7 @@ call "%~dp0build_client.bat"
 1. `tools/release_publish.py --apply` — สร้าง release + อัปโหลด EXE/ZIP + อัปเดต `update.json`
    + append `docs/release_history.csv` ผ่าน GitHub REST API (token จาก `git credential fill` —
    เครื่องนี้ไม่มี `gh` CLI) · ตรวจ sha ก่อนแตะ GitHub และยืนยันด้วยการดาวน์โหลดจริงหลังอัปโหลด
+   · อุ่นแคช CDN ให้เอง (ดึง asset ที่เพิ่งอัปโหลด 1 รอบ — ครั้งแรกสุดของ asset ใหม่ช้ากว่าปกติมาก)
 2. ด่านไขว้ — `tools/_release_consistency_verify.py --strict-net --deep` → ต้องเขียว
 3. **E2E** — ดาวน์โหลด EXE จาก release จริง → size + sha ต้อง MATCH เป๊ะ
 4. commit + push `docs/release_history.csv`
@@ -238,7 +239,7 @@ build_client.bat
 | `rows` | วิดเจ็ตแถวตาราง: `AccountRow` / `WebhookRow` / `KeywordRow` |
 | `log_system` | ระบบ logging ส่วนกลาง: หมุนรายวัน 3 รูปแบบ, redaction password/cookie, retention 7 วัน |
 | `perf_logger` | บันทึก RAM/thread ของโปรแกรมทุก 60 วิ ลง `logs/sfkeyword_perf_YYYYMMDD.log` (audit memory leak) |
-| `updater` | อัปเดตอัตโนมัติ **แบบเงียบ** + kill-switch ผ่าน GitHub (`update.json` / `kill_switch.json`) — ตรวจตอนเปิดโปรแกรมและตอนงานจบ (โปรแกรมว่าง) ดาวน์โหลดเบื้องหลัง ตรวจขนาด/SHA-256/ชนิดไฟล์ก่อนติดป้ายพร้อมติดตั้ง แล้วถามผู้ใช้ครั้งเดียวว่ารีสตาร์ทเลยไหม (`start_silent_updater` · `silent_update_check` · `verify_update_file` · `pending_update_info` · `rollback_pin` กันรุ่นที่ถอยหนีไม่ให้เสนอซ้ำ) |
+| `updater` | อัปเดตอัตโนมัติ **แบบเงียบ** + kill-switch ผ่าน GitHub (`update.json` / `kill_switch.json`) — ตรวจครั้งแรกหลังหน้าต่างหลักขึ้น 4 วิ และทุกครั้งที่งานจบ (โปรแกรมว่าง) ดาวน์โหลดเบื้องหลัง ตรวจขนาด/SHA-256/ชนิดไฟล์ก่อนติดป้ายพร้อมติดตั้ง แล้วถามผู้ใช้ครั้งเดียวว่ารีสตาร์ทเลยไหม (`start_silent_updater` · `silent_update_check` · `verify_update_file` · `pending_update_info` · `rollback_pin` กันรุ่นที่ถอยหนีไม่ให้เสนอซ้ำ) · เร่งความเร็ว: keep-alive session ต่อเธรด · ไฟล์ ≥ 8 MB โหลดหลายช่วงพร้อมกัน 4 เส้น (ถอยไปเส้นเดียวเองถ้าเซิร์ฟเวอร์ไม่รองรับ Range) · ไฟล์เดิมที่ตรวจผ่านแล้วใช้ซ้ำโดยไม่ยิงเน็ต |
 | `rollback` | หน้าต่าง **ย้อนกลับเวอร์ชัน** — อ่าน `docs/release_history.csv` (แหล่งหลัก) + GitHub Releases API (แหล่งเสริม ให้วันที่/โน้ต/ขนาด/digest) รวมเป็นรายการรุ่นที่ติดตั้งย้อนได้ · ตรวจขนาด + SHA-256 + ชนิดไฟล์ก่อนติดตั้งทุกครั้ง · สำรอง `settings.json` ก่อนย้อน |
 | `worker_manager` | จัดการ background thread ส่วนกลาง (สร้าง/ติดตาม/หยุดเป็นระบบ แทนที่การ `threading.Thread(...).start()` กระจาย) |
 | `app` | คลาส `App` — ประกอบ mixin ทั้งหมด (ไม่มีความ logic เอง) |
