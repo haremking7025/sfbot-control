@@ -195,8 +195,6 @@ build_client.bat
 | `settings_backups/` | สำรองตั้งค่า (สำหรับ "กู้คืนการตั้งค่า") |
 | `webhook_sent_messages.json` | ประวัติข้อความ Discord ที่เคยส่ง |
 | `sfkeyword_crash.log` | crash log (กันหลุดตอน callback UI) |
-| `update_prefs.json` | สวิตช์ "อัปเดตอัตโนมัติ (เงียบ)" — ไฟล์แยก เพื่อให้จุดเข้าโปรแกรมอ่านได้ก่อนสร้างหน้าต่างหลัก |
-| `pending_update/` | ไฟล์อัปเดตที่ดาวน์โหลดเบื้องหลังไว้แล้ว + ทะเบียน (`pending.json`) พร้อมติดตั้งเมื่อผู้ใช้ยืนยัน |
 
 ---
 
@@ -241,7 +239,7 @@ build_client.bat
 | `rows` | วิดเจ็ตแถวตาราง: `AccountRow` / `WebhookRow` / `KeywordRow` |
 | `log_system` | ระบบ logging ส่วนกลาง: หมุนรายวัน 3 รูปแบบ, redaction password/cookie, retention 7 วัน |
 | `perf_logger` | บันทึก RAM/thread ของโปรแกรมทุก 60 วิ ลง `logs/sfkeyword_perf_YYYYMMDD.log` (audit memory leak) |
-| `updater` | อัปเดตอัตโนมัติ **แบบเงียบ** + kill-switch ผ่าน GitHub (`update.json` / `kill_switch.json`) — ตรวจครั้งแรกหลังหน้าต่างหลักขึ้น 4 วิ และทุกครั้งที่งานจบ (โปรแกรมว่าง) ดาวน์โหลดเบื้องหลัง ตรวจขนาด/SHA-256/ชนิดไฟล์ก่อนติดป้ายพร้อมติดตั้ง แล้วถามผู้ใช้ครั้งเดียวว่ารีสตาร์ทเลยไหม (`start_silent_updater` · `silent_update_check` · `verify_update_file` · `pending_update_info` · `rollback_pin` กันรุ่นที่ถอยหนีไม่ให้เสนอซ้ำ) · เร่งความเร็ว: keep-alive session ต่อเธรด · ไฟล์ ≥ 8 MB โหลดหลายช่วงพร้อมกัน 4 เส้น (ถอยไปเส้นเดียวเองถ้าเซิร์ฟเวอร์ไม่รองรับ Range) · ไฟล์เดิมที่ตรวจผ่านแล้วใช้ซ้ำโดยไม่ยิงเน็ต |
+| `updater` | อัปเดต + kill-switch ผ่าน GitHub (`update.json` / `kill_switch.json`) — ตรวจ **ครั้งเดียวตอนเปิดโปรแกรม** ก่อนหน้าต่างหลักขึ้น ถ้ามีรุ่นใหม่จะเด้งหน้าต่างให้กดอัปเดตเอง · ตรวจขนาด/SHA-256/ชนิดไฟล์ทุกครั้งก่อนติดตั้ง (`verify_update_file` · `download_update` · `apply_update` · `rollback_pin` กันรุ่นที่ถอยหนีไม่ให้เสนอซ้ำ) · เร่งความเร็ว: keep-alive session ต่อเธรด · ไฟล์ ≥ 8 MB โหลดหลายช่วงพร้อมกัน 4 เส้น (ถอยไปเส้นเดียวเองถ้าเซิร์ฟเวอร์ไม่รองรับ Range) |
 | `rollback` | หน้าต่าง **ย้อนกลับเวอร์ชัน** — อ่าน `docs/release_history.csv` (แหล่งหลัก) + GitHub Releases API (แหล่งเสริม ให้วันที่/โน้ต/ขนาด/digest) รวมเป็นรายการรุ่นที่ติดตั้งย้อนได้ · ตรวจขนาด + SHA-256 + ชนิดไฟล์ก่อนติดตั้งทุกครั้ง · สำรอง `settings.json` ก่อนย้อน |
 | `worker_manager` | จัดการ background thread ส่วนกลาง (สร้าง/ติดตาม/หยุดเป็นระบบ แทนที่การ `threading.Thread(...).start()` กระจาย) |
 | `app` | คลาส `App` — ประกอบ mixin ทั้งหมด (ไม่มีความ logic เอง) |
