@@ -137,6 +137,12 @@ call "%~dp0build_client.bat"
 5. ล้างของ (wrapper/script/log/zip/dist/build) + prune release/tag เก่าบน GitHub **เหลือ 2 ตัวล่าสุด**
    (`tools/prune_releases.py --keep-last 2` — เก็บตัวก่อนหน้าไว้ให้ติดตั้งย้อนกลับได้ทันที)
 
+### ถอยเวอร์ชัน (ฉุกเฉิน)
+
+ตัวอัปเดตเสนอเฉพาะรุ่นที่ใหม่กว่า ⇒ แค่ชี้ `update.json` ไปรุ่นเก้าไม่มีผลกับลูกค้า
+ใช้ `tools/release_rollback.py --to <รุ่น> --apply` (ตั้ง `force_update` + รันด่านก่อน push)
+แล้วปิดด้วย `--stop --apply` เมื่อถอยเสร็จ · ด่านกันถอยหลัง: `tools/_rollback_verify.py`
+
 > ไฟล์ `.exe` ตัวเดียวเท่านั้นที่ต้องแจกจ่ายให้ลูกค้า — ทำงานได้เองโดยไม่ต้องมีไฟล์อื่น
 > ข้างๆ
 

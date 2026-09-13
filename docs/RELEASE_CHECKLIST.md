@@ -289,11 +289,33 @@
   `v0.0.0-restore-test` แล้วลบทิ้งให้เอง เหลือแต่ release จริงบน GitHub
   (หมายเหตุ: GitHub ตั้ง `published_at` ใหม่เอง — วันปล่อยเดิมกู้คืนไม่ได้)
 
-  > ⚠️ วิธีถอยลูกค้าที่ถูกต้อง — ตัวอัปเดตในแอปเสนอเฉพาะรุ่นที่ **ใหม่กว่า** (`updater._is_newer`):
-  > · ถ้าแค่ชี้ `update.json` ไปที่รุ่นเก่า ลูกค้าจะไม่เห็นอะไรเลย (ไม่ถือว่ามีอัปเดต)
-  > · ถ้าต้องถอยทั้งฐานลูกค้า ให้ตั้ง `force_update: true` ใน `update.json` — แฟล็กนี้
-  >   ข้ามการเทียบเวอร์ชัน ⇒ รุ่นเก่าจะถูกเสนอให้ติดตั้งได้ (ปิดกลับหลังถอยเสร็จ ไม่งั้นเด้งซ้ำ)
-  > · แอปเก็บ EXE ตัวเดิมไว้เป็น `.exe.old` ในเครื่องลูกค้าอยู่แล้ว (ถอยได้เฉพาะเครื่องนั้น)
+  > ⚠️ ตัวอัปเดตในแอปเสนอเฉพาะรุ่นที่ **ใหม่กว่า** (`updater._is_newer`) ⇒ แค่ชี้ `update.json`
+  > ไปรุ่นเก้า **ไม่มีอะไรเกิดขึ้นกับลูกค้า** · แอปเก็บ EXE ตัวเดิมไว้เป็น `.exe.old`
+  > ในเครื่องลูกค้าอยู่แล้ว (ถอยได้เฉพาะเครื่องนั้น — ไม่ใช่ทั้งฐาน)
+
+- [ ] **บทเรียนการเก็บของเก่า: ZIP คือหลักฐานที่เชื่อถือได้ ไม่ใช่ `dist\*.exe`**
+      → ตอนนำเข้ารุ่นยุค SFBOT (1.2.8/1.3.0/1.3.1) เข้าคลัง เจอว่า `dist\SFBOT_v1.2.8.exe`
+      ถูก **build ทับใหม่ทีหลัง** (1 ก.ย. → 2 ก.ย.) ⇒ sha ไม่ตรงกับประวัติปล่อยเดิม
+        แต่ `SFBOT_v1.2.8.zip` ยังเป็นไบต์วันปล่อย ⇒ แกะ exe ข้างในได้ sha ตรงประวัติเป๊ะ
+      ⇒ เก็บ ZIP ไว้ทุกครั้ง · ติ่งชื่อ asset ใหม่ได้โดยไม่เปลี่ยนไบต์ (sha เดิม)
+
+- [ ] **ถอยลูกค้าทั้งฐาน (ฉุกเฉิน)** — ใช้สคริปต์ถาวร `tools/release_rollback.py`
+      ที่ตั้ง `force_update: true` ให้เอง (แฟล็กนี้ข้ามการเทียบเวอร์ชัน ⇒ รุ่นเก่าถูกเสนอ
+      ให้ติดตั้งได้) และ **รันด่านความสอดคล้องก่อน push ทุกครั้ง**:
+
+  ```bash
+  venv/Scripts/python.exe tools/release_rollback.py --list                # รุ่นที่ถอยได้ทั้งหมด
+  venv/Scripts/python.exe tools/release_rollback.py --to 1.3.83            # ดูแผน (ดีฟอลต์ ไม่ทำอะไร)
+  venv/Scripts/python.exe tools/release_rollback.py --to 1.3.83 --apply    # ถอยจริง
+  venv/Scripts/python.exe tools/release_rollback.py --stop --apply         # เลิกบังคับ + กลับรุ่นใหม่สุด
+  venv/Scripts/python.exe tools/release_rollback.py --selftest             # ตรวจตรรกะในเครื่อง
+  ```
+
+  → กฎความปลอดภัย: รุ่นเป้าหมายต้องมี **release บน GitHub + asset EXE + digest + แถวในประวัติ**
+  และ sha ตรงกันทุกชั้น ขาดข้อใด = หยุด (บอกทางแก้ เช่นให้ `restore_release.py` ติดตั้งกลับก่อน) ·
+  ด่านไม่ผ่าน = คืน `update.json` เดิม ไม่ commit · commit เฉพาะ `update.json`
+  · ⚠ `force_update` ไม่แยกรุ่น ⇒ ลูกค้าที่อยู่รุ่นเป้าหมายแล้วจะถูกเสนอรุ่นเดิมซ้ำ
+  ⇒ **ถอยเสร็จแล้วรัน `--stop --apply`** (พร้อมออกเวอร์ชันแก้ไขต่อไป) · ด่านกันถอยหลัง: `tools/_rollback_verify.py`
 
   > **นโยบายเก็บของ (ตัดสิน 13 ก.ย. 2569): เก็บตัวล่าสุด + ตัวก่อนหน้าไว้เป็นทางถอย**
   > ⇒ ใช้ `--keep-last 2` เป็นค่าปกติ **อย่าใช้ค่าดีฟอลต์ (เก็บตัวเดียว)** เพราะจะลบตัวก่อนหน้า
@@ -341,7 +363,8 @@ constants.py (VERSION) → gates (ruff + compile + boot smoke 7 แท็บ + h
     → E2E ดาวน์โหลดจริง MATCH (size + sha) → ล้างของเก่า (wrapper/script/log/zip/dist/build)
     → สำรอง asset + ตรวจ sha ผ่านครบ (tools/prune_releases.py --apply)
     → ลบ release/tag เก่าบน GitHub เหลือ 2 ตัวล่าสุด (เก็บตัวก่อนหน้าไว้เป็นทางถอย) → ✅ เสร็จ
-    ถ้าต้องถอยกลับ: tools/restore_release.py --tag <tag> --apply (ตรวจ sha กับ manifest ทุกครั้ง)
+    ถ้าต้องติดตั้ง release เก่ากลับขึ้น GitHub: tools/restore_release.py --tag <tag> --apply (ตรวจ sha กับ manifest)
+    ถ้าต้องให้ลูกค้าทุกเครื่องถอยรุ่น: tools/release_rollback.py --to <รุ่น> --apply → แล้ว --stop --apply
 ```
 
 สร้างโดย [haremking7025](https://github.com/haremking7025) · สำหรับ SFKeyword Desktop
