@@ -128,11 +128,13 @@ call "%~dp0build_client.bat"
 ก่อนปล่อย: gates = ruff + compileall + **boot smoke headless** (สร้าง `App` จากซอร์ส → สลับครบ
 7 แท็บ → วัดกริดการ์ดตั้งค่า) แล้วปล่อยตาม `docs/RELEASE_CHECKLIST.md`:
 
-1. `_do_release_<ver>.py` — สร้าง release + อัปโหลด EXE/ZIP ผ่าน GitHub REST API
-   (token จาก `git credential fill` — เครื่องนี้ไม่มี `gh` CLI)
-2. อัปเดต `update.json` (version/url/sha256/size) + append `docs/release_history.csv` → commit + push
+1. `tools/release_publish.py --apply` — สร้าง release + อัปโหลด EXE/ZIP + อัปเดต `update.json`
+   + append `docs/release_history.csv` ผ่าน GitHub REST API (token จาก `git credential fill` —
+   เครื่องนี้ไม่มี `gh` CLI) · ตรวจ sha ก่อนแตะ GitHub และยืนยันด้วยการดาวน์โหลดจริงหลังอัปโหลด
+2. ด่านไขว้ — `tools/_release_consistency_verify.py --strict-net --deep` → ต้องเขียว
 3. **E2E** — ดาวน์โหลด EXE จาก release จริง → size + sha ต้อง MATCH เป๊ะ
-4. ล้างของ (wrapper/script/log/zip/dist/build) + ลบ release/tag เก่าบน GitHub เหลือแค่ล่าสุด
+4. commit + push `docs/release_history.csv`
+5. ล้างของ (wrapper/script/log/zip/dist/build) + ลบ release/tag เก่าบน GitHub เหลือแค่ล่าสุด
 
 > ไฟล์ `.exe` ตัวเดียวเท่านั้นที่ต้องแจกจ่ายให้ลูกค้า — ทำงานได้เองโดยไม่ต้องมีไฟล์อื่น
 > ข้างๆ

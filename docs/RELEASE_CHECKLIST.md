@@ -142,19 +142,27 @@
 
 ## 5. ปล่อย GitHub Release
 
-> เครื่องนี้ไม่มี `gh` CLI — ใช้ GitHub REST API ผ่าน script ชั่วคราว `_do_release_<ver>.py`
-> (token ดึงจาก `git credential fill`) ตามที่ทำจริงใน v1.3.44–1.3.47:
+> เครื่องนี้ไม่มี `gh` CLI — ใช้ GitHub REST API ผ่านเครื่องมือถาวร `tools/release_publish.py`
+> (token ดึงจาก `git credential fill`) ⇒ **ไม่ต้องเขียนสคริปต์ชั่วคราวรายรุ่นอีก**
 
-- [ ] เขียน `_do_release_<ver>.py`:
-  1. `git credential fill` → แยก `password=` เป็น token
-  2. `POST /repos/haremking7025/sfbot-control/releases` (tag_name/name/body = สรุปที่เปลี่ยน)
-  3. อัปโหลด asset EXE + ZIP → `POST /uploads.github.com/.../assets?name=...` (201 ทั้งคู่)
+- [ ] ปล่อยทั้งชุดในคำสั่งเดียว (release + อัปโหลด EXE/ZIP + `update.json` + CSV):
 
-- [ ] รัน: `venv/Scripts/python.exe _do_release_<ver>.py` → ตรวจ `create release: 201` + `upload ...: 201` ×2
+  ```bash
+  venv/Scripts/python.exe tools/release_publish.py              # ดูเฉย ๆ ก่อน (ดีฟอลต์ ไม่ทำอะไร)
+  venv/Scripts/python.exe tools/release_publish.py --apply      # ปล่อยจริง
+  venv/Scripts/python.exe tools/release_publish.py --selftest   # ตรวจตรรกะในเครื่อง (ไม่แตะเน็ต)
+  ```
 
-  > ⚠️ tag ต้องตรงกับ `url` ใน update.json (ขั้นตอน 6) ทุกจุด
+  - ตรวจไฟล์ EXE/ZIP + sha ก่อนแตะ GitHub · สร้าง release + อัปโหลด · ยืนยันด้วย digest ที่ GitHub
+    รายงาน + ดาวน์โหลดจริงมาเทียบ sha · เขียน `update.json` และ append CSV ให้เอง · รันซ้ำได้ไม่พัง
+  - หลังปล่อยแล้วรันด่านไขว้: `tools/_release_consistency_verify.py --strict-net --deep`
+
+  > ⚠️ tag ต้องตรงกับ `url` ใน update.json ทุกจุด (เครื่องมือเขียนให้เอง ถ้าทำมือต้องเช็ค)
 
 - [ ] ยืนยัน asset อัปโหลดครบ (EXE + ZIP) + digest ตรงเครื่อง
+
+- [ ] วิธีทำมือ (เก็บไว้อ้างกลไก — ไม่ต้องใช้แล้ว): `POST /repos/haremking7025/sfbot-control/releases`
+      (tag_name/name/body = สรุปที่เปลี่ยน) แล้ว `POST /uploads.github.com/.../assets?name=...` (201 ทั้งคู่)
 
 - [ ] ถ้ามี `gh` CLI ใช้วิธีเดิมได้:
 
@@ -165,7 +173,16 @@
 
 ---
 
-## 6. อัปเดต `update.json` (repo sfbot-control)
+## 6. อัปเดต `update.json` + `docs/release_history.csv` (repo sfbot-control)
+
+> ใช้ `tools/release_publish.py` (ขั้นตอน 5) = จบทั้งสองไฟล์ในคำสั่งเดียว · หัวข้อนี้เก็บไว้เป็น
+> ข้อมูลอ้างอิง schema และวิธีทำมือ
+
+- [ ] `docs/release_history.csv` — คอลัมน์คงที่ 7 ตัว (BOM + LF เสมอ):
+      `version,exe_name,sha256,build_datetime,zip_name,zip_sha256,zip_size`
+  - `build_datetime` = **เวลาสร้างจริงจาก build** (มีคำพูดครอบเพราะมีช่องว่าง) — อย่าเปลี่ยนเป็นวันปล่อย
+  - `sha256` / `zip_sha256` = digest ของ asset จริงบน GitHub (hex 64 ตัว พิมพ์ใหญ่) · `zip_size` = ไบต์
+  - ตรวจ/ซ่อมให้ตรงกับ release จริงได้เอง: `tools/_release_consistency_verify.py --fix --apply --yes`
 
 - [ ] clone/pull repo ควบคุม:
 
@@ -189,7 +206,7 @@
   |---|---|
   | `version` | VERSION ใน constants.py |
   | `url` | release download URL ของ **EXE** (ไม่ใช่ ZIP) |
-  | `sha256` | จากขั้นตอน 4 (sha ของ EXE, ตัวพิมพ์เล็ก) |
+  | `sha256` | จากขั้นตอน 4 (sha ของ EXE, hex 64 ตัว พิมพ์ใหญ่) |
   | `size` | จากขั้นตอน 4 (bytes ของ EXE) |
   | `notes` | สรุปสิ่งที่เปลี่ยน — updater เอาไปแสดงในหน้าต่างอัปเดต |
 
@@ -250,6 +267,27 @@
   · `tools/` อยู่ใน .gitignore ⇒ สคริปต์นี้อยู่เฉพาะเครื่องนี้ ไม่ขึ้น repo (คู่กับ harness อื่น ๆ)
   — อย่าลบไฟล์นี้ทิ้ง
 
+- [ ] **ทางกลับ ถ้าต้องติดตั้ง release เก่าคืน** (เช่นลูกค้ารายงานว่าเวอร์ชันใหม่มีปัญหา) —
+      ใช้สคริปต์ถาวร `tools/restore_release.py` ที่ **ตรวจ sha กับ `manifest.json` ก่อน**
+      แตะ GitHub เสมอ และไม่เชื่อรหัส HTTP เพียงอย่างเดียว (ตรวจ digest จริงซ้ำอีกรอบ):
+
+  ```bash
+  venv/Scripts/python.exe tools/restore_release.py --list                  # มีอะไรสำรองไว้ + อยู่บน GitHub ไหม
+  venv/Scripts/python.exe tools/restore_release.py --tag v1.2.2             # ดูเฉย ๆ ก่อน (ดีฟอลต์ ไม่ทำอะไร)
+  venv/Scripts/python.exe tools/restore_release.py --tag v1.2.2 --apply     # ติดตั้งกลับจริง
+  venv/Scripts/python.exe tools/restore_release.py --tag v1.2.2 --apply --force   # แทนที่ asset เดิมที่ไม่ตรง
+  venv/Scripts/python.exe tools/restore_release.py --rehearsal              # ซ้อมจริงด้วย release ชั่วคราว (ลบเอง)
+  venv/Scripts/python.exe tools/restore_release.py --selftest               # ตรวจตรรกะในเครื่อง (ไม่แตะเน็ต)
+  ```
+
+  → กฎความปลอดภัย: **ไม่มี sha ใน manifest = พิสูจน์ไม่ได้ = ไม่ติดตั้ง** · ไฟล์ในเครื่อง
+  ต้องมีอยู่ ไม่ว่าง ขนาดตรง sha ตรง **ครบทุกไฟล์** จึงเริ่มแตะ GitHub · release ที่มีอยู่
+  ตรงกับ manifest อยู่แล้ว = ไม่ทำอะไรซ้ำ (รันคำสั่งเดิมได้เรื่อย ๆ) · มีอยู่แต่ไม่ตรง = หยุด
+  บอกให้ใส่ `--force` เอง · หลังอัปโหลดจะยืนยันด้วย digest ที่ GitHub รายงาน + ดาวน์โหลดจริง
+  มาเทียบ sha อีกชั้น · `--rehearsal` ซ้อมทั้งเส้น (สร้าง→อัปโหลด→ตรวจ→ลบ) ด้วย tag ชั่วคราว
+  `v0.0.0-restore-test` แล้วลบทิ้งให้เอง เหลือแต่ release จริงบน GitHub
+  (หมายเหตุ: GitHub ตั้ง `published_at` ใหม่เอง — วันปล่อยเดิมกู้คืนไม่ได้)
+
 - [ ] ตรวจผลหลังลบ: คำสั่ง `--apply` จะพิมพ์ release ที่เหลือบน GitHub ให้ดูก่อนจบ
       → ต้องเหลือแค่ตัวล่าสุด และต้องอัปเดต `docs/release_history.csv` ให้ตรง (ข้อถัดไป)
 
@@ -259,6 +297,23 @@
 - [ ] อัปเดต `docs/release_history.csv` ให้ตรง release จริง (ถ้าลบ release เก่า ให้ลบแถวด้วย)
   — ตั้งแต่ build ใหม่ ระบบถามยืนยันก่อนเขียน CSV (`SFKeyword_LOG_RELEASE=y`) จึงควรมีเฉพาะ
   เวอร์ชันที่ปล่อยจริงอยู่แล้ว
+- [ ] **ด่านบังคับอัตโนมัติ** `tools/_release_consistency_verify.py` (อยู่ในชุด harness ⇒ build
+      รันให้ก่อน build เสมอ) ตรวจสามที่ให้ตรงกัน: GitHub releases/tags ↔ `docs/release_history.csv`
+      ↔ `update.json` — **ไม่ตรงแล้ว build หยุดทันที** กันเคสที่ลูกค้าเจอ "กดอัปเดตแล้วพัง"
+
+  ```bash
+  venv/Scripts/python.exe tools/_release_consistency_verify.py            # รันมือ (เร็ว)
+  venv/Scripts/python.exe tools/_release_consistency_verify.py --deep     # ดาวน์โหลด EXE จริงมาเทียบ sha
+  venv/Scripts/python.exe tools/_release_consistency_verify.py --strict-net  # เน็ตใช้ไม่ได้ = ไม่ผ่าน
+  ```
+
+  → จับอะไรบ้าง: แถว CSV ที่ไม่มี release (แถวผี) · release ที่ยังไม่มีแถว CSV · tag กำพร้า ·
+  digest ของ asset ไม่ตรงกับ CSV · `update.json` ชี้ release/asset ที่ไม่มีหรือ sha/ขนาดไม่ตรง ·
+  ชื่อไฟล์ใน url ไม่ตรงรุ่น · CSV ผิดรูปแบบ — และมีตัวควบคุมพิสูจน์ว่าจับของผิดได้จริงทุกกติกา
+  · เน็ตใช้ไม่ได้ = เตือนแล้วผ่านไป (ไม่บล็อก build) เว้นแต่ใส่ `--strict-net`
+  · รุ่นที่กำลังปล่อย (`VERSION` ในซอร์ส) ยังไม่มีแถว CSV ได้ = ช่วงกลางการปล่อย
+  · เจอแบบ "ลบ release แล้วลืมลบแถว CSV" ⇒ แก้ CSV หรือใช้ `tools/prune_releases.py`
+  (ไฟล์อยู่ใน `tools/` ซึ่ง gitignore ⇒ อยู่เฉพาะเครื่องนี้ อย่าลบ)
 
 ---
 
@@ -267,11 +322,12 @@
 ```
 constants.py (VERSION) → gates (ruff + compile + boot smoke 7 แท็บ + harness ทั้งชุด)
     → build_client.bat headless (EXE) → zip → sha256/size
-    → _do_release_<ver>.py (API: create release + upload EXE/ZIP, token จาก git credential)
-    → update.json (version/url/sha256/size) + docs/release_history.csv → commit + push
+    → tools/release_publish.py --apply (API: create release + upload EXE/ZIP + update.json + CSV)
+    → commit + push docs/release_history.csv
     → E2E ดาวน์โหลดจริง MATCH (size + sha) → ล้างของเก่า (wrapper/script/log/zip/dist/build)
     → สำรอง asset + ตรวจ sha ผ่านครบ (tools/prune_releases.py --apply)
     → ลบ release/tag เก่าบน GitHub เหลือแค่ล่าสุด → ✅ เสร็จ
+    ถ้าต้องถอยกลับ: tools/restore_release.py --tag <tag> --apply (ตรวจ sha กับ manifest ทุกครั้ง)
 ```
 
 สร้างโดย [haremking7025](https://github.com/haremking7025) · สำหรับ SFKeyword Desktop
