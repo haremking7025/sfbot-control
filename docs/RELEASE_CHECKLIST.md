@@ -52,6 +52,32 @@
 
   → ต้องขึ้น `HARNESS SUITE OK — เขียว N/N`
 
+- [ ] **ด่านเปิด EXE จริง** — ยกขึ้นเป็นด่านอัตโนมัติแล้ว (`tools/_packaged_exe_verify.py`):
+      เปิด EXE ที่ build แล้วจริง ซ่อนหน้าต่างทันที แล้วยืนยันว่าชื่อหน้าต่างตรงเวอร์ชัน +
+      หน้าต่างอยู่ในพื้นที่ใช้งานของจอหลัก + ขนาดใช้งานจริง + เปิดมากลางจอ (ไม่กู้พิกัดเก่า)
+      จับเคส **"แพ็กเกจผ่านแต่เปิดไม่ขึ้น"** ซึ่งด่าน sha/ขนาด จับไม่ได้เลย
+
+      ```bash
+      venv/Scripts/python.exe -X utf8 tools/_packaged_exe_verify.py            # ยอม SKIP ถ้ายังไม่ build
+      venv/Scripts/python.exe -X utf8 tools/_packaged_exe_verify.py --require  # บังคับ (ใช้ตอนปล่อย)
+      ```
+
+      > ในชุด harness ตัวนี้จะ **SKIP อย่างชัดเจน** เมื่อยังไม่มี `dist\SFKeyword\SFKeyword_v<ver>.exe`
+      > (build ล้าง dist ก่อนรัน suite) · และจะ **รันจริงเอง** ถ้ามี EXE ของเวอร์ชันนั้นอยู่
+      > → ตัวรัน `tools/_single_screen_e2e.py` (อยู่ในรายการ NON_TESTS) เป็นผู้ทำงานจริง
+- [ ] **ด่านคำสั่งในเอกสารมีจริง** — `tools/_doccmd_verify.py` (อยู่ในชุด harness ⇒ build รันเอง):
+      อ่าน `docs/*.md` + `README.md` แล้วเทียบทุกคำสั่ง `tools/…py --flag` กับเครื่องมือจริง
+      โดยอ่าน flag จาก AST ของเครื่องมือ (ทั้ง `add_argument` และแบบตรวจมือ `in sys.argv`)
+
+      ```bash
+      venv/Scripts/python.exe -X utf8 tools/_doccmd_verify.py         # ด่าน (พร้อมตัวควบคุม 17 ข้อ)
+      venv/Scripts/python.exe -X utf8 tools/_doccmd_verify.py --list  # ดัมป์ทุกคำสั่งที่เอกสารอ้าง
+      ```
+
+      > เกิดจากของจริง: เอกสารเคยสั่ง `tools/release_publish.py --selftest` ทั้งที่เครื่องมือ
+      > **ไม่มี flag นี้** — ด่านอื่นจับไม่ได้เพราะตรวจแต่โค้ด/ไฟล์ไบนารี ไม่มีตัวไหนอ่าน
+      > "คำสั่งที่เอกสารเขียน" · ชื่อไฟล์ตัวอย่าง (เช่น `_xxx_verify.py`) ต้องประกาศใน `PLACEHOLDERS`
+      > ของด่าน — และถ้าวันหนึ่งมีไฟล์นั้นขึ้นมาจริง ด่านจะบังคับให้เอาออก (ไม่มีการยกเว้นค้าง)
 - [ ] **Boot smoke headless** (จำลองเปิดแอปจากซอร์ส — DATA_DIR ชี้ temp กันแตะ config จริง):
   สร้าง `App(root)` → สลับครบ 7 แท็บ (`run/accounts/keywords/autoitem/inventory/dailykey/settings`)
   → ทุกแท็บมี widget + ไม่มี exception → วัดกริดการ์ดตั้งค่า (การ์ดบน 2 ใบ y/size เท่ากัน)
@@ -155,6 +181,9 @@
 
   - ตรวจไฟล์ EXE/ZIP + sha ก่อนแตะ GitHub · สร้าง release + อัปโหลด · ยืนยันด้วย digest ที่ GitHub
     รายงาน + ดาวน์โหลดจริงมาเทียบ sha · เขียน `update.json` และ append CSV ให้เอง · รันซ้ำได้ไม่พัง
+  - **ขั้น 1 ของ `--apply` = เปิด EXE จริง** (`_packaged_exe_verify.py --require`) — เปิดไม่ขึ้น
+    หรือไม่มี EXE = **หยุดก่อนอัปโหลด** ⇒ ของที่เปิดไม่ขึ้นไม่มีทางขึ้น GitHub
+    (ตรวจไปแล้วรอบนี้จริง ๆ จึงใช้ `--skip-exe-open` — ไม่แนะนำ)
   - หลังปล่อยแล้วรันด่านไขว้: `tools/_release_consistency_verify.py --strict-net --deep`
 
   > ⚠️ tag ต้องตรงกับ `url` ใน update.json ทุกจุด (เครื่องมือเขียนให้เอง ถ้าทำมือต้องเช็ค)
