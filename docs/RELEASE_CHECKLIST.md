@@ -255,10 +255,11 @@
       **ไม่ลบอะไรเลยถ้ามีไฟล์เดียวที่ไม่ผ่าน**:
 
   ```bash
-  venv/Scripts/python.exe tools/prune_releases.py                  # ดูเฉย ๆ ก่อน (ดีฟอลต์ ไม่ลบ)
-  venv/Scripts/python.exe tools/prune_releases.py --apply          # ลบจริงหลังสำรอง+ตรวจผ่านครบ
-  venv/Scripts/python.exe tools/prune_releases.py --keep v1.2.2    # ระบุ tag ที่เก็บ (ดีฟอลต์ = ล่าสุด)
-  venv/Scripts/python.exe tools/prune_releases.py --selftest       # ตรวจตรรกะในเครื่อง (ไม่แตะเน็ต)
+  venv/Scripts/python.exe tools/prune_releases.py                    # ดูเฉย ๆ ก่อน (ดีฟอลต์ ไม่ลบ)
+  venv/Scripts/python.exe tools/prune_releases.py --apply            # ลบจริงหลังสำรอง+ตรวจผ่านครบ
+  venv/Scripts/python.exe tools/prune_releases.py --keep-last 2      # เก็บ 2 ตัวใหม่สุด (นโยบายปกติ)
+  venv/Scripts/python.exe tools/prune_releases.py --keep v1.2.2      # ระบุ tag เอง (ระบุซ้ำ/คั่นจุลภาคได้)
+  venv/Scripts/python.exe tools/prune_releases.py --selftest         # ตรวจตรรกะในเครื่อง (ไม่แตะเน็ต)
   ```
 
   → สำรองลง `C:\tmp\gh_release_backup\<tag>\` พร้อม `manifest.json` (เก็บ tag · วันที่ปล่อย ·
@@ -288,8 +289,21 @@
   `v0.0.0-restore-test` แล้วลบทิ้งให้เอง เหลือแต่ release จริงบน GitHub
   (หมายเหตุ: GitHub ตั้ง `published_at` ใหม่เอง — วันปล่อยเดิมกู้คืนไม่ได้)
 
+  > ⚠️ วิธีถอยลูกค้าที่ถูกต้อง — ตัวอัปเดตในแอปเสนอเฉพาะรุ่นที่ **ใหม่กว่า** (`updater._is_newer`):
+  > · ถ้าแค่ชี้ `update.json` ไปที่รุ่นเก่า ลูกค้าจะไม่เห็นอะไรเลย (ไม่ถือว่ามีอัปเดต)
+  > · ถ้าต้องถอยทั้งฐานลูกค้า ให้ตั้ง `force_update: true` ใน `update.json` — แฟล็กนี้
+  >   ข้ามการเทียบเวอร์ชัน ⇒ รุ่นเก่าจะถูกเสนอให้ติดตั้งได้ (ปิดกลับหลังถอยเสร็จ ไม่งั้นเด้งซ้ำ)
+  > · แอปเก็บ EXE ตัวเดิมไว้เป็น `.exe.old` ในเครื่องลูกค้าอยู่แล้ว (ถอยได้เฉพาะเครื่องนั้น)
+
+  > **นโยบายเก็บของ (ตัดสิน 13 ก.ย. 2569): เก็บตัวล่าสุด + ตัวก่อนหน้าไว้เป็นทางถอย**
+  > ⇒ ใช้ `--keep-last 2` เป็นค่าปกติ **อย่าใช้ค่าดีฟอลต์ (เก็บตัวเดียว)** เพราะจะลบตัวก่อนหน้า
+  > ทิ้งทันทีที่ปล่อยรอบใหม่ — ซึ่งเป็นตัวที่ต้องใช้เวลาลูกค้ารายงานว่าเวอร์ชันใหม่มีปัญหา
+  > (ตัวที่ยังอยู่บน GitHub ติดตั้งเองได้ทันทีโดยไม่ต้องพึ่งสำรองในเครื่อง)
+
 - [ ] ตรวจผลหลังลบ: คำสั่ง `--apply` จะพิมพ์ release ที่เหลือบน GitHub ให้ดูก่อนจบ
-      → ต้องเหลือแค่ตัวล่าสุด และต้องอัปเดต `docs/release_history.csv` ให้ตรง (ข้อถัดไป)
+      → ต้องเหลืออย่างน้อย 2 ตัว (ล่าสุด + ตัวก่อนหน้า) และอัปเดต `docs/release_history.csv`
+      ให้ตรงกับที่เหลือจริง (ข้อถัดไป) · ด่าน `_release_consistency_verify.py` บังคับว่าทุกแถว
+      ต้องมี release และทุก release ต้องมีแถว
 
 - [ ] ลบ EXE/ZIP เก่าในโปรเจกต์ + build artifacts (`build\` `build_protected\`) ไหม?
   > ⚠️ **ห้ามลบ `.cython-cache\`** — เป็นแคช .pyd ที่ทำให้ build รอบหน้าวิ่งแบบ cache hit
@@ -326,7 +340,7 @@ constants.py (VERSION) → gates (ruff + compile + boot smoke 7 แท็บ + h
     → commit + push docs/release_history.csv
     → E2E ดาวน์โหลดจริง MATCH (size + sha) → ล้างของเก่า (wrapper/script/log/zip/dist/build)
     → สำรอง asset + ตรวจ sha ผ่านครบ (tools/prune_releases.py --apply)
-    → ลบ release/tag เก่าบน GitHub เหลือแค่ล่าสุด → ✅ เสร็จ
+    → ลบ release/tag เก่าบน GitHub เหลือ 2 ตัวล่าสุด (เก็บตัวก่อนหน้าไว้เป็นทางถอย) → ✅ เสร็จ
     ถ้าต้องถอยกลับ: tools/restore_release.py --tag <tag> --apply (ตรวจ sha กับ manifest ทุกครั้ง)
 ```
 

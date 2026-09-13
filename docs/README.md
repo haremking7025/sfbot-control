@@ -134,7 +134,8 @@ call "%~dp0build_client.bat"
 2. ด่านไขว้ — `tools/_release_consistency_verify.py --strict-net --deep` → ต้องเขียว
 3. **E2E** — ดาวน์โหลด EXE จาก release จริง → size + sha ต้อง MATCH เป๊ะ
 4. commit + push `docs/release_history.csv`
-5. ล้างของ (wrapper/script/log/zip/dist/build) + ลบ release/tag เก่าบน GitHub เหลือแค่ล่าสุด
+5. ล้างของ (wrapper/script/log/zip/dist/build) + prune release/tag เก่าบน GitHub **เหลือ 2 ตัวล่าสุด**
+   (`tools/prune_releases.py --keep-last 2` — เก็บตัวก่อนหน้าไว้ให้ติดตั้งย้อนกลับได้ทันที)
 
 > ไฟล์ `.exe` ตัวเดียวเท่านั้นที่ต้องแจกจ่ายให้ลูกค้า — ทำงานได้เองโดยไม่ต้องมีไฟล์อื่น
 > ข้างๆ
