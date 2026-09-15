@@ -1,7 +1,7 @@
 {
-  "version": "1.3.95",
-  "url": "https://github.com/haremking7025/sfbot-control/releases/download/v1.3.95/SFKeyword_v1.3.95.exe",
-  "sha256": "E8D287D44E982F41E1ABFABB442CAA3B89EAFDFB26B8101D71E5C04F2ABAE981",
-  "size": 28773115,
-  "notes": "แก้บั๊กเปิดโปรแกรมไม่ขึ้น — สคริปต์ย้อนเวอร์ชันลบโค้ดสร้างช่อง 'พร้อมกัน' ทิ้ง (AttributeError: _inv_op_concurrency_var)"
+  "version": "1.3.96",
+  "url": "https://github.com/haremking7025/sfbot-control/releases/download/v1.3.96/SFKeyword_v1.3.96.exe",
+  "sha256": "D6B7757748FECEA93DE31171B73BC0B95FA119359F2AFD43F33E1C4910B1A564",
+  "size": 28776918,
+  "notes": "ไอดีพร้อมกันได้ถึง 1,200 + เลือกสีชื่อไอดีเองได้\n\n• เพิ่มจำนวนพร้อมกันสูงสุดจาก 200 เป็น 1,200 ไอดี\n• หน้าตั้งค่าเลือกสีชื่อไอดีเองได้ ลบได้ทีละสี พร้อมตัวอย่างทาด้วยสีจริง\n• ช่องกรอกคีย์เวิร์ดปรับให้พอดีกับความกว้างแถว\n• แถบเลื่อนเข้าธีมมืดทุกจุด"
 }
