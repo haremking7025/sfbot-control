@@ -1,7 +1,7 @@
 {
-  "version": "1.3.92",
-  "url": "https://github.com/haremking7025/sfbot-control/releases/download/v1.3.92/SFKeyword_v1.3.92.exe",
-  "sha256": "8962A853FD1E815FA24813116625AFB175ABCAD2A98FC3B26D415BE76B815628",
-  "size": 28772945,
-  "notes": "แก้ dropdown 'พร้อมกัน' — เลือกทุกตัวเลข 1–1,200 (เดิมข้ามทีละ 5 หลัง 30) + scrollbar ของ dropdown เปลี่ยนจากสีขาวเป็นสีมืดให้เข้าธีม"
+  "version": "1.3.93",
+  "url": "https://github.com/haremking7025/sfbot-control/releases/download/v1.3.93/SFKeyword_v1.3.93.exe",
+  "sha256": "5EBC13C7BE5BBEFB4560B0A86CF997E483EBBEECCF032AA8A841678158C4A116",
+  "size": 28775428,
+  "notes": "แก้ dropdown scrollbar จากสีขาวเป็นสีมืด (DarkCombobox) + presets ทุกตัวเลข 1-1,200"
 }
