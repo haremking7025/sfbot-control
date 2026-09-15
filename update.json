@@ -3,5 +3,5 @@
   "url": "https://github.com/haremking7025/sfbot-control/releases/download/v1.3.95/SFKeyword_v1.3.95.exe",
   "sha256": "E8D287D44E982F41E1ABFABB442CAA3B89EAFDFB26B8101D71E5C04F2ABAE981",
   "size": 28773115,
-  "notes": "fix _inv_op_concurrency_var AttributeError — แก้ revive script bug"
+  "notes": "แก้บั๊กเปิดโปรแกรมไม่ขึ้น — สคริปต์ย้อนเวอร์ชันลบโค้ดสร้างช่อง 'พร้อมกัน' ทิ้ง (AttributeError: _inv_op_concurrency_var)"
 }
