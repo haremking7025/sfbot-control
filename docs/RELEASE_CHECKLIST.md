@@ -206,10 +206,21 @@
 - [ ] ปล่อยทั้งชุดในคำสั่งเดียว (release + อัปโหลด EXE/ZIP + `update.json` + CSV):
 
   ```bash
-  venv/Scripts/python.exe tools/release_publish.py              # ดูเฉย ๆ ก่อน (ดีฟอลต์ ไม่ทำอะไร)
-  venv/Scripts/python.exe tools/release_publish.py --apply      # ปล่อยจริง
-  venv/Scripts/python.exe tools/release_publish.py --selftest   # ตรวจตรรกะในเครื่อง (ไม่แตะเน็ต)
+  venv/Scripts/python.exe tools/release_publish.py --summary "แก้บั๊กเปิดโปรแกรมไม่ขึ้น"                       # ดูเฉย ๆ ก่อน (ดีฟอลต์ ไม่ทำอะไร)
+  venv/Scripts/python.exe tools/release_publish.py --apply --summary "แก้บั๊กเปิดโปรแกรมไม่ขึ้น" --detail "สคริปต์ย้อนเวอร์ชันลบโค้ดสร้างช่อง 'พร้อมกัน' ทิ้ง"   # ปล่อยจริง
+  venv/Scripts/python.exe tools/release_publish.py --apply --summary-file สรุป.txt                           # สรุปจากไฟล์ (บรรทัดแรก = หัวข้อ · บรรทัดขึ้นต้นด้วย - = ข้อ)
+  venv/Scripts/python.exe tools/release_publish.py --selftest                                                # ตรวจตรรกะในเครื่อง (ไม่แตะเน็ต)
   ```
+
+  - **`notes` (ข้อความที่ลูกค้าเห็นทุกคนในหน้าต่างอัปเดต) มาจาก `--summary`/`--detail`** —
+    สคริปต์จัดรูปแบบให้เอง (บรรทัดแรก = หัวข้อ ที่เหลือเป็น `•` ข้อ) แล้ว **ตรวจก่อนใช้**:
+    ห้ามคำอังกฤษปน (ยกเว้นคำเทคนิค/เลขรุ่น/ชื่อไฟล์) · ห้ามคำในคอลัมน์ "ห้ามใช้" ของ
+    `docs/WORDING.md` · จับคำอังกฤษที่พิมพ์ผิดบ่อย · ห้ามบรรทัดซ้ำ · ไม่เกิน 20 บรรทัด
+    (เท่าที่หน้าต่างอัปเดตแสดง) ⇒ **ไม่ผ่าน = ไม่ปล่อย**
+    เกิดจากของจริง: notes v1.3.95 หลุดว่า `revive script bug` (ที่ต้องเป็น revert) และปนอังกฤษ
+    ทั้งรุ่น ทั้งที่รุ่นก่อน ๆ เป็นไทย · ทางเดิม `--notes`/`--notes-file` ยังใช้ได้ แต่ต้องผ่าน
+    กติกาเดียวกัน · ถ้าเป็นคำเทคนิคจริงที่ยังไม่มี ให้เพิ่มคำนั้นในคอลัมน์ "ใช้คำนี้" ของ
+    `docs/WORDING.md` (กติกาจะรับทันที เพราะอ่านจากเอกสาร ไม่ก๊อปไว้ในโค้ด)
 
   - ตรวจไฟล์ EXE/ZIP + sha ก่อนแตะ GitHub · สร้าง release + อัปโหลด · ยืนยันด้วย digest ที่ GitHub
     รายงาน + ดาวน์โหลดจริงมาเทียบ sha · เขียน `update.json` และ append CSV ให้เอง · รันซ้ำได้ไม่พัง
@@ -269,7 +280,7 @@
   | `url` | release download URL ของ **EXE** (ไม่ใช่ ZIP) |
   | `sha256` | จากขั้นตอน 4 (sha ของ EXE, hex 64 ตัว พิมพ์ใหญ่) |
   | `size` | จากขั้นตอน 4 (bytes ของ EXE) |
-  | `notes` | สรุปสิ่งที่เปลี่ยน — updater เอาไปแสดงในหน้าต่างอัปเดต |
+  | `notes` | สรุปสิ่งที่เปลี่ยน (ไทยล้วน) — updater เอาไปแสดงในหน้าต่างอัปเดต · `tools/release_publish.py` สร้างให้เองจาก `--summary`/`--detail` พร้อมตรวจถ้อยคำ (ดูขั้นตอน 5) |
 
   > ⚠️ update.json ต้องชี้ไปที่ **EXE** ตรงๆ (sha/size ของ EXE) —
   > ไม่ใช้ ZIP เป็น target อัปเดตแล้ว กัน updater ดาวน์โหลดผิดไฟล์
