@@ -1,7 +1,7 @@
 {
-  "version": "1.3.93",
-  "url": "https://github.com/haremking7025/sfbot-control/releases/download/v1.3.93/SFKeyword_v1.3.93.exe",
-  "sha256": "5EBC13C7BE5BBEFB4560B0A86CF997E483EBBEECCF032AA8A841678158C4A116",
-  "size": 28775428,
-  "notes": "แก้ dropdown scrollbar จากสีขาวเป็นสีมืด (DarkCombobox) + presets ทุกตัวเลข 1-1,200"
+  "version": "1.3.94",
+  "url": "https://github.com/haremking7025/sfbot-control/releases/download/v1.3.94/SFKeyword_v1.3.94.exe",
+  "sha256": "07DD217090E0266D736A41AE210415E557C787208D468DF522944ACA9109E21E",
+  "size": 28772810,
+  "notes": "revert DarkCombobox — คืน ttk.Combobox เดิม + presets ทุกตัวเลข 1-1200"
 }
