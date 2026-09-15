@@ -1,7 +1,7 @@
 {
-  "version": "1.3.91",
-  "url": "https://github.com/haremking7025/sfbot-control/releases/download/v1.3.91/SFKeyword_v1.3.91.exe",
-  "sha256": "60BCB8725EA6951E59787B2BA15C7A6575F09B930B3C001B910A1865492062FB",
-  "size": 28772805,
-  "notes": "เพิ่มขีดจำกัด 'พร้อมกัน' เป็น 1,200 ไอดี (เดิม 200)\n\nทำไม: ผู้ใช้ที่มีชุดไอดีใหญ่ (100-200+) ต้องรันหลายรอบเพราะ ขีดจำกัดเดิมบังคับให้ลดจำนวน 'พร้อมกัน' ลง\n\nสิ่งที่เปลี่ยน:\n  - MAX_CONCURRENCY จาก 200 → 1,200\n  - dropdown presets อัปเดตอัตโนมัติ (1–1,200)\n  - ทุกจุดที่ clamp ค่าใช้ constant เดียวกัน → ไม่มี hardcoded 200 ที่อื่น\n\nคุณภาพ:\n  - ชุดด่าน 58/58 เขียว · ruff สะอาด"
+  "version": "1.3.92",
+  "url": "https://github.com/haremking7025/sfbot-control/releases/download/v1.3.92/SFKeyword_v1.3.92.exe",
+  "sha256": "8962A853FD1E815FA24813116625AFB175ABCAD2A98FC3B26D415BE76B815628",
+  "size": 28772945,
+  "notes": "แก้ dropdown 'พร้อมกัน' — เลือกทุกตัวเลข 1–1,200 (เดิมข้ามทีละ 5 หลัง 30) + scrollbar ของ dropdown เปลี่ยนจากสีขาวเป็นสีมืดให้เข้าธีม"
 }
