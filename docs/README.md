@@ -21,7 +21,8 @@
 | ⚙ ตั้งค่า | หน่วงระหว่างล็อกอิน (เว้นจังหวะล็อกอินไอดีเดียวกัน), เปิดพร้อมวินโดวส์, **ย้อนกลับเวอร์ชัน** (ติดตั้งรุ่นก่อนหน้ากลับจาก GitHub ในโปรแกรม) |
 
 ระบบเสริม: ถาดระบบ (ซ่อนลงถาดเมื่อกด X), เปิดพร้อมวินโดวส์ (Run key), single-instance
-กันเปิดซ้อน, rate limit เว้นจังหวะล็อกอินต่อไอดี,
+กันเปิดซ้อน (กุญแจผูกกับโฟลเดอร์ข้อมูล — โปรแกรมที่รันด้วยโฟลเดอร์ข้อมูลอื่น เช่นตอนเทสต์
+หรือโหมดพกพา ไม่แย่งกุญแจกัน), rate limit เว้นจังหวะล็อกอินต่อไอดี,
 บันทึก cookie ต่อไอดี (ล็อกอินครั้งเดียวใช้ข้ามรอบ), redaction รหัสผ่าน/cookie ในทุก log
 
 ---
@@ -211,6 +212,7 @@ build_client.bat
 | `settings_backups/` | สำรองตั้งค่า (สำหรับ "กู้คืนการตั้งค่า") |
 | `webhook_sent_messages.json` | ประวัติข้อความ Discord ที่เคยส่ง |
 | `sfkeyword_crash.log` | crash log (กันหลุดตอน callback UI) |
+| `unknown_web_messages.jsonl` | คำตอบของเว็บที่ "อ่านผลไม่ได้" (จดไว้ทบทวนเป็นรอบ ผ่าน `core/web_signals.py` — ปิดค่าลับก่อนเขียน · หมุนที่ 256 KB) |
 
 ---
 
@@ -220,7 +222,7 @@ build_client.bat
 
 | ไฟล์ | หน้าที่ |
 |---|---|
-| `sfkeyword.pyw` | **Entry point** — bootstrap เท่านั้น: DPI awareness, spawn `pythonw.exe`, single-instance mutex, `--tray` / auto-start detection, สร้าง `App` แล้วเข้า mainloop |
+| `sfkeyword.pyw` | **Entry point** — bootstrap เท่านั้น: DPI awareness, spawn `pythonw.exe`, single-instance (เรียก `core/instance_lock.py` — ชื่อกุญแจผูกกับโฟลเดอร์ข้อมูล), `--tray` / auto-start detection, สร้าง `App` แล้วเข้า mainloop |
 | `build_client.bat` | สคริปต์ build .exe (venv → ruff → กันโค้ด (ไม่บังคับ) → PyInstaller) |
 | `tools/get_version.py` | อ่าน `VERSION` จาก `sfkeyword_lib/core/constants.py` ให้ build script ตั้งชื่อไฟล์ |
 | `tools/check_venv_manifest.py` | ตรวจว่า venv ตรงกับ manifest dependencies (requirements.txt) ก่อน build |
@@ -246,6 +248,7 @@ build_client.bat
 | `deps` | รวม import ของ third-party/optional (tkinter, PIL, requests, cryptography) + ตัวแปรบอกความพร้อม (`_PIL_OK` …) |
 | `constants` | `VERSION`, URL, สีธีม, ตัวเลือก dropdown (หน่วย/แรงค์/ประเภทไอดี), ความกว้างคอลัมน์ตาราง |
 | `paths` | ตำแหน่งโฟลเดอร์ข้อมูล, migrate ข้อมูลรุ่นเก่า, `_resource_path`, จัดการ Run key "เปิดพร้อมวินโดวส์" |
+| `instance_lock` | กุญแจกันเปิดโปรแกรมซ้อน — ชื่อ mutex ผูกกับ *โฟลเดอร์ข้อมูล* (โฟลเดอร์มาตรฐานได้ชื่อเดิม · โฟลเดอร์อื่นได้คนละดอก ⇒ ด่านเทสต์/โหมดพกพาเปิดพร้อมตัวจริงได้โดยไม่แตะหน้าต่างกัน) |
 | `security` | เข้ารหัสรหัสผ่านตอนเก็บ (DPAPI / Fernet / XOR fallback) |
 | `http_flow` | **Pure-HTTP engine** (backend ปัจจุบัน): ล็อกอิน, cookie fast-path, ส่งคีย์เวิร์ด, เลือกแรงค์/หน่วย, ยืนยันรับไอเทม, rate limit เว้นจังหวะล็อกอินต่อไอดี |
 | `webhook` | ดึงคูปอง SF (`fetch_sf_coupons`), ส่ง/จัดรูปแบบ Discord webhook |
