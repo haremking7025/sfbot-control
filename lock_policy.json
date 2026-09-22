@@ -12,11 +12,10 @@
     "รหัสหลุด = แก้ code ของเครื่องนั้นใน devices (มีผลรอบเปิดโปรแกรมถัดไป) · ถอนทั้งฐาน = active: false",
     "ด่านกันพลาด: ถ้าดึงไฟล์นี้ไม่ได้ เครื่องจะคงนโยบายเดิมไว้ (ไม่ปลดล็อกให้เอง)"
   ],
-  "revision": 0,
+  "revision": 1,
   "active": false,
-  "pages": ["autoitem", "inventory", "dailykey"],
+  "pages": [],
   "cap": 5,
   "code": "",
-  "devices": {},
-  "message": ""
+  "devices": {}
 }
