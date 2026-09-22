@@ -12,10 +12,14 @@
     "รหัสหลุด = แก้ code ของเครื่องนั้นใน devices (มีผลรอบเปิดโปรแกรมถัดไป) · ถอนทั้งฐาน = active: false",
     "ด่านกันพลาด: ถ้าดึงไฟล์นี้ไม่ได้ เครื่องจะคงนโยบายเดิมไว้ (ไม่ปลดล็อกให้เอง)"
   ],
-  "revision": 1,
+  "revision": 2,
   "active": false,
-  "pages": [],
+  "pages": [
+    "autoitem",
+    "inventory",
+    "dailykey"
+  ],
   "cap": 5,
-  "code": "",
+  "code": "sha256$910e1cfd920ff2af8a6e7fd9ebaa2468$28a73cc5eb17789df66d1633a66bfec4f0ca44df8b5e3809268757c74f8663dc",
   "devices": {}
 }
