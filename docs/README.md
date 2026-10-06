@@ -4,7 +4,7 @@
 กรอกคีย์เวิร์ด/โค้ดกิจกรรมให้ทุกไอดีอัตโนมัติ ดึงคีย์ของแจกประจำวันส่งเข้า Discord
 และรับไอเทมฟรีอัตโนมัติ
 
-เวอร์ชันปัจจุบัน: **1.4.0** *(= `VERSION` ใน `sfkeyword_lib/core/constants.py` — อัปเดตบรรทัดนี้พร้อมปล่อยรุ่นใหม่)*
+เวอร์ชันปัจจุบัน: **1.4.1** *(= `VERSION` ใน `sfkeyword_lib/core/constants.py` — อัปเดตบรรทัดนี้พร้อมปล่อยรุ่นใหม่)*
 
 ---
 
@@ -78,8 +78,8 @@ build_client.bat
 
 สคริปต์จะทำตามลำดับ:
 
-1. อ่านเวอร์ชันจาก `sfkeyword_lib/core/constants.py` (`VERSION = "1.4.0"`) ผ่าน `tools/get_version.py`
-   → ตั้งชื่อไฟล์เป็น `SFKeyword_v1.4.0.exe` อัตโนมัติ (ตัวอย่างใช้เลขรุ่นปัจจุบัน — รุ่นถัดไปเลขเปลี่ยนตาม `VERSION`)
+1. อ่านเวอร์ชันจาก `sfkeyword_lib/core/constants.py` (`VERSION = "1.4.1"`) ผ่าน `tools/get_version.py`
+   → ตั้งชื่อไฟล์เป็น `SFKeyword_v1.4.1.exe` อัตโนมัติ (ตัวอย่างใช้เลขรุ่นปัจจุบัน — รุ่นถัดไปเลขเปลี่ยนตาม `VERSION`)
 2. **ล้าง artifacts รอบก่อนอัตโนมัติ** (spec/exe/zip/workdir) — กันขยะสะสมทุก build
 3. ตรวจ venv ตรง manifest + รัน `ruff` ตรวจบั๊ก/เดดโค้ด (`python -m ruff check
    --no-respect-gitignore .` ตั้งค่าใน
@@ -101,8 +101,8 @@ build_client.bat
      ไป `build_protected/` → compile `sfkeyword_lib/` ด้วย Cython → obfuscate `sfkeyword.pyw`
      ด้วย PyArmor → build จากสำเนาที่กันโค้ดแล้ว *(ต้องมี MSVC Build Tools)*
    - **N** — build จากซอร์สตรงๆ
-5. `PyInstaller --onefile --noconsole` → ไฟล์ออกที่ **`dist\SFKeyword\SFKeyword_v1.4.0.exe`**
-   + สร้าง `SFKeyword_v1.4.0.zip` + คำนวณ SHA-256
+5. `PyInstaller --onefile --noconsole` → ไฟล์ออกที่ **`dist\SFKeyword\SFKeyword_v1.4.1.exe`**
+   + สร้าง `SFKeyword_v1.4.1.zip` + คำนวณ SHA-256
 
 ### Build แบบ headless (ใช้จริงตอนปล่อย release)
 

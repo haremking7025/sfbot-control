@@ -200,6 +200,7 @@ AST หา construct ที่ทำให้ Cython crash (เช่น `sorted
 | `python -X utf8 tools/_buildhygiene_verify.py` | PATH ที่ใช้ build ถูกตัดแล้ว + บิลด์ไม่มี DLL ของโปรแกรมอื่นหลุดติด (H1–H5) |
 | `python -X utf8 tools/_startupreg_verify.py` | ค่าเปิดพร้อม Windows ต้องชี้ `sfkeyword.pyw` ไม่ใช่สคริปต์ทดสอบใน tools\ (S1–S12) |
 | `python -X utf8 tools/_leftover_verify.py` | ไม่มีของค้างจากรอบทดสอบ: Run/RunOnce · Startup · scheduled task · ไฟล์ชั่วคราว · โฟลเดอร์ %TEMP% ค้าง (B1–B6) |
+| `python -X utf8 tools/_startupheal_proof.py` | เปิดแอปจริงแล้วค่าเปิดพร้อมวินหดอส์ถูกซ่อมถูกต้อง (สวิตช์ปิด=ไม่แตะ) (H1–H4) |
 | `python -X utf8 tools/_bootpopup_proof.py` | ไม่มีสภาพตัวติดตั้ง Python ค้างที่ทำป๊อปอัปเด้งตอนบูต + ค่าเปิดพร้อม Windows ชี้ไฟล์จริง (P1–P5) |
 
 `_redact_verify.py` รายงานเวลาให้ด้วย: บรรทัด log ปกติ ~0.65 µs (เดิมต้องสแกน
@@ -320,7 +321,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File tools/build_tools/measure_st
 
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File tools/build_tools/smoke_test_exe.ps1 `
-    -Exe dist\SFKeyword\SFKeyword_v1.4.0.exe        # หรือ ..._x86.exe
+    -Exe dist\SFKeyword\SFKeyword_v1.4.1.exe        # หรือ ..._x86.exe
 ```
 
 | เคส | ต้องผ่าน |
@@ -419,6 +420,10 @@ powershell -NoProfile -ExecutionPolicy Bypass -File tools/build_tools/smoke_test
   และค่าค้างจนกว่าจะกดสวิตช์ซ้ำ
   · แก้โดย `_app_entry_path()` หา `sfkeyword.pyw` จากโฟลเดอร์ของแพ็กเจ้าเอง (ไม่ใช่สคริปต์ที่ถูกเรียก) · หาไม่เจอ = `set_startup_enabled()` ไม่แตะ registry เลย
   · ด่านที่ล็อกไว้: `tools/_startupreg_verify.py` (S1–S12) · `tools/_leftover_verify.py` (B1–B6)
+- **สวิตช์ปิดแต่โปรแกรมเปิดอัตโนมัติให้เอง** — `app_core` เคยตัดสิน “เปิดครั้งแรก” จากการมีไฟล์เก่า `sfkeyword_settings.json`
+  ⇒ เครื่องที่ย้ายข้อมูลเสร็จแล้ว ไฟล์นั้นถูกเปลี่ยนชื่อเป็น `.migrated_backup` ⇒ ถูกมองเป็น“เปิดครั้งแรก” ทุกบูต
+  และสั่งเปิดพร้อมวินโดวส์ให้เองทั้งที่ผู้ใช้ปิดไว้ (พบด้วย `tools/_startupheal_proof.py`)
+  · แก้โดยให้ `_load_settings()` จำว่า“เคยมีค่าตั้งเดิมหรือไม่” (`_settings_loaded_any`) · ด่าน: `tools/_startupheal_proof.py` (H1–H4)
 
 ## รองรับวินโดวส์เวอร์ชัน/สถาปัตยกรรมไหน
 
