@@ -200,6 +200,7 @@ AST หา construct ที่ทำให้ Cython crash (เช่น `sorted
 | `python -X utf8 tools/_buildhygiene_verify.py` | PATH ที่ใช้ build ถูกตัดแล้ว + บิลด์ไม่มี DLL ของโปรแกรมอื่นหลุดติด (H1–H5) |
 | `python -X utf8 tools/_startupreg_verify.py` | ค่าเปิดพร้อม Windows ต้องชี้ `sfkeyword.pyw` ไม่ใช่สคริปต์ทดสอบใน tools\ (S1–S12) |
 | `python -X utf8 tools/_leftover_verify.py` | ไม่มีของค้างจากรอบทดสอบ: Run/RunOnce · Startup · scheduled task · ไฟล์ชั่วคราว · โฟลเดอร์ %TEMP% ค้าง (B1–B6) |
+| `python -X utf8 tools/_bootpopup_proof.py` | ไม่มีสภาพตัวติดตั้ง Python ค้างที่ทำป๊อปอัปเด้งตอนบูต + ค่าเปิดพร้อม Windows ชี้ไฟล์จริง (P1–P5) |
 
 `_redact_verify.py` รายงานเวลาให้ด้วย: บรรทัด log ปกติ ~0.65 µs (เดิมต้องสแกน
 ทุก pattern ทุกบรรทัด ~3.9 µs) เพราะมีด่านเร็วตัดจบบรรทัดที่ไม่มีคำต้องสงสัย
