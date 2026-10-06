@@ -198,6 +198,8 @@ AST หา construct ที่ทำให้ Cython crash (เช่น `sorted
 | `python -X utf8 tools/_tamper_verify.py` | ชั้นกันการถูกแกะตอนรัน (19 เคส) |
 | `python -X utf8 tools/_redact_verify.py` | ความลับไม่หลุดลง log — 6 รูปแบบ + ชุด generate + ยิงผ่าน `logging` จริง |
 | `python -X utf8 tools/_buildhygiene_verify.py` | PATH ที่ใช้ build ถูกตัดแล้ว + บิลด์ไม่มี DLL ของโปรแกรมอื่นหลุดติด (H1–H5) |
+| `python -X utf8 tools/_startupreg_verify.py` | ค่าเปิดพร้อม Windows ต้องชี้ `sfkeyword.pyw` ไม่ใช่สคริปต์ทดสอบใน tools\ (S1–S12) |
+| `python -X utf8 tools/_leftover_verify.py` | ไม่มีของค้างจากรอบทดสอบ: Run/RunOnce · Startup · scheduled task · ไฟล์ชั่วคราว · โฟลเดอร์ %TEMP% ค้าง (B1–B6) |
 
 `_redact_verify.py` รายงานเวลาให้ด้วย: บรรทัด log ปกติ ~0.65 µs (เดิมต้องสแกน
 ทุก pattern ทุกบรรทัด ~3.9 µs) เพราะมีด่านเร็วตัดจบบรรทัดที่ไม่มีคำต้องสงสัย
@@ -411,6 +413,11 @@ powershell -NoProfile -ExecutionPolicy Bypass -File tools/build_tools/smoke_test
   ต้องไม่มี `ucrtbase.dll` · ด่านที่ล็อกไว้กันถอยหลัง: `tools/_buildhygiene_verify.py`
   (H1–H3 ตรวจฟังก์ชัน `pyinstaller_env()` กับขั้นรัน PyInstaller · H4 สแกน EXE/โฟลเดอร์
   ที่ build แล้ว · H5 ตัวควบคุมเชิงลบ)
+- **ค่าเปิดพร้อม Windows ชี้สคริปต์ทดสอบ** — `_get_startup_command()` เดิมสร้างคำสั่งจาก `__main__.__file__` / `sys.argv[0]`
+  ⇒ วันที่ 6 ต.ค. 2569 รันชุดด่านแล้วค่าใน `HKCU\...\Run` กลายเป็น `"...	ools\_tray_exit_harness.py" --tray` ⇒ เครื่องเปิดสคริปต์ทดสอบแทนโปรแกรมทุกครั้งที่บูต
+  และค่าค้างจนกว่าจะกดสวิตช์ซ้ำ
+  · แก้โดย `_app_entry_path()` หา `sfkeyword.pyw` จากโฟลเดอร์ของแพ็กเจ้าเอง (ไม่ใช่สคริปต์ที่ถูกเรียก) · หาไม่เจอ = `set_startup_enabled()` ไม่แตะ registry เลย
+  · ด่านที่ล็อกไว้: `tools/_startupreg_verify.py` (S1–S12) · `tools/_leftover_verify.py` (B1–B6)
 
 ## รองรับวินโดวส์เวอร์ชัน/สถาปัตยกรรมไหน
 
