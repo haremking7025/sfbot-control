@@ -4,7 +4,7 @@
 กรอกคีย์เวิร์ด/โค้ดกิจกรรมให้ทุกไอดีอัตโนมัติ ดึงคีย์ของแจกประจำวันส่งเข้า Discord
 และรับไอเทมฟรีอัตโนมัติ
 
-เวอร์ชันปัจจุบัน: **1.3.85**
+เวอร์ชันปัจจุบัน: **1.4.0** *(= `VERSION` ใน `sfkeyword_lib/core/constants.py` — อัปเดตบรรทัดนี้พร้อมปล่อยรุ่นใหม่)*
 
 ---
 
@@ -18,7 +18,7 @@
 | 📦 ฝาก/เบิก | ดู/เลือกไอเทม (กรองหมวด, หมดอายุ, ลบได้) + ฝาก/เบิก/ลบทั้งหมด — หลายบัญชีพร้อมกัน, ปิดเซสชันอัตโนมัติหลังจบรอบ, รองรับบัญชีที่มีไอเทมหลักล้านชิ้น (งานค้างในคิวมีเพดาน + ไม่ถือรายการทั้งชุดในแรม · หน้าต่างดู/เลือกไอเทมแสดง 2,000 แถวแรกแล้วให้ค้นหา/เลือกหมวด) |
 | 🔑 คีย์ประจำวัน | ดึงคีย์แจกประจำวัน + ส่งเข้า Discord Webhook อัตโนมัติ (00:05 ทุกวัน) / ด้วยมือ, ประวัติข้อความที่เคยส่ง |
 | 🎁 รับไอเทมฟรี | ระบบแยกต่างหาก (บัญชี/Webhook ของตัวเอง) รับไอเทมฟรีอัตโนมัติ |
-| ⚙ ตั้งค่า | หน่วงระหว่างล็อกอิน (เว้นจังหวะล็อกอินไอดีเดียวกัน), เปิดพร้อมวินโดวส์ |
+| ⚙ ตั้งค่า | หน่วงระหว่างล็อกอิน (เว้นจังหวะล็อกอินไอดีเดียวกัน), เปิดพร้อมวินโดวส์, จำนวนไฟล์ .txt ล่าสุดที่จำไว้ (3/6/9) |
 
 ระบบเสริม: ถาดระบบ (ซ่อนลงถาดเมื่อกด X), เปิดพร้อมวินโดวส์ (Run key), single-instance
 กันเปิดซ้อน (กุญแจผูกกับโฟลเดอร์ข้อมูล — โปรแกรมที่รันด้วยโฟลเดอร์ข้อมูลอื่น เช่นตอนเทสต์
@@ -78,8 +78,8 @@ build_client.bat
 
 สคริปต์จะทำตามลำดับ:
 
-1. อ่านเวอร์ชันจาก `sfkeyword_lib/core/constants.py` (`VERSION = "1.3.79"`) ผ่าน `tools/get_version.py`
-   → ตั้งชื่อไฟล์เป็น `SFKeyword_v1.3.79.exe` อัตโนมัติ
+1. อ่านเวอร์ชันจาก `sfkeyword_lib/core/constants.py` (`VERSION = "1.4.0"`) ผ่าน `tools/get_version.py`
+   → ตั้งชื่อไฟล์เป็น `SFKeyword_v1.4.0.exe` อัตโนมัติ (ตัวอย่างใช้เลขรุ่นปัจจุบัน — รุ่นถัดไปเลขเปลี่ยนตาม `VERSION`)
 2. **ล้าง artifacts รอบก่อนอัตโนมัติ** (spec/exe/zip/workdir) — กันขยะสะสมทุก build
 3. ตรวจ venv ตรง manifest + รัน `ruff` ตรวจบั๊ก/เดดโค้ด (`python -m ruff check
    --no-respect-gitignore .` ตั้งค่าใน
@@ -101,8 +101,8 @@ build_client.bat
      ไป `build_protected/` → compile `sfkeyword_lib/` ด้วย Cython → obfuscate `sfkeyword.pyw`
      ด้วย PyArmor → build จากสำเนาที่กันโค้ดแล้ว *(ต้องมี MSVC Build Tools)*
    - **N** — build จากซอร์สตรงๆ
-5. `PyInstaller --onefile --noconsole` → ไฟล์ออกที่ **`dist\SFKeyword\SFKeyword_v1.3.79.exe`**
-   + สร้าง `SFKeyword_v1.3.79.zip` + คำนวณ SHA-256
+5. `PyInstaller --onefile --noconsole` → ไฟล์ออกที่ **`dist\SFKeyword\SFKeyword_v1.4.0.exe`**
+   + สร้าง `SFKeyword_v1.4.0.zip` + คำนวณ SHA-256
 
 ### Build แบบ headless (ใช้จริงตอนปล่อย release)
 
@@ -195,6 +195,10 @@ build_client.bat
 > venv/Scripts/python.exe -X utf8 tools/build_tools/build_protected_driver.py
 > ```
 >
+> build x86: `prepare_x86_python.py` เตรียมล่าม 32-bit ก่อน แล้วค่อยเรียก
+> `build_protected_driver.py --arch x86 --python <ล่าม 32-bit>\python.exe`
+> (ARM64 ยังทำบนเครื่องนี้ไม่ได้ — ไม่มี wheel `pyarmor.cli.core` สำหรับ win_arm64)
+>
 > ดูรายละเอียดทั้งสองวิธี + ขั้นตอน ZIP/Release/update.json ได้ที่
 > **`docs/build-protected.md`**
 
@@ -231,7 +235,7 @@ build_client.bat
 | `tools/requirements.txt` | dependencies รันจริง (requests, cryptography, Pillow, pystray, pyinstaller …) |
 | `tools/requirements-build.txt` | dependencies สำหรับกันโค้ด (Cython, PyArmor) |
 | `requirements.txt` | manifest กลาง (root) — รวม dependencies ทั้งหมดผ่าน `-r` ไปยัง `tools/requirements*.txt` (ใช้ `pip install -r requirements.txt` ได้ครบ) |
-| `tools/build_tools/` | สคริปต์กันโค้ด: `cythonize_lib.py`, `obfuscate_entry.py`, `list_lib_modules.py`, `build_protected_driver.py` (driver build แบบกันโค้ด ไม่ต้องใช้ vcvarsall) |
+| `tools/build_tools/` | สคริปต์กันโค้ด: `cythonize_lib.py`, `obfuscate_entry.py`, `list_lib_modules.py`, `build_protected_driver.py` (driver build แบบกันโค้ด ไม่ต้องใช้ vcvarsall · `--arch` เลือกสถาปัตยกรรม · `--layout onefile|onedir`), `check_cython_safe.py` (ด่าน AST ก่อนเริ่มคอมไพล์), `prepare_x86_python.py` (เตรียมล่าม 32-bit ให้ build x86 ได้), `smoke_test_exe.ps1` (รัน EXE จริง 3 เคส เป็น gate), `measure_startup.ps1` (วัดเวลาเปิดโปรแกรมจริงเป็น ms) |
 | `docs/README.md` | เอกสารนี้ |
 | `docs/build-protected.md` | วิธี build แบบกันโค้ด (Cython + PyArmor) โดยไม่ใช้ vcvarsall.bat + ขั้นตอน Release |
 | `pyproject.toml` | config `ruff` — ตรวจบั๊ก/เดดโค้ด (รัน `python -m ruff check
@@ -251,7 +255,13 @@ build_client.bat
 | `constants` | `VERSION`, URL, สีธีม, ตัวเลือก dropdown (หน่วย/แรงค์/ประเภทไอดี), ความกว้างคอลัมน์ตาราง |
 | `paths` | ตำแหน่งโฟลเดอร์ข้อมูล, migrate ข้อมูลรุ่นเก่า, `_resource_path`, จัดการ Run key "เปิดพร้อมวินโดวส์" |
 | `instance_lock` | กุญแจกันเปิดโปรแกรมซ้อน — ชื่อ mutex ผูกกับ *โฟลเดอร์ข้อมูล* (โฟลเดอร์มาตรฐานได้ชื่อเดิม · โฟลเดอร์อื่นได้คนละดอก ⇒ ด่านเทสต์/โหมดพกพาเปิดพร้อมตัวจริงได้โดยไม่แตะหน้าต่างกัน) |
+| `tamper_guard` | ตรวจการถูกแกะ/ดัดแปลงตอนเปิดโปรแกรม (ดีบักเกอร์ระดับระบบ · tracer ฝั่ง Python · เครื่องมือวิเคราะห์ที่รันอยู่ · ชุดไฟล์ที่ถูกแตกใหม่ · env แทรกแซง) — ค่าเริ่มต้นจดลง `sfkeyword_diagnostics.log` เท่านั้น · จะหยุดทำงานเมื่อ **ตั้ง `TAMPER_ENFORCE = True` ใน `core/constants.py` ตอน build** (ฝังไปกับ `.pyd` ผู้ใช้แก้ไม่ได้) หรือสั่งชั่วคราวด้วย `SFKEYWORD_TAMPER_ENFORCE=y` (ใช้ได้เฉพาะบิลด์ที่ยังไม่ฝังค่า) |
+| `windows_compat` | ตรวจ **เวอร์ชันวินโดวส์ + สถาปัตยกรรม** ที่กำลังรัน · บันทึกลง log ครั้งเดียวตอนเปิด · เตือนเมื่อเครื่องอยู่นอกขอบเขตที่รองรับ (ต่ำกว่า Windows 10) แล้ว **ทำงานต่อ ไม่ปิดโปรแกรม** · มี `api_available()` ให้ด่านอื่น probe API วินโดวส์รุ่นใหม่ก่อนเรียก |
 | `security` | เข้ารหัสรหัสผ่านตอนเก็บ (DPAPI / Fernet / XOR fallback) |
+| `adaptive` | ปรับสปีดอัตโนมัติเมื่อเจอสัญญาณกดดัน (บัญชีถูกล็อก 15 นาที / timeout / เน็ตสะดุด) แล้วคืนสปีดเองเมื่อหาย |
+| `web_signals` | เกณฑ์คำกลางที่ใช้ตัดสินคำตอบของเว็บ (ต้องล็อกอินใหม่ / คีย์ผิด / รับรางวัลแล้ว) + ที่เก็บกลางของคำที่เว็บพูดแต่โปรแกรมยังไม่รู้จัก (ไว้ทบทวนเป็นรอบ) |
+| `inventory_flow` | Pure-HTTP ของฝาก/เบิก: กติกาฝากได้/เบิกได้, ล็อกอินใหม่ให้เองเมื่อเซสชันหลุด, ลองซ้ำเฉพาะรายการที่ควรลอง |
+| `screens` | ตำแหน่ง/ขนาดหน้าต่างและจอ (จัด popup กลางจอที่โปรแกรมอยู่ + ขนาดสำรองเมื่อยังวัดขนาดจริงไม่ได้) |
 | `http_flow` | **Pure-HTTP engine** (backend ปัจจุบัน): ล็อกอิน, cookie fast-path, ส่งคีย์เวิร์ด, เลือกแรงค์/หน่วย, ยืนยันรับไอเทม, rate limit เว้นจังหวะล็อกอินต่อไอดี |
 | `webhook` | ดึงคูปอง SF (`fetch_sf_coupons`), ส่ง/จัดรูปแบบ Discord webhook |
 | `labels` | แปลงโค้ดภายใน → label ภาษาไทย (เช่น `gameid` → "Game ID") |
@@ -265,7 +275,6 @@ build_client.bat
 | `app` | คลาส `App` — ประกอบ mixin ทั้งหมด (ไม่มีความ logic เอง) |
 | `app_core` | `__init__`, properties กัน thread race, วางหน้าต่างกลางจอหลัก (ไม่จำพิกัดเดิม), `_build_ui()` ทั้งหน้าต่าง |
 | `app_settings` | โหลด/บันทึกตั้งค่า, migrate ไฟล์ตั้งค่า, reset, สำรอง/กู้คืน |
-| `app_settings_diagnostics` | stub class สำหรับ MRO compatibility (ฟีเจอร์ diagnostic ถูกลบแล้ว) |
 | `app_settings_tab` | UI แท็บ "ตั้งค่า" |
 | `app_tables` | เพิ่ม/ลบ/reindex/นับแถวในตารางบัญชี/คีย์เวิร์ด/webhook |
 | `app_webhook_ui` | ยูทิลิตี้ webhook ร่วม: redaction, ส่งทุกช่อง, จัดแบ่ง embed, ทดสอบการเชื่อมต่อ |
@@ -273,6 +282,7 @@ build_client.bat
 | `app_manual_key_sender` | หน้าต่างส่งคีย์ด้วยมือ (พิมพ์/วาง แล้วส่ง) |
 | `app_daily_key_watcher` | poller คีย์ประจำวันเบื้องหลัง + toggle/nับถอยหลัง |
 | `app_webhook_history` | ดู/ลบข้อความ Discord ที่เคยส่ง |
+| `app_inventory_engine` | เอนจินฝาก/เบิก: รันหลายบัญชีพร้อมกันแบบสตรีม, จำกัดงานค้างในคิว, ไม่ถือรายการทั้งชุดในแรม (รองรับบัญชีที่มีไอเทมหลักล้านชิ้น) |
 | `app_autoitem_ui` / `app_autoitem_webhook` / `app_autoitem_engine` | แท็บ "รับไอเทมฟรี": UI, webhook, เอนจินรับของ |
 | `app_logging` | แผง log ในแอป: queue, filter, ค้นหา, เขียนไฟล์ run-log |
 | `app_stats` | สถิติการรัน, ประวัติต่อบัญชี, ส่งออก CSV |
@@ -289,8 +299,13 @@ build_client.bat
 
 ## 🔒 ความปลอดภัย
 
-- **ไม่มี network call ตอนเปิดโปรแกรม** — เส้นทาง import → สร้างหน้าต่าง → mainloop
-  ไม่ติดต่ออินเทอร์เน็ต (ตรวจสอบแล้วทั้งแบบ static และ dynamic)- network call ที่เหลือทั้งหมดเป็นฟีเจอร์หลักและเกิดจากผู้ใช้กดเท่านั้น:
+- **ตอนเปิดโปรแกรมยิงเน็ตชุดเดียว = ตรวจอัปเดต + สวิตช์ปิดปรับปรุง** — ไปที่
+  `raw.githubusercontent.com/haremking7025/sfbot-control` (มี fallback เป็น GitHub Contents API)
+  **ครั้งเดียว ก่อนหน้าต่างหลักขึ้น** (`updater.check_on_startup_sync` เรียกจาก `sfkeyword.pyw`)
+  แล้วจบ — ไม่มีตัวตรวจเบื้องหลังระหว่างใช้งาน · ดึงไม่ได้/เน็ตล่ม = เปิดโปรแกรมต่อทันที
+  (ไม่ค้าง ไม่บล็อก) · **ยกเว้นเปิดแบบ `--tray`** (เปิดพร้อมวินโดวส์) ที่ข้ามขั้นนี้ทั้งขั้น
+  ⇒ ไม่ยิงเน็ตเลย
+- นอกจากชุดตรวจอัปเดตตอนเปิดโปรแกรม network call ทั้งหมดเป็นฟีเจอร์หลักที่เกิดจากผู้ใช้กดเท่านั้น:
   - หน้าเว็บ SF ระหว่างล็อกอิน/กรอกคีย์เวิร์ด — ผ่าน HTTP (requests) โดยตรง
   - ส่ง/ดึงข้อมูล Discord webhook ตาม URL ที่ผู้ใช้ตั้งเอง
 - **ค่าที่ตั้งในแต่ละแท็บถูกจำข้ามการเปิดโปรแกรม**: หน่วงล็อกอิน · พร้อมกัน (แดชบอร์ด /
@@ -302,7 +317,11 @@ build_client.bat
   *ไอดีเดียวกัน* ⇒ ไอดีต่างกันไม่ต้องรอกัน · ล็อก 15 นาทีเกิดจากใส่รหัสผิดซ้ำใน
   บัญชีเดียวกัน ไม่เกี่ยวกับตัวหน่วงนี้
 - รหัสผ่านถูกเข้ารหัสตอนเก็บ (DPAPI/Fernet) และทุก log ผ่าน redaction filter —
-  password/cookie/token ไม่เคยหลุดลงไฟล์หรือจอ
+  ครอบคลุม 6 รูปแบบ: `Authorization: Bearer …` · `Bearer …` ที่ลอยมาเดี่ยว ·
+  `key=value` (password/api_key/… ) · ค่าใน query/form · `Set-Cookie:` ·
+  ค่าใน JSON ⇒ password/cookie/token/api key ไม่หลุดลงไฟล์ `.log`/`.jsonl`
+  หรือจอ (ด่านตรวจ: `tools/_redact_verify.py` — ทั้งรูปแบบที่เจอจริงและชุด generate)
+  เข้ารหัสด้วยกลไกเดียวกับรหัสผ่าน — log บอกแค่ "มี/ไม่มี" ไม่พิมพ์ค่าจริง
 
 ---
 
